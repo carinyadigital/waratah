@@ -20,6 +20,7 @@ import {
   checkInternalLinkGraph,
   checkMustSupportStillResolves,
   checkPositioningHash,
+  checkPublishedHasReview,
   checkSourceFreshness,
   type CorpusDoc,
   type Violation,
@@ -84,8 +85,16 @@ const main = async () => {
         .map((f) => parseYaml(readFileSync(path.join(packsDir, f), 'utf8')) as PackArtifact)
     : [];
 
+  const reviewsDir = path.join(paths.content, 'reviews');
+  const reviewSlugs = existsSync(reviewsDir)
+    ? readdirSync(reviewsDir)
+        .filter((f) => f.endsWith('.yaml'))
+        .map((f) => f.replace(/\.yaml$/, ''))
+    : [];
+
   const violations: Violation[] = [
     ...checkBriefAndPack(published, briefSlugs, packs.map((p) => p.slug), corpus.map((c) => c.slug)),
+    ...checkPublishedHasReview(published, reviewSlugs),
     ...checkTargetQueryUniquenessSafe(briefs),
     ...checkInternalLinkGraph(corpus),
     ...(external === 'check' ? await checkExternalLinks(corpus, packs, fetch) : []),

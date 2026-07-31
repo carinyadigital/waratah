@@ -64,6 +64,19 @@ export const checkBriefAndPack = (
   return violations;
 };
 
+/** Every published document has a review record — the invariant review.schema.json's own description asserts. */
+export const checkPublishedHasReview = (published: CorpusDoc[], reviewSlugs: string[]): Violation[] => {
+  const reviews = new Set(reviewSlugs);
+  return published
+    .filter((doc) => !reviews.has(doc.slug))
+    .map((doc) => ({
+      invariant: 'published-has-review',
+      page: doc.slug,
+      title: `published page "${doc.slug}" has no review record`,
+      evidence: `no .agency/content/reviews/${doc.slug}.yaml — the calibration/shadow pipeline treats review records as its sole input`,
+    }));
+};
+
 /** The cannibalisation check: every targetQuery maps to exactly one canonical page. */
 export const checkTargetQueryUniqueness = (briefs: BriefArtifact[]): Violation[] => {
   const byQuery = new Map<string, string[]>();

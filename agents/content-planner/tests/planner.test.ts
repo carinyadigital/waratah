@@ -80,7 +80,7 @@ const commissionInput = (over: Partial<CommissionInput> = {}): CommissionInput =
 // give the opportunity an id like the builder would
 const withId = (input: CommissionInput): CommissionInput => ({
   ...input,
-  opportunity: { id: 'opp-how-to-read-a-soil-test', ...input.opportunity },
+  opportunity: { ...input.opportunity, id: 'opp-how-to-read-a-soil-test' },
 });
 
 describe('commissioning', () => {

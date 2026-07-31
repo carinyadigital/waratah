@@ -18,7 +18,8 @@
     "scripts/**/*.ts",
     "packages/*/src/**/*.ts",
     "packages/*/build.ts",
-    "tests/**/*.ts"
+    "tests/**/*.ts",
+    "agents/**/*.ts"
   ],
   "exclude": ["node_modules", "**/dist"]
 }

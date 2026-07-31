@@ -4,6 +4,7 @@ import { buildConfig } from 'payload';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 
+import { ClaimFeature } from './lexical/claimFeature';
 import { Users } from './collections/Users';
 import { Posts, Recipes } from './collections/content';
 
@@ -16,7 +17,9 @@ export default buildConfig({
       url: process.env.DATABASE_URI ?? `file:${path.resolve(dirname, '../carinyaparc.db')}`,
     },
   }),
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [...defaultFeatures, ClaimFeature()],
+  }),
   collections: [Users, Posts, Recipes],
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

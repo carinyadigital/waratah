@@ -40,22 +40,43 @@ const readJsonDir = <T>(dir: string): T[] => {
 
 const fetchPublishedFromPayload = async (baseUrl: string, apiKey: string): Promise<CorpusDoc[]> => {
   const docs: CorpusDoc[] = [];
+  const base = baseUrl.replace(/\/$/, '');
   for (const collection of ['posts', 'recipes'] as const) {
-    const res = await fetch(
-      `${baseUrl.replace(/\/$/, '')}/api/${collection}?where[_status][equals]=published&limit=200`,
-      { headers: { Authorization: `users API-Key ${apiKey}` } },
-    );
-    if (!res.ok) throw new Error(`payload fetch ${collection}: ${res.status}`);
-    const body = (await res.json()) as { docs: Record<string, unknown>[] };
-    for (const d of body.docs) {
-      docs.push({
-        slug: d.slug as string,
-        surface: collection === 'recipes' ? 'recipes' : 'blog',
-        content: d.content as CorpusDoc['content'],
-        publishedAt: (d.publishedAt ?? d.updatedAt) as string,
-        lastReviewedAt: d.lastReviewedAt as string | undefined,
-        positioningHash: d.positioningHash as string | undefined,
-      });
+    let page = 1;
+    for (;;) {
+      if (page > 500) throw new Error(`payload fetch ${collection}: exceeded 500 pages`);
+      const res = await fetch(
+        `${base}/api/${collection}?where[_status][equals]=published&limit=100&page=${page}`,
+        { headers: { Authorization: `users API-Key ${apiKey}` } },
+      );
+      if (!res.ok) throw new Error(`payload fetch ${collection}: ${res.status}`);
+      const body = (await res.json()) as {
+        docs: Record<string, unknown>[];
+        hasNextPage?: boolean;
+        totalPages?: number;
+      };
+      for (const d of body.docs) {
+        docs.push({
+          slug: d.slug as string,
+          surface: collection === 'recipes' ? 'recipes' : 'blog',
+          content: d.content as CorpusDoc['content'],
+          publishedAt: (d.publishedAt ?? d.updatedAt) as string,
+          lastReviewedAt: d.lastReviewedAt as string | undefined,
+          positioningHash: d.positioningHash as string | undefined,
+        });
+      }
+      if (body.docs.length === 0) break;
+      if (body.hasNextPage === true) {
+        page += 1;
+        continue;
+      }
+      if (typeof body.totalPages === 'number' && page < body.totalPages) {
+        page += 1;
+        continue;
+      }
+      // No pagination metadata: stop when a page returns fewer than the page size.
+      if (body.docs.length < 100) break;
+      page += 1;
     }
   }
   return docs;

@@ -125,6 +125,22 @@ describe('levels move on evidence, automatically', () => {
     expect(kinds).toContain('demotion');
   });
 
+  it('a severe miss is not demoted again by the levels engine', () => {
+    const root = scaffold();
+    const classes = loadClasses(root);
+    const cls = classes.find((c) => c.id === 'figure-rederivation')!;
+    cls.level = 4;
+    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+
+    recordShadowVerdict(root, 'figure-rederivation', 'the-bad-one', 'reproduces');
+    recordHumanDecision(root, 'figure-rederivation', 'the-bad-one', 'fabricated-figure', { severeMiss: true });
+    expect(queryClass(root, 'figure-rederivation').level).toBe(2);
+
+    const changes = runLevelsEngine(root);
+    expect(changes.find((c) => c.classId === 'figure-rederivation')).toBeUndefined();
+    expect(queryClass(root, 'figure-rederivation').level).toBe(2);
+  });
+
   it('never promotes past the ceiling', () => {
     const root = scaffold();
     fillLedger(root, 'what-to-commission', 10);

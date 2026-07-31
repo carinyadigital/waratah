@@ -207,8 +207,9 @@ const applyDemotion = (root: string, classId: string, reason: string): void => {
 /**
  * The levels engine. Promotion: agreement above threshold across a full
  * window of that class, zero severe misses in window, one level at a time,
- * never past the ceiling. Demotion for severe misses is applied at decision
- * time; this pass also catches any recorded but unapplied ones.
+ * never past the ceiling. Demotion for severe misses happens at decision
+ * time only — this pass refuses promotion while any severe miss remains in
+ * the window, and does not demote again.
  */
 export const runLevelsEngine = (root: string): LevelChange[] => {
   const classes = loadClasses(root);
@@ -218,22 +219,9 @@ export const runLevelsEngine = (root: string): LevelChange[] => {
     if (cls.basis !== 'agent-judgement') continue;
     const report = agreementRate(root, cls.id);
 
-    if (report.severeMisses > 0 && cls.level > 0) {
-      const to = Math.max(0, cls.level - 2);
-      const change: LevelChange = {
-        classId: cls.id,
-        from: cls.level,
-        to,
-        kind: 'demotion',
-        reason: `${report.severeMisses} severe miss(es) in window`,
-        at: new Date().toISOString(),
-      };
-      appendLog(root, change);
-      cls.level = to;
-      cls.lastReviewedAt = change.at;
-      changes.push(change);
-      continue;
-    }
+    // Severe miss already demoted at decision time. Block promotion until
+    // the miss rolls out of the window; do not apply a second −2 here.
+    if (report.severeMisses > 0) continue;
 
     const full = report.observed >= (cls.minSample ?? report.window);
     const above = report.agreementRate !== null && report.agreementRate >= (cls.agreementThreshold ?? 1);

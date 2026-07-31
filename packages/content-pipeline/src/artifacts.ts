@@ -55,10 +55,31 @@ export const hasDraft = (paths: RepoPaths, slug: string): boolean =>
 export const loadDraft = (paths: RepoPaths, slug: string): DraftArtifact =>
   readJson(path.join(paths.content, 'drafts', `${slug}.json`));
 
-export const corpusSlugs = (paths: RepoPaths): string[] => {
+/** Slugs of staged drafts, for internal-link resolution within the corpus being staged. */
+const draftSlugs = (paths: RepoPaths): string[] => {
   const dir = path.join(paths.content, 'drafts');
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .map((f) => f.replace(/\.json$/, ''));
 };
+
+/**
+ * Slugs of the local published mirror (.agency/content/published/), read the same
+ * way content-monitor's corpus assembly does: by each document's own `slug` field,
+ * not its filename.
+ */
+const publishedSlugs = (paths: RepoPaths): string[] => {
+  const dir = path.join(paths.content, 'published');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => readJson<{ slug: string }>(path.join(dir, f)).slug);
+};
+
+/**
+ * Slugs known to the corpus — staged drafts plus the local published mirror — so a
+ * draft linking to an already-published page (with no active draft file) resolves
+ * the same way here as it does in content-monitor's broader corpus definition.
+ */
+export const corpusSlugs = (paths: RepoPaths): string[] => [...new Set([...draftSlugs(paths), ...publishedSlugs(paths)])];

@@ -4,10 +4,10 @@ source_of_truth: https://github.com/carinyaparc/design-system (brand/Brand Guide
 note: >
   This file mirrors the human-authored Brand Guide in the design-system repo.
   It is a working copy for brand-creative tooling, not a new source of voice —
-  update the design-system repo first, then resync this file. Per docs/product.md,
-  the eventual hashed, human-only-write standards layer for this project lives
-  at packages/brand/src/ (positioning.md, voice.md, claim-policy.md) in the site
-  repo; this file is a stopgap until that exists.
+  update the design-system repo first, then resync this file. The hashed,
+  human-only-write standards layer for this project lives at packages/brand/src/
+  (positioning.md, voice.md, claim-policy.md) in the site repo; this file is a
+  stopgap until that exists.
 last_synced: 2026-07-31
 ---
 
@@ -60,7 +60,7 @@ Warm & welcoming · Grounded & authentic · Rugged & hands-on · Quietly playful
 
 ## Regulatory note (carries into claim policy, not just tone)
 
-Regenerative and environmental claims made in copy (soil health, biodiversity, "sustainable," "regenerative") sit under live ACCC guidance on environmental and sustainability claims — this is a compliance surface, not only a style one. Per `docs/product.md`, no published claim should outrun its evidence, and the eventual `packages/brand/src/claim-policy.md` is the authority once built. Until then: don't assert what isn't measured or sourced; prefer the specific, checkable number over the sweeping claim.
+Regenerative and environmental claims made in copy (soil health, biodiversity, "sustainable," "regenerative") sit under live ACCC guidance on environmental and sustainability claims — this is a compliance surface, not only a style one. No published claim should outrun its evidence; `packages/brand/src/claim-policy.md` is the authority once built. Until then: don't assert what isn't measured or sourced; prefer the specific, checkable number over the sweeping claim.
 
 ## Sample lines (reference, not a script)
 
@@ -83,5 +83,5 @@ Primary: website copy, the "Life on Pasture" blog/journal, email newsletter (pro
 
 ## Known gaps
 
-- No numeric subscriber/business targets yet (`docs/product.md` §3, flagged `[NEEDS CLARIFICATION]`) — don't invent target figures in copy.
+- No numeric subscriber/business targets yet (flagged `[NEEDS CLARIFICATION]`) — don't invent target figures in copy.
 - `packages/brand/src/positioning.md` / `voice.md` / `claim-policy.md` don't exist yet in the site repo — this file and the design-system repo are the working reference until they're built.

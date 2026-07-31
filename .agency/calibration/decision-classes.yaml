@@ -1,5 +1,5 @@
-# The decision-class register (design.md §9.1–9.2). Per class, never
-# wholesale: each climbs its own ladder on measured agreement.
+# The decision-class register. Per class, never wholesale: each climbs its
+# own ladder on measured agreement.
 #
 # levels: 0 human decides · 1 shadow verdicts logged · 2 agent decides, human
 # reviews 100% · 3 agent decides, human audits a sample · 4 agent decides,

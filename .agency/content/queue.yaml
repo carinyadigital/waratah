@@ -1,4 +1,4 @@
-# The ready queue. Capped as policy, filled only by humans (design.md §2.1).
+# The ready queue. Capped as policy, filled only by humans.
 #
 # Publishing rate is pinned to human review capacity, permanently. The cap is
 # the number of briefs one reviewer can honestly carry at once; promotion is

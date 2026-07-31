@@ -6,6 +6,7 @@ import { stringify as toYaml } from 'yaml';
 import { capture } from '../capture';
 import { sweepExpiredBriefs } from '../expiry-sweep';
 import { Triage } from '../../../agents/content-monitor/agent/triage';
+import { loadQueue, promote } from '../../../agents/content-planner/agent/queue';
 
 const IDEA = `what about a piece on why the creek crossing silts up every  winter??
 half-formed but there's something in it — maybe tie to the riparian planting`;
@@ -74,5 +75,16 @@ describe('expiry sweep — stale briefs expire, reported not silent', () => {
     const report = sweepExpiredBriefs(root, new Date('2026-07-31'));
     expect(report.expired).toHaveLength(0);
     expect(report.kept).toContain('in-progress');
+  });
+
+  it('an expired brief is dropped from the ready queue, not left occupying a slot forever', () => {
+    const { root, brief } = scaffold();
+    brief('promoted-then-stale', '2026-01-01');
+    promote(path.join(root, '.agency/content'), 'promoted-then-stale', 'Jonno');
+    expect(loadQueue(path.join(root, '.agency/content')).ready).toContain('promoted-then-stale');
+
+    sweepExpiredBriefs(root, new Date('2026-07-31'));
+
+    expect(loadQueue(path.join(root, '.agency/content')).ready).not.toContain('promoted-then-stale');
   });
 });

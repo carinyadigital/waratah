@@ -11,6 +11,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { hasDraft, listBriefSlugs, loadBrief, repoPaths } from '../../packages/content-pipeline/src/artifacts';
 import { Triage } from '../../agents/content-monitor/agent/triage';
+import { loadQueue, pruneExpiredFromQueue } from '../../agents/content-planner/agent/queue';
 
 export interface ExpiryReport {
   expired: { slug: string; expiresAt: string; trackerRef: string }[];
@@ -32,10 +33,15 @@ export const sweepExpiredBriefs = (root: string, now = new Date()): ExpiryReport
       continue;
     }
 
-    // Move out of the active briefs dir — the ready queue reads active briefs only.
+    // Move out of the active briefs dir.
     const expiredDir = path.join(paths.content, 'briefs', 'expired');
     mkdirSync(expiredDir, { recursive: true });
     renameSync(path.join(paths.content, 'briefs', `${slug}.yaml`), path.join(expiredDir, `${slug}.yaml`));
+
+    // Drop it from the ready queue too, if a human had promoted it there.
+    if (loadQueue(paths.content).ready.includes(slug)) {
+      pruneExpiredFromQueue(paths.content, slug);
+    }
 
     // Resolve the tracker item if it lives in Triage; a Linear ref is reported for human action.
     if (brief.trackerRef.startsWith('triage/')) {

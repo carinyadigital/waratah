@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
+version: 1
+name: content-analyst
+owner: greg
+description: Track one intelligence. Reads performance and audience signals, emits read and demand artifacts. No CMS, no repo, no send.
+tags: [content, intelligence]
+
+deploy:
+  platform: claude-managed-agent
+  schedule: '0 7 * * MON'
+  timezone: Australia/Sydney
+
+triggers:
+  - type: schedule
+    cron: '0 7 * * MON'
+    timezone: Australia/Sydney
+  - type: chat
+    channel: slack
+
+policy:
+  untrustedInput: true
+  connections: [ga4, gsc, ahrefs, esp, slack]
+  writes: [artifact-store, tracker, slack]
+  approval: draft-only
+  spendCapUsd: 60 # deliberately high: strong model, long runs, read-only envelope
+  idempotencyKey: read.period
+
+content:
+  voice: packages/brand/dist/carinya-voice.json
+  rubric: packages/brand/dist/editorial-rubric.md
+  positioning: packages/brand/dist/positioning.json
+  nThreshold: { ga4: 400, gsc: 200, ahrefs: 100, esp: 150 } # R11
+  clusters: [topic-area, angle-type, format, funnel-intent]
+  emits: [read, demand]
+
+observability:
+  traces: both
+  alertChannel: '#carinya-content'
+  evals: agents/content-analyst/evals

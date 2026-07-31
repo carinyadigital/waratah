@@ -42,7 +42,7 @@
                   "description": "Exact GA4/GSC/Ahrefs/ESP query, re-runnable. Every number traces to something re-runnable."
                 },
                 "n": { "type": "integer", "minimum": 0, "description": "Sample size. Always." },
-                "window": { "type": "string", "minLength": 3 },
+                "window": { "type": "string", "minLength": 2, "description": "e.g. 7d, 28d, 2026-W27..W31" },
                 "source": { "enum": ["ga4", "gsc", "ahrefs", "esp"] },
                 "direction": {
                   "enum": ["up", "down", "flat"],

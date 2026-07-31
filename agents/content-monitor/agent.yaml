@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
+version: 1
+name: content-monitor
+owner: greg
+description: Weekly corpus invariant check. Files violations to tracker. No model calls, cannot write content anywhere.
+tags: [content, ci]
+
+deploy:
+  platform: github-actions
+  workflow: .github/workflows/content-monitor.yml
+  harness: none
+
+triggers:
+  - type: schedule
+    cron: '0 5 * * SUN'
+    timezone: Australia/Sydney
+  - type: repo-event
+    event: push
+    paths: ['packages/brand/**'] # positioning change → immediate re-check
+
+policy:
+  untrustedInput: false
+  connections: [github, payload]
+  writes: [tracker, pr-comment]
+  approval: none
+  idempotencyKey: invariant.id+page
+
+observability:
+  traces: none
+  alertChannel: '#carinya-content'

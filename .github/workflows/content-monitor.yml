@@ -1,0 +1,55 @@
+# content-monitor — weekly corpus invariants. (design.md §7; tasks.md CNT09)
+# Deterministic, no model calls. Violations are filed into Triage under
+# .agency/triage/ with idempotencyKey invariant.id+page and pushed as a
+# commit; a Linear sync picks them up from there.
+name: content-monitor
+
+on:
+  schedule:
+    # 0 5 * * SUN Australia/Sydney ≈ 19:00 Saturday UTC
+    - cron: '0 19 * * SAT'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/brand/**' # positioning change → immediate re-check (CNT09-03)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build brand dist
+        run: pnpm build:brand
+
+      - name: Run invariants
+        env:
+          PAYLOAD_URL: ${{ secrets.PAYLOAD_URL }}
+          CONTENT_AGENT_API_KEY: ${{ secrets.CONTENT_AGENT_API_KEY }}
+        run: pnpm monitor --external-links check
+
+      - name: Commit filed triage items
+        run: |
+          if [[ -n "$(git status --porcelain .agency/triage)" ]]; then
+            git config user.name "content-monitor"
+            git config user.email "agents@carinyaparc.com.au"
+            git add .agency/triage
+            git commit -m "content-monitor: file invariant violations"
+            git push
+          else
+            echo "no new violations"
+          fi

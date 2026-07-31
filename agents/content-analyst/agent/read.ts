@@ -1,6 +1,6 @@
 /**
  * The read builder — every analyst discipline enforced at write, not by
- * instruction (design.md §4.3–4.5):
+ * instruction:
  *
  *  - questions are pre-registered: findings answer a question from
  *    questions.yaml or are labelled exploratory

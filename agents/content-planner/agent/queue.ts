@@ -1,8 +1,7 @@
 /**
- * The ready queue — capped, human-promoted (design.md §2.1; the epic's real
- * content). The cap is a policy field checked at write. Promotion into the
- * ready queue requires a human; the planner may file to Triage only, and no
- * agent may set priority.
+ * The ready queue — capped, human-promoted. The cap is a policy field checked
+ * at write. Promotion into the ready queue requires a human; the planner may
+ * file to Triage only, and no agent may set priority.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

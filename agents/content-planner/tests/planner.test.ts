@@ -27,7 +27,7 @@ const candidate = (over: Partial<Parameters<OpportunitiesBuilder['propose']>[0]>
   ...over,
 });
 
-describe('synthesis (CNT07-S2)', () => {
+describe('synthesis', () => {
   it('refuses synthesis with no input artifacts', () => {
     expect(() => new OpportunitiesBuilder('2026-08', HASH, policy, {})).toThrow(/opinion/);
   });
@@ -83,7 +83,7 @@ const withId = (input: CommissionInput): CommissionInput => ({
   opportunity: { id: 'opp-how-to-read-a-soil-test', ...input.opportunity },
 });
 
-describe('commissioning (CNT07-S3)', () => {
+describe('commissioning', () => {
   it('an opportunity becomes a schema-valid brief with positioningHash and expiresAt set', () => {
     const root = scaffoldRepo();
     const result = commission(root, withId(commissionInput()), new Date('2026-08-01'));
@@ -103,7 +103,7 @@ describe('commissioning (CNT07-S3)', () => {
   });
 });
 
-describe('the capped, human-promoted queue (CNT07-S4)', () => {
+describe('the capped, human-promoted queue', () => {
   it('the commissioner files to Triage and never writes the queue', () => {
     const root = scaffoldRepo();
     writeFileSync(path.join(root, '.agency/content/queue.yaml'), toYaml({ cap: 1, ready: [] }));

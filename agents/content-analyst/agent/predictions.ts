@@ -1,8 +1,8 @@
 /**
- * Prediction records and horizon scoring (design.md §4.5). At horizon the
- * prediction is scored regardless of whether anyone asked. Over a year the
- * calibration record — not report quality, not output volume — is the
- * measure of whether the analyst is worth its tokens.
+ * Prediction records and horizon scoring. At horizon the prediction is scored
+ * regardless of whether anyone asked. Over a year the calibration record —
+ * not report quality, not output volume — is the measure of whether the
+ * analyst is worth its tokens.
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

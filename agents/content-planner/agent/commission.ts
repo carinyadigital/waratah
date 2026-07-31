@@ -74,7 +74,7 @@ export const commission = (root: string, input: CommissionInput, now = new Date(
   const contentDir = path.join(root, '.agency', 'content');
   const slug = slugify(input.opportunity.title);
 
-  // CNT09-05 applied earlier: refuse the collision at write.
+  // Refuse a targetQuery collision at write — one query maps to one page.
   const taken = existingTargetQueries(contentDir);
   const query = input.opportunity.targetQuery.trim().toLowerCase();
   const holder = taken.get(query);

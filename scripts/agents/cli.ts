@@ -1,5 +1,5 @@
 /**
- * The register CLI (architecture.md §7):
+ * The register CLI:
  *
  *   pnpm agents list [--tag content] [--only name]
  *   pnpm agents check            # policy rules. The CI gate.
@@ -91,7 +91,7 @@ const commands: Record<string, () => number> = {
         return 0;
       case 'claude-managed-agent':
         console.log(
-          `${only}: claude-managed-agent deploy is driven by .github/workflows/agents-deploy.yml using the provider CLI with CLAUDE_MANAGED_AGENTS_TOKEN. Manifest is the source of truth; see docs/agent-deploys.md.`,
+          `${only}: claude-managed-agent deploy is driven by .github/workflows/agents-deploy.yml using the provider CLI with CLAUDE_MANAGED_AGENTS_TOKEN. Manifest is the source of truth.`,
         );
         return 0;
       default:

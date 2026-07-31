@@ -1,7 +1,7 @@
 /**
- * Policy rules, CI-enforced by `pnpm agents check` (architecture.md §6).
+ * Policy rules, CI-enforced by `pnpm agents check`.
  * A rule that cannot be checked is documentation, and is marked as such.
- * R1–R8 land with the register; R9–R12 are added by CNT05 and CNT11.
+ * R1–R8 land with the register; R9–R12 are added as later epics deliver them.
  */
 import { existsSync } from 'node:fs';
 import path from 'node:path';

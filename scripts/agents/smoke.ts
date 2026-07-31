@@ -1,5 +1,5 @@
 /**
- * CNT04-02 (and CNT10-02 / CNT07-02) — local smoke run harness.
+ * Local smoke run harness.
  *
  * `pnpm tsx scripts/agents/smoke.ts --agent content-studio --slug <slug>`
  *

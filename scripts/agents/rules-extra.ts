@@ -1,7 +1,7 @@
 /**
- * R9–R12 (architecture.md §6). R9 and R10 generalise what CNT03 shipped as a
- * one-off; R11 makes the `content:` block real. R12 arrives with the
- * calibration ledger (CNT11).
+ * R9–R12. R9 and R10 generalise the access and connection checks that content
+ * QA shipped as a one-off; R11 makes the `content:` block real. R12 arrives
+ * with the calibration ledger.
  */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -45,10 +45,10 @@ export const r9: Rule = ({ root, manifests }) => {
 
 /**
  * R10 — no agent may declare a direct database connection. Any agent, any
- * tag (ADR-0003): the rule most likely to be broken by someone being helpful
- * during a debugging session. Two layers: connections classified `database`
- * in connections.yaml are refused, and connection names that look like
- * databases are refused even if someone "helpfully" registers them.
+ * tag: the rule most likely to be broken by someone being helpful during a
+ * debugging session. Two layers: connections classified `database` in
+ * connections.yaml are refused, and connection names that look like databases
+ * are refused even if someone "helpfully" registers them.
  */
 export const r10: Rule = ({ manifests, connections }) => {
   const violations: Violation[] = [];
@@ -81,8 +81,8 @@ const N_THRESHOLD_KINDS = new Set(['analytics', 'search', 'seo', 'email']);
 /**
  * R11 — any agent emitting a `read` artifact declares content.nThreshold per
  * connected source. The schema half (read.schema.json rejecting
- * empty-by-omission alternativeExplanations and couldNotDetermine) shipped
- * with CNT02-06; this is the manifest half.
+ * empty-by-omission alternativeExplanations and couldNotDetermine) already
+ * enforces required honesty fields; this is the manifest half.
  */
 export const r11: Rule = ({ manifests, connections }) => {
   const violations: Violation[] = [];

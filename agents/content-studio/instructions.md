@@ -28,7 +28,7 @@ You are the studio: you turn one brief and its evidence pack into one staged Pay
 
 ## Staging
 
-Stage the passing draft to Payload over REST as the `agent` identity (`docs/agent-publishing.md`), `_status: draft`, idempotent on `brief.slug` — re-running a brief updates its existing draft rather than duplicating it. Commit the artifacts to `.agency/content/` on a branch; the PR is the review surface (`approval: pr-review`).
+Stage the passing draft to Payload over REST as the `agent` identity, `_status: draft`, idempotent on `brief.slug` — re-running a brief updates its existing draft rather than duplicating it. Commit the artifacts to `.agency/content/` on a branch; the PR is the review surface (`approval: pr-review`).
 
 ## Run report (Slack thread)
 

@@ -1,12 +1,11 @@
-# content-qa — the deterministic gate agent. (design.md §5, §10; tasks.md CNT03)
+# content-qa — the deterministic gate agent.
 #
 # Two jobs, one suite:
-#   - pull_request: gates + access assertions on the PR (CNT03-01), with a
-#     per-gate PR comment that updates in place (CNT03-06/07).
-#   - push to main: the same suite re-run on the merge commit (CNT03-02).
-#     A gate that only runs pre-merge can be routed around by force-push or
-#     admin merge; this one cannot be skipped. Branch protection requiring
-#     this check is documented in docs/branch-protection.md (CNT03-03).
+#   - pull_request: gates + access assertions on the PR, with a per-gate PR
+#     comment that updates in place.
+#   - push to main: the same suite re-run on the merge commit. A gate that
+#     only runs pre-merge can be routed around by force-push or admin merge;
+#     this one cannot be skipped. Branch protection must require this check.
 #
 # No model calls anywhere in this workflow.
 name: content-qa
@@ -54,11 +53,11 @@ jobs:
           pnpm gates --format markdown --out gate-report.md
         # external links are checked for real here — that is the point of CI
 
-      - name: CNT01 access assertions (CNT03-04/05)
+      - name: Access assertions
         if: always()
         run: pnpm vitest run tests/access
 
-      - name: Gate report as PR comment (CNT03-06/07)
+      - name: Gate report as PR comment
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:

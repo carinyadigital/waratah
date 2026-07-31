@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/agent.schema.json",
   "title": "Agent manifest",
-  "description": "The register's contract. policy is the load-bearing block: everything else describes how the agent runs; policy describes what it can do to the world. (architecture.md §3)",
+  "description": "The register's contract. policy is the load-bearing block: everything else describes how the agent runs; policy describes what it can do to the world.",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "name", "owner", "description", "tags", "deploy", "triggers", "policy", "observability"],

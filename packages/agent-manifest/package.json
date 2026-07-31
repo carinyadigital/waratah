@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "agent.schema.json and manifest types. The manifest is written before the agent. (architecture.md)",
+  "description": "agent.schema.json and manifest types. The manifest is written before the agent.",
   "exports": {
     ".": "./src/index.ts",
     "./agent.schema.json": "./agent.schema.json"

@@ -1,9 +1,9 @@
-# The connection registry. (architecture.md §5)
+# The connection registry.
 #
 # Every connection an agent may declare in policy.connections is registered
 # here with an owner, a kind, and a rotation policy. R2 asserts declared
 # connections exist here; R10 prohibits any agent declaring a connection of
-# kind "database" (ADR-0003).
+# kind "database".
 #
 # kind vocabulary: cms | code | chat | analytics | search | seo | email |
 #                  observability | hosting | spreadsheet | database
@@ -20,7 +20,7 @@ connections:
     kind: cms
     owner: greg
     rotation:
-      # CNT01-09 — key lifecycle for the agent identity.
+      # Key lifecycle for the agent identity.
       cadence: quarterly
       method: >-
         Rotate the agent user's API key in the Payload Admin UI

@@ -1,5 +1,23 @@
 import type { Access, Where } from 'payload';
 
+type AgentPublishOutcome = { decided: true; allowed: boolean } | { decided: false };
+
+/**
+ * The shared prefix both publish-adjacent access rules start from: deny
+ * outright for no user, pass through non-agents untouched, and deny an
+ * agent's attempt to make _status "published" — on create or update alike.
+ * `decided: false` means the caller must apply its own, more specific rule.
+ */
+const agentPublishAttempt = (req: { user?: unknown }, data: unknown): AgentPublishOutcome => {
+  const user = req.user as { role?: string } | null;
+  if (!user) return { decided: true, allowed: false };
+  if (user.role !== 'agent') return { decided: true, allowed: true };
+  if (data && (data as { _status?: string })._status === 'published') {
+    return { decided: true, allowed: false };
+  }
+  return { decided: false };
+};
+
 /**
  * The publish denial, in code.
  *
@@ -26,14 +44,8 @@ import type { Access, Where } from 'payload';
  * enforced at the API.
  */
 export const agentCannotPublish: Access = ({ req, data }) => {
-  const user = req.user as { role?: string } | null;
-  if (!user) return false;
-  if (user.role !== 'agent') return true;
-
-  // Deny promotion: incoming _status may never be "published" for the agent.
-  if (data && (data as { _status?: string })._status === 'published') {
-    return false;
-  }
+  const outcome = agentPublishAttempt(req, data);
+  if (outcome.decided) return outcome.allowed;
 
   // Constrain targets: only never-published / draft documents are updatable.
   const constraint: Where = { _status: { not_equals: 'published' } };
@@ -46,13 +58,8 @@ export const agentCannotPublish: Access = ({ req, data }) => {
  * born published.
  */
 export const agentCreatesDraftsOnly: Access = ({ req, data }) => {
-  const user = req.user as { role?: string } | null;
-  if (!user) return false;
-  if (user.role !== 'agent') return true;
-  if (data && (data as { _status?: string })._status === 'published') {
-    return false;
-  }
-  return true;
+  const outcome = agentPublishAttempt(req, data);
+  return outcome.decided ? outcome.allowed : true;
 };
 
 /** Agents may never delete content. */

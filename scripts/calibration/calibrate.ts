@@ -22,12 +22,7 @@ import {
   recordShadowVerdict,
   runLevelsEngine,
 } from '../../packages/content-pipeline/src/calibration';
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
-};
-const flag = (name: string): boolean => process.argv.includes(`--${name}`);
+import { arg, flag } from '../../packages/content-pipeline/src/cliArgs';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const command = process.argv[2];

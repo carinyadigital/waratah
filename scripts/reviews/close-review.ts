@@ -16,13 +16,9 @@ import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
 import { computeEdit } from '../../packages/content-pipeline/src/review';
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 import { assertValid } from '../../packages/content-pipeline/src/validate';
 import type { DraftArtifact } from '../../packages/content-pipeline/src/gates/types';
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
-};
 
 const fail = (msg: string): never => {
   console.error(`cannot close review: ${msg}`);

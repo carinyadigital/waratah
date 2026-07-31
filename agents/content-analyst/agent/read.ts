@@ -104,7 +104,12 @@ export class ReadBuilder {
       if (!figure.query?.trim() || figure.n === undefined || !figure.window?.trim()) {
         throw new Error('every figure carries its exact query, n and window — no exceptions');
       }
-      if (figure.direction && figure.source) {
+      if (figure.direction) {
+        if (!figure.source) {
+          throw new Error(
+            `a directional figure needs its source (n=${figure.n}) — the n-threshold can't be checked without knowing which source's threshold applies; report the figure without a direction instead`,
+          );
+        }
         const threshold = this.nThreshold[figure.source];
         if (threshold !== undefined && figure.n < threshold) {
           throw new NThresholdError(figure.source, figure.n, threshold);

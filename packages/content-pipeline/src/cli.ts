@@ -19,13 +19,9 @@ import {
   loadPack,
   repoPaths,
 } from './artifacts';
+import { arg } from './cliArgs';
 import { runGates, type SuiteResult } from './gates/index';
 import { renderMarkdown, renderTable } from './report';
-
-const arg = (name: string, fallback?: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : fallback;
-};
 
 const main = async () => {
   const root = arg('root', process.cwd())!;
@@ -42,26 +38,29 @@ const main = async () => {
     return;
   }
 
-  const suites: SuiteResult[] = [];
-  let failed = false;
   const skipped: string[] = [];
-
+  const runnable: string[] = [];
   for (const slug of slugs) {
-    if (!hasDraft(paths, slug)) {
-      skipped.push(slug);
-      continue;
-    }
-    const suite = await runGates({
-      slug,
-      draft: loadDraft(paths, slug),
-      brief: loadBrief(paths, slug),
-      pack: loadPack(paths, slug),
-      brand,
-      options: { externalLinks: external, corpusSlugs: corpusSlugs(paths) },
-    });
-    suites.push(suite);
-    if (!suite.ok) failed = true;
+    (hasDraft(paths, slug) ? runnable : skipped).push(slug);
   }
+
+  // Each brief's gate suite is independent — including the network-bound
+  // external-link checks — so run them concurrently rather than paying the
+  // sum of every brief's time.
+  const corpus = corpusSlugs(paths);
+  const suites: SuiteResult[] = await Promise.all(
+    runnable.map((slug) =>
+      runGates({
+        slug,
+        draft: loadDraft(paths, slug),
+        brief: loadBrief(paths, slug),
+        pack: loadPack(paths, slug),
+        brand,
+        options: { externalLinks: external, corpusSlugs: corpus },
+      }),
+    ),
+  );
+  const failed = suites.some((s) => !s.ok);
 
   const rendered =
     format === 'json'

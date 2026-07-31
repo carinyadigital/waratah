@@ -22,13 +22,9 @@ import {
   loadPack,
   repoPaths,
 } from '../../packages/content-pipeline/src/artifacts';
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 import { runGates } from '../../packages/content-pipeline/src/gates/index';
 import { renderRunReport } from '../../agents/content-studio/agent/runReport';
-
-const arg = (name: string, fallback?: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : fallback;
-};
 
 const agent = arg('agent') ?? 'content-studio';
 const root = path.resolve(arg('root', process.cwd())!);

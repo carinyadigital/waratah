@@ -3,7 +3,7 @@
  * corpus, these decide. No model calls.
  */
 import { collectClaims, collectLinks, type LexicalDocument } from '../../../packages/content-pipeline/src/lexical/claim';
-import { internalSlug } from '../../../packages/content-pipeline/src/gates/links';
+import { internalSlug, resolveExternalLink } from '../../../packages/content-pipeline/src/gates/links';
 import type { BriefArtifact, ClaimPolicy, PackArtifact, SurfaceSpec } from '../../../packages/content-pipeline/src/gates/types';
 
 export interface CorpusDoc {
@@ -64,6 +64,19 @@ export const checkBriefAndPack = (
   return violations;
 };
 
+/** Every published document has a review record — the invariant review.schema.json's own description asserts. */
+export const checkPublishedHasReview = (published: CorpusDoc[], reviewSlugs: string[]): Violation[] => {
+  const reviews = new Set(reviewSlugs);
+  return published
+    .filter((doc) => !reviews.has(doc.slug))
+    .map((doc) => ({
+      invariant: 'published-has-review',
+      page: doc.slug,
+      title: `published page "${doc.slug}" has no review record`,
+      evidence: `no .agency/content/reviews/${doc.slug}.yaml — the calibration/shadow pipeline treats review records as its sole input`,
+    }));
+};
+
 /** The cannibalisation check: every targetQuery maps to exactly one canonical page. */
 export const checkTargetQueryUniqueness = (briefs: BriefArtifact[]): Violation[] => {
   const byQuery = new Map<string, string[]>();
@@ -118,30 +131,23 @@ export const checkExternalLinks = async (
 
   const violations: Violation[] = [];
   for (const [url, pages] of urls) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10_000);
-      let res = await fetchImpl(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal });
-      if (res.status === 405 || res.status === 501) {
-        res = await fetchImpl(url, { method: 'GET', redirect: 'follow', signal: controller.signal });
-      }
-      clearTimeout(timer);
-      if (res.status >= 400) {
-        violations.push({
-          invariant: 'external-link-resolves',
-          page: pages[0],
-          title: `external link returns ${res.status}`,
-          evidence: `${url} (used by: ${[...new Set(pages)].join(', ')})`,
-        });
-      }
-    } catch (err) {
-      violations.push({
-        invariant: 'external-link-resolves',
-        page: pages[0],
-        title: 'external link did not resolve',
-        evidence: `${url} — ${(err as Error).message} (used by: ${[...new Set(pages)].join(', ')})`,
-      });
-    }
+    const resolution = await resolveExternalLink(url, fetchImpl);
+    if (resolution.ok) continue;
+    violations.push(
+      'status' in resolution
+        ? {
+            invariant: 'external-link-resolves',
+            page: pages[0],
+            title: `external link returns ${resolution.status}`,
+            evidence: `${url} (used by: ${[...new Set(pages)].join(', ')})`,
+          }
+        : {
+            invariant: 'external-link-resolves',
+            page: pages[0],
+            title: 'external link did not resolve',
+            evidence: `${url} — ${resolution.error} (used by: ${[...new Set(pages)].join(', ')})`,
+          },
+    );
   }
   return violations;
 };

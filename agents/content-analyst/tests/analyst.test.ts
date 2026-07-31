@@ -97,6 +97,16 @@ describe('the n-threshold gate', () => {
       ),
     ).not.toThrow();
   });
+
+  it('a directional claim with no source is rejected, however small n is — the threshold cannot be checked blind', () => {
+    expect(() =>
+      builder().addFinding(
+        finding({
+          figures: [{ value: 12, query: 'ga4: sessions cluster=recipes', n: 3, window: '7d', direction: 'up' }],
+        }),
+      ),
+    ).toThrow(/needs its source/);
+  });
 });
 
 describe('reads, predictions and the run report', () => {

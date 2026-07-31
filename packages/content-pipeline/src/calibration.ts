@@ -175,12 +175,12 @@ export interface AgreementReport {
   severeMisses: number;
 }
 
-/** Agreement rate per class over the rolling window. */
+/** Agreement rate per class over the rolling window. A window of 0 means no observations count. */
 export const agreementRate = (root: string, classId: string): AgreementReport => {
   const cls = loadClasses(root).find((c) => c.id === classId);
   if (!cls) throw new Error(`unknown decision class "${classId}"`);
   const window = cls.window ?? 20;
-  const recent = loadLedger(root, classId).slice(-window);
+  const recent = window > 0 ? loadLedger(root, classId).slice(-window) : [];
   const agreements = recent.filter((o) => o.agrees).length;
   return {
     classId,

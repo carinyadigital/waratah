@@ -73,7 +73,7 @@ export const checkAdaptation = (
   }
   const carriedText = adaptation.claims.map((c) => c.text).join(' ');
   let outside = fullText;
-  for (const c of adaptation.claims) outside = outside.replace(c.text, ' ');
+  for (const c of adaptation.claims) outside = outside.split(c.text).join(' ');
   for (const category of policy.categories) {
     for (const pattern of category.patterns) {
       const re = new RegExp(pattern, 'i');

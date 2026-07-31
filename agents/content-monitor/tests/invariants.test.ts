@@ -8,6 +8,7 @@ import {
   checkInternalLinkGraph,
   checkMustSupportStillResolves,
   checkPositioningHash,
+  checkPublishedHasReview,
   checkSourceFreshness,
   checkTargetQueryUniqueness,
   type CorpusDoc,
@@ -69,6 +70,14 @@ describe('slug join and orphans, both directions', () => {
     expect(kinds).toContain('published-has-pack');
     expect(kinds).toContain('brief-orphaned');
     expect(violations.find((v) => v.invariant === 'brief-orphaned')!.page).toBe('other-brief');
+  });
+});
+
+describe('published pages have a review record', () => {
+  it('a published page with no review record is flagged; a reviewed one is not', () => {
+    const violations = checkPublishedHasReview([doc('reviewed'), doc('unreviewed')], ['reviewed']);
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toMatchObject({ invariant: 'published-has-review', page: 'unreviewed' });
   });
 });
 

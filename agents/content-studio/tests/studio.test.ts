@@ -4,7 +4,7 @@ import { gateLoop } from '../agent/gateLoop';
 import { PackCollector, SourceBudgetExceededError } from '../agent/pack';
 import { renderRunReport } from '../agent/runReport';
 import { stageDraft } from '../agent/stage';
-import { collectClaims, textOf } from '../../../packages/content-pipeline/src/lexical/claim';
+import { collectClaims, textOf, type SerializedClaimNode } from '../../../packages/content-pipeline/src/lexical/claim';
 import { computeEdit } from '../../../packages/content-pipeline/src/review';
 import type {
   BrandDist,
@@ -32,9 +32,9 @@ const pack: PackArtifact = {
 describe('claim anchoring', () => {
   it('converts [[cN:text]] markers into claim nodes bound to pack entry ids', () => {
     const nodes = anchorParagraph('We measured. [[c1:the number rose]] across paddocks.', pack);
-    const claimNodes = nodes.filter((n) => n.type === 'claim');
+    const claimNodes = nodes.filter((n): n is SerializedClaimNode => n.type === 'claim');
     expect(claimNodes).toHaveLength(1);
-    expect((claimNodes[0] as { claimId: string }).claimId).toBe('c1');
+    expect(claimNodes[0].claimId).toBe('c1');
     const docText = nodes.map((n) => textOf(n)).join('');
     expect(docText).toContain('the number rose');
   });
@@ -165,6 +165,15 @@ describe('REST staging as the agent identity', () => {
     expect(body.slug).toBeUndefined();
     expect(body._status).toBe('draft');
     expect(body.positioningHash).toBe('b'.repeat(64));
+  });
+
+  it('refuses to guess a Payload collection for a surface with none, rather than defaulting to posts', async () => {
+    await expect(
+      stageDraft(
+        { slug: 's', title: 'T', surface: 'landing', content: { root: { type: 'root', children: [] } } },
+        { baseUrl: 'https://cms.example', apiKey: 'KEY', fetchImpl: (async () => new Response('{}')) as typeof fetch },
+      ),
+    ).rejects.toThrow(/no Payload collection/);
   });
 });
 

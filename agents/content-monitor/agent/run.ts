@@ -12,6 +12,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml } from 'yaml';
 import { loadBrand, loadBrief, listBriefSlugs, repoPaths } from '../../../packages/content-pipeline/src/artifacts';
+import { arg } from '../../../packages/content-pipeline/src/cliArgs';
 import type { BriefArtifact, PackArtifact } from '../../../packages/content-pipeline/src/gates/types';
 import {
   checkBriefAndPack,
@@ -20,16 +21,12 @@ import {
   checkInternalLinkGraph,
   checkMustSupportStillResolves,
   checkPositioningHash,
+  checkPublishedHasReview,
   checkSourceFreshness,
   type CorpusDoc,
   type Violation,
 } from './invariants';
 import { Triage } from './triage';
-
-const arg = (name: string, fallback?: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : fallback;
-};
 
 const readJsonDir = <T>(dir: string): T[] => {
   if (!existsSync(dir)) return [];
@@ -105,8 +102,16 @@ const main = async () => {
         .map((f) => parseYaml(readFileSync(path.join(packsDir, f), 'utf8')) as PackArtifact)
     : [];
 
+  const reviewsDir = path.join(paths.content, 'reviews');
+  const reviewSlugs = existsSync(reviewsDir)
+    ? readdirSync(reviewsDir)
+        .filter((f) => f.endsWith('.yaml'))
+        .map((f) => f.replace(/\.yaml$/, ''))
+    : [];
+
   const violations: Violation[] = [
     ...checkBriefAndPack(published, briefSlugs, packs.map((p) => p.slug), corpus.map((c) => c.slug)),
+    ...checkPublishedHasReview(published, reviewSlugs),
     ...checkTargetQueryUniquenessSafe(briefs),
     ...checkInternalLinkGraph(corpus),
     ...(external === 'check' ? await checkExternalLinks(corpus, packs, fetch) : []),

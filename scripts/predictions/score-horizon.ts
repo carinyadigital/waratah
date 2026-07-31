@@ -12,11 +12,7 @@
 import path from 'node:path';
 import process from 'node:process';
 import { calibrationSummary, markDue, scorePrediction } from '../../agents/content-analyst/agent/predictions';
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
-};
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const contentDir = path.join(root, '.agency', 'content');

@@ -10,14 +10,12 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
+import { looksLikeAgent } from '../../../packages/content-pipeline/src/humanApproval';
 import { adaptationHash, type Adaptation } from './adapt';
 
 const distDir = (root: string) => path.join(root, '.agency', 'distribution');
 
 export class SendNotApprovedError extends Error {}
-
-/** Looks like an agent, not a person — same refusal as queue promotion. */
-const agentLike = /^$|agent|bot|studio|planner|analyst|monitor|distributor|desk|-qa$|^ci$/i;
 
 export interface SendApproval {
   sendId: string;
@@ -30,7 +28,7 @@ export interface SendApproval {
 
 /** A human approves one specific send of one specific adaptation. */
 export const approveSend = (root: string, adaptation: Adaptation, approver: string): SendApproval => {
-  if (agentLike.test(approver.trim())) {
+  if (looksLikeAgent(approver)) {
     throw new SendNotApprovedError(`approval requires a named human (got "${approver}") — a human confirms each send, per send`);
   }
   const contentHash = adaptationHash(adaptation);

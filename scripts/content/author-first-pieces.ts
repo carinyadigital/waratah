@@ -1,10 +1,10 @@
 /**
- * CNT02-10 — the two pieces written by hand, end to end.
+ * The two pieces written by hand, end to end.
  *
  * The prose is authored here with the same claim-annotation contract the
  * writer subagent will use (Lexical claim nodes bound to pack entry ids),
  * validated on write, and emitted to .agency/content/drafts/. Running the
- * gate suite over these two pieces is the acceptance test for CNT02.
+ * gate suite over these two pieces is the acceptance test for the gate suite.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

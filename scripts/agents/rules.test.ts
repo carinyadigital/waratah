@@ -1,6 +1,7 @@
 /**
- * The register rules, exercised against synthetic manifests. R1–R8 shipped
- * with the register; R9–R11 with CNT05; R12 arrives with the ledger (CNT11).
+ * The register rules, exercised against synthetic manifests. R1–R8 ship with
+ * the register; R9–R11 with the generalisation epic; R12 arrives with the
+ * calibration ledger.
  */
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -90,7 +91,7 @@ describe('R5/R7 — scheduled and unattended writers', () => {
   });
 });
 
-describe('R9 — cms-draft implies an asserted role (CNT05-S1)', () => {
+describe('R9 — cms-draft implies an asserted role', () => {
   it('fails without cmsRole, without cmsRoleAssertedBy, and when the named test is absent', () => {
     const noRole = manifest({ policy: { writes: ['cms-draft'], connections: ['payload'] } });
     expect(r9(ctx(noRole))[0].message).toContain('cmsRole');
@@ -115,7 +116,7 @@ describe('R9 — cms-draft implies an asserted role (CNT05-S1)', () => {
   });
 });
 
-describe('R10 — no direct database access, any agent, any tag (CNT05-S2)', () => {
+describe('R10 — no direct database access, any agent, any tag', () => {
   it('fails a connection classified database, whatever the tag', () => {
     const m = manifest({ tags: ['engineering'], policy: { connections: ['staging_postgres'] } });
     const violations = r10(ctx(m));
@@ -134,7 +135,7 @@ describe('R10 — no direct database access, any agent, any tag (CNT05-S2)', () 
   });
 });
 
-describe("R11 — the content block becomes real (CNT05-S3)", () => {
+describe('R11 — the content block becomes real', () => {
   it('an agent emitting read must declare nThreshold for every measurable source', () => {
     const m = manifest({
       policy: { connections: ['ga4', 'gsc', 'slack'], writes: ['artifact-store'] },

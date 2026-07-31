@@ -1,6 +1,6 @@
 /**
- * Stale briefs expire (CNT06-S2). An unstarted brief is a stale opinion
- * about what mattered ninety days ago.
+ * Stale briefs expire. An unstarted brief is a stale opinion about what
+ * mattered ninety days ago.
  *
  * Weekly, alongside the monitor. A brief whose expiresAt has passed and which
  * has no draft is moved to briefs/expired/, its tracker item is resolved out

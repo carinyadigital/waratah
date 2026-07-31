@@ -1,5 +1,5 @@
 /**
- * CNT04-09 — close the review record at publish.
+ * Close the review record at publish.
  *
  * Usage:
  *   pnpm tsx scripts/reviews/close-review.ts --slug <slug> \

@@ -1,5 +1,5 @@
 /**
- * Capture — an idea reaches Triage in one step (CNT06-S1).
+ * Capture — an idea reaches Triage in one step.
  *
  * The Slack path: a capture trigger (emoji or shortcut) posts the message to
  * this repo as a repository_dispatch event (.github/workflows/content-capture.yml),

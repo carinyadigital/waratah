@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Carinya Parc site and agent workforce. See docs/README.md.",
+  "description": "Carinya Parc site and agent workforce.",
   "engines": {
     "node": ">=20"
   },

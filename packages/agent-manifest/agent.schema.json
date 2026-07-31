@@ -115,6 +115,13 @@
       "type": "object",
       "additionalProperties": false,
       "description": "Content-practice agents. R8: brand assets referenced by dist/ path, never duplicated. R11: any agent emitting a read artifact declares nThreshold per connected source.",
+      "if": {
+        "properties": { "emits": { "contains": { "const": "read" } } },
+        "required": ["emits"]
+      },
+      "then": {
+        "required": ["nThreshold"]
+      },
       "properties": {
         "voice": { "type": "string", "pattern": "^packages/brand/dist/" },
         "rubric": { "type": "string", "pattern": "^packages/brand/dist/" },

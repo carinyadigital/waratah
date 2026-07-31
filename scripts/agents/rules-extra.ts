@@ -5,6 +5,7 @@
  */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { loadClasses, qualifiesForLevel } from '../../packages/content-pipeline/src/calibration';
 import type { Rule, Violation } from './rules';
 
 /**
@@ -115,4 +116,30 @@ export const r11: Rule = ({ manifests, connections }) => {
   return violations;
 };
 
-export const extraRules: Rule[] = [r9, r10, r11];
+/**
+ * R12 — any decision class at review level ≥ 3 references a calibration
+ * record with n above threshold and zero severe misses in window. Applies to
+ * agent-judgement classes; deterministic-check classes sit at 4 because
+ * their oracle is the check itself. Violations attach to the register, not
+ * to one agent — the ladder is a property of the practice.
+ */
+export const r12: Rule = ({ root }) => {
+  const classesFile = path.join(root, '.agency', 'calibration', 'decision-classes.yaml');
+  if (!existsSync(classesFile)) return [];
+  const violations: Violation[] = [];
+  for (const cls of loadClasses(root)) {
+    const verdict = qualifiesForLevel(root, cls);
+    if (!verdict.ok) {
+      violations.push({ rule: 'R12', agent: `class:${cls.id}`, message: verdict.reason });
+    }
+    if (cls.basis === 'never' && cls.level > 0) {
+      violations.push({ rule: 'R12', agent: `class:${cls.id}`, message: 'a never-graduating class has been raised above level 0' });
+    }
+    if (cls.level > cls.ceiling) {
+      violations.push({ rule: 'R12', agent: `class:${cls.id}`, message: `level ${cls.level} exceeds ceiling ${cls.ceiling}` });
+    }
+  }
+  return violations;
+};
+
+export const extraRules: Rule[] = [r9, r10, r11, r12];

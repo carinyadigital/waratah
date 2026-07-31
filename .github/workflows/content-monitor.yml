@@ -48,6 +48,9 @@ jobs:
       - name: Horizon scoring — predictions due are marked, never forgotten
         run: pnpm tsx scripts/predictions/score-horizon.ts
 
+      - name: Calibration levels engine — promotion and demotion on evidence
+        run: pnpm tsx scripts/calibration/calibrate.ts levels
+
       - name: Commit filed triage items
         run: |
           if [[ -n "$(git status --porcelain .agency)" ]]; then

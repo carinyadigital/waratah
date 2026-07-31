@@ -5,9 +5,9 @@
   "type": "module",
   "description": "Carinya Parc site and agent workforce.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "agents": "tsx scripts/agents/cli.ts",
     "gates": "tsx packages/content-pipeline/src/cli.ts",

@@ -26,7 +26,7 @@ pnpm agents check         # register rules R1–R12
 pnpm monitor --external-links skip   # corpus invariants, offline
 ```
 
-Requires Node ≥ 20 and pnpm. The Payload integration tests run against a throwaway SQLite database; no services needed.
+Requires Node and pnpm. The Payload integration tests run against a throwaway SQLite database; no services needed.
 
 ## The one-paragraph version
 

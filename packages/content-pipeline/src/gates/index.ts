@@ -1,7 +1,7 @@
 /**
- * The gate suite. Deterministic, no model calls (design.md §5). Grows
- * monotonically from human catches — every time the editor catches something,
- * ask whether it could have been a check.
+ * The gate suite. Deterministic, no model calls. Grows monotonically from
+ * human catches — every time the editor catches something, ask whether it
+ * could have been a check.
  */
 import type { Gate, GateInput, GateResult } from './types';
 import { briefConformance } from './briefConformance';

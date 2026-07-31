@@ -1,6 +1,6 @@
 /**
  * Loading and locating .agency/content/ artifacts and packages/brand/dist.
- * The slug is the join key across tracker, artifacts and CMS (design.md §4).
+ * The slug is the join key across tracker, artifacts and CMS.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';

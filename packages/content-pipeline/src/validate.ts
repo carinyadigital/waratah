@@ -1,7 +1,7 @@
 /**
- * Schema validation, applied on write (design.md §4). Required-by-omission
- * fields — couldNotVerify, couldNotDetermine, alternativeExplanations — are
- * rejected when absent because the schemas mark them `required`.
+ * Schema validation, applied on write. Required-by-omission fields —
+ * couldNotVerify, couldNotDetermine, alternativeExplanations — are rejected
+ * when absent because the schemas mark them `required`.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';

@@ -1,5 +1,5 @@
 /**
- * CNT02-03 — builds `dist/` from `src/`. Generated; never hand-edited.
+ * Builds `dist/` from `src/`. Generated; never hand-edited.
  *
  * Emits:
  *   dist/positioning.json     — content hash of positioning.md (the hash every

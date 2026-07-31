@@ -4,7 +4,7 @@
  *
  * Runs every gate for every brief that has a draft; briefs without drafts are
  * reported and skipped (they are queued work, not failures). Exit code is
- * non-zero when any gate fails — this is the CI contract (CNT03).
+ * non-zero when any gate fails — this is the CI contract.
  */
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';

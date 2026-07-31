@@ -1,6 +1,6 @@
 /**
- * CNT04-08 — editDistance and editLocus, computed from the staged draft
- * versus the published document (design.md §8).
+ * editDistance and editLocus, computed from the staged draft versus the
+ * published document.
  *
  * The diff is free with every piece and diagnostic in a way analytics never
  * will be: structure survives / sentences rewritten → voice problem; prose
@@ -81,7 +81,7 @@ export const computeEdit = (
   };
 };
 
-/** Count claim annotations that survived — a silent deletion during editing is what CNT09's re-check catches later, but the review record notices first. */
+/** Count claim annotations that survived — a silent deletion during editing is what the monitor's re-check catches later, but the review record notices first. */
 export const claimSurvival = (staged: LexicalDocument, published: LexicalDocument): { staged: number; published: number } => {
   const count = (doc: LexicalDocument) => {
     let n = 0;

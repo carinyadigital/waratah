@@ -1,7 +1,7 @@
 /**
  * Gate result rendering — terminal table and the PR-comment markdown used by
- * content-qa (CNT03-06). The couldNotVerify list appears in full: what the
- * researcher could not source is exactly what the reviewer must read.
+ * content-qa. The couldNotVerify list appears in full: what the researcher
+ * could not source is exactly what the reviewer must read.
  */
 import type { SuiteResult } from './gates/index';
 

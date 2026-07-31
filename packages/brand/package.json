@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "The standards layer. Every agent reads it; no agent writes it. (content/design.md §1)",
+  "description": "The standards layer. Every agent reads it; no agent writes it.",
   "scripts": {
     "build": "tsx build.ts"
   },

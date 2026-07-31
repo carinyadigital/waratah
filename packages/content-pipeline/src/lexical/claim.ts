@@ -1,5 +1,5 @@
 /**
- * CNT02-07 — the claim annotation contract. (design.md §5.1)
+ * The claim annotation contract.
  *
  * A claim is a Lexical inline element node carrying a stable `claimId` bound
  * to a pack entry id:

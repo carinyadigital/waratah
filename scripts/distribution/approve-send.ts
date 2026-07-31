@@ -12,11 +12,7 @@ import process from 'node:process';
 import { parse as parseYaml } from 'yaml';
 import { approveSend } from '../../agents/content-distributor/agent/sends';
 import type { Adaptation } from '../../agents/content-distributor/agent/adapt';
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
-};
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const file = arg('adaptation');

@@ -16,6 +16,7 @@
 import { createHash } from 'node:crypto';
 import process from 'node:process';
 import { Triage, type TriageItem } from '../../agents/content-monitor/agent/triage';
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 
 export interface CaptureInput {
   text: string;
@@ -52,11 +53,6 @@ export const capture = (root: string, input: CaptureInput): CaptureResult => {
   });
 
   return { id, outcome, item: { id, kind: 'idea', title: mechanicalTitle(input.text), raw: input.text, author: input.author } };
-};
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
 };
 
 if (process.argv[1]?.endsWith('capture.ts')) {

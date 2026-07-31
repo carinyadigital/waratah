@@ -12,6 +12,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml } from 'yaml';
 import { loadBrand, loadBrief, listBriefSlugs, repoPaths } from '../../../packages/content-pipeline/src/artifacts';
+import { arg } from '../../../packages/content-pipeline/src/cliArgs';
 import type { BriefArtifact, PackArtifact } from '../../../packages/content-pipeline/src/gates/types';
 import {
   checkBriefAndPack,
@@ -26,11 +27,6 @@ import {
   type Violation,
 } from './invariants';
 import { Triage } from './triage';
-
-const arg = (name: string, fallback?: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : fallback;
-};
 
 const readJsonDir = <T>(dir: string): T[] => {
   if (!existsSync(dir)) return [];

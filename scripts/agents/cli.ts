@@ -11,13 +11,9 @@
  */
 import process from 'node:process';
 import { loadConnections, loadManifests } from '../../packages/agent-manifest/src/index';
+import { arg } from '../../packages/content-pipeline/src/cliArgs';
 import { coreRules, type RuleContext, type Violation } from './rules';
 import { extraRules } from './rules-extra';
-
-const arg = (name: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : undefined;
-};
 
 const root = arg('root') ?? process.cwd();
 const command = process.argv[2] ?? 'check';

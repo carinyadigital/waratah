@@ -19,13 +19,9 @@ import {
   loadPack,
   repoPaths,
 } from './artifacts';
+import { arg } from './cliArgs';
 import { runGates, type SuiteResult } from './gates/index';
 import { renderMarkdown, renderTable } from './report';
-
-const arg = (name: string, fallback?: string): string | undefined => {
-  const i = process.argv.indexOf(`--${name}`);
-  return i >= 0 ? process.argv[i + 1] : fallback;
-};
 
 const main = async () => {
   const root = arg('root', process.cwd())!;

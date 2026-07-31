@@ -1,13 +1,17 @@
 {
   "branch": "main",
-  "last_reviewed_sha": "bd6a97a68ec1cbdb898beec28fc7fd56abf0f9e5",
+  "last_reviewed_sha": "a987f23962afd404f80a0c8fde637c9e260fd30b",
   "reviewed_at": "2026-07-31T12:27:45Z",
   "fixed_at": "2026-07-31T12:40:00Z",
   "scope": "full-codebase",
   "result": "FAIL",
   "risk_level": "High",
   "review_effort": "L",
-  "lenses_run": ["bug-scan", "requirements", "architecture"],
+  "lenses_run": [
+    "bug-scan",
+    "requirements",
+    "architecture"
+  ],
   "findings": [
     {
       "id": "cr-001",
@@ -27,7 +31,7 @@
       "severity": "Major",
       "action": "blocking",
       "status": "fixed",
-      "summary": "Severe miss demotes twice (applyDemotion then runLevelsEngine) — e.g. level 4→2→0 instead of −2"
+      "summary": "Severe miss demotes twice (applyDemotion then runLevelsEngine) \u2014 e.g. level 4\u21922\u21920 instead of \u22122"
     },
     {
       "id": "cr-003",
@@ -109,7 +113,7 @@
       "severity": "Minor",
       "action": "suggestion",
       "status": "fixed",
-      "summary": "R11/R12 marked unenforced in §6 but schema + rules-extra + CLI enforce them"
+      "summary": "R11/R12 marked unenforced in \u00a76 but schema + rules-extra + CLI enforce them"
     },
     {
       "id": "cr-011",
@@ -129,7 +133,7 @@
       "severity": "Moderate",
       "action": "suggestion",
       "status": "fixed",
-      "summary": "PAYLOAD_SECRET falls back to hardcoded carinya-dev-secret when env unset — ensure production always sets it"
+      "summary": "PAYLOAD_SECRET falls back to hardcoded carinya-dev-secret when env unset \u2014 ensure production always sets it"
     }
   ]
 }

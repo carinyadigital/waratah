@@ -42,13 +42,16 @@ jobs:
           CONTENT_AGENT_API_KEY: ${{ secrets.CONTENT_AGENT_API_KEY }}
         run: pnpm monitor --external-links check
 
+      - name: Expiry sweep — stale briefs out of the ready queue
+        run: pnpm tsx scripts/capture/expiry-sweep.ts
+
       - name: Commit filed triage items
         run: |
-          if [[ -n "$(git status --porcelain .agency/triage)" ]]; then
+          if [[ -n "$(git status --porcelain .agency)" ]]; then
             git config user.name "content-monitor"
             git config user.email "agents@carinyaparc.com.au"
-            git add .agency/triage
-            git commit -m "content-monitor: file invariant violations"
+            git add .agency
+            git commit -m "content-monitor: file invariant violations / expire stale briefs"
             git push
           else
             echo "no new violations"

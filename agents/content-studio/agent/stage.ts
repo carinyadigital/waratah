@@ -10,6 +10,8 @@ import type { DraftArtifact } from '../../../packages/content-pipeline/src/gates
 export interface StageConfig {
   baseUrl: string;
   apiKey: string;
+  /** Positioning hash from the brief — stamped on the CMS document at staging. */
+  positioningHash?: string;
   fetchImpl?: typeof fetch;
 }
 
@@ -45,6 +47,7 @@ export const stageDraft = async (draft: DraftArtifact, config: StageConfig): Pro
     slug: draft.slug,
     _status: 'draft',
     content: draft.content,
+    ...(config.positioningHash ? { positioningHash: config.positioningHash } : {}),
   });
 
   if (found.docs.length) {
@@ -52,7 +55,11 @@ export const stageDraft = async (draft: DraftArtifact, config: StageConfig): Pro
     // PATCH must not carry title/slug — they are locked fields for the agent
     // role; sending them is not an error (they are stripped) but staying
     // inside the role's envelope is the polite version of the guarantee.
-    const patchBody = JSON.stringify({ _status: 'draft', content: draft.content });
+    const patchBody = JSON.stringify({
+      _status: 'draft',
+      content: draft.content,
+      ...(config.positioningHash ? { positioningHash: config.positioningHash } : {}),
+    });
     const res = await f(`${base}/api/${collection}/${id}?draft=true`, {
       method: 'PATCH',
       headers: headers(config.apiKey),

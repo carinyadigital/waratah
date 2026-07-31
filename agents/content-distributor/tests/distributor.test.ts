@@ -124,6 +124,16 @@ describe('published work is adapted, not rewritten', () => {
     expect(result.failures).toEqual([]);
   });
 
+  it('a carried claim repeated twice in the body is not falsely flagged — every occurrence is stripped, not just the first', () => {
+    const claimText = 'Grass-finishing lifts omega-3 precursors relative to grain-finishing';
+    const repeated = adaptation({
+      claims: [{ claimId: 'c1', text: claimText }],
+      body: `${claimText} — a hook worth repeating. ${claimText}. Full story: https://carinyaparc.com.au/slow-roasted-highland-beef.`,
+    });
+    const result = checkAdaptation(repeated, source, newsletterSpec, policy);
+    expect(result.failures).toEqual([]);
+  });
+
   it('missing canonical link and prohibited claims are refused', () => {
     const noLink = adaptation({ body: 'A lovely roast. The end, no link anywhere in this body at all, which is the problem being tested.' });
     expect(checkAdaptation(noLink, source, newsletterSpec, policy).failures.join(' ')).toContain('canonical');

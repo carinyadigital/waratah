@@ -45,6 +45,9 @@ jobs:
       - name: Expiry sweep — stale briefs out of the ready queue
         run: pnpm tsx scripts/capture/expiry-sweep.ts
 
+      - name: Horizon scoring — predictions due are marked, never forgotten
+        run: pnpm tsx scripts/predictions/score-horizon.ts
+
       - name: Commit filed triage items
         run: |
           if [[ -n "$(git status --porcelain .agency)" ]]; then

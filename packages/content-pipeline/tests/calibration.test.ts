@@ -125,6 +125,22 @@ describe('levels move on evidence, automatically', () => {
     expect(kinds).toContain('demotion');
   });
 
+  it('does not double-demote a severe miss across repeated runLevelsEngine calls', () => {
+    const root = scaffold();
+    const classes = loadClasses(root);
+    const cls = classes.find((c) => c.id === 'figure-rederivation')!;
+    cls.level = 4;
+    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+
+    recordShadowVerdict(root, 'figure-rederivation', 'the-bad-one', 'reproduces');
+    recordHumanDecision(root, 'figure-rederivation', 'the-bad-one', 'fabricated-figure', { severeMiss: true });
+    expect(queryClass(root, 'figure-rederivation').level).toBe(2);
+
+    // The same severe miss is still inside the trailing window; a second pass must not re-demote it.
+    runLevelsEngine(root);
+    expect(queryClass(root, 'figure-rederivation').level).toBe(2);
+  });
+
   it('never promotes past the ceiling', () => {
     const root = scaffold();
     fillLedger(root, 'what-to-commission', 10);
@@ -156,5 +172,18 @@ describe('R12 — the rule the ledger makes checkable', () => {
     fillLedger(root, 'draft-quality', 4, false);
     expect(agreementRate(root, 'figure-rederivation').agreementRate).toBe(1);
     expect(agreementRate(root, 'draft-quality').agreementRate).toBe(0);
+  });
+
+  it('a window of 0 counts no observations, not the whole ledger', () => {
+    const root = scaffold();
+    const classes = loadClasses(root);
+    const cls = classes.find((c) => c.id === 'figure-rederivation')!;
+    cls.window = 0;
+    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+
+    fillLedger(root, 'figure-rederivation', 5);
+    const report = agreementRate(root, 'figure-rederivation');
+    expect(report.observed).toBe(0);
+    expect(report.agreementRate).toBeNull();
   });
 });

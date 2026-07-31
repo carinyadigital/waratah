@@ -35,6 +35,8 @@ export interface Observation {
   humanDecidedAt?: string;
   agrees?: boolean;
   severeMiss?: boolean;
+  /** Set once this severe miss has already triggered a demotion, so the levels engine does not demote for it again. */
+  demotionApplied?: boolean;
 }
 
 export interface LevelChange {
@@ -136,6 +138,7 @@ export const recordHumanDecision = (
     humanDecidedAt: new Date().toISOString(),
     agrees: shadow.verdict === humanVerdict,
     severeMiss: options.severeMiss ?? false,
+    demotionApplied: options.severeMiss ?? false,
   };
 
   const ledger = loadLedger(root, classId);
@@ -173,14 +176,16 @@ export interface AgreementReport {
   agreements: number;
   agreementRate: number | null;
   severeMisses: number;
+  /** Severe misses in the window that have not yet triggered a demotion. */
+  unappliedSevereMisses: number;
 }
 
-/** Agreement rate per class over the rolling window. */
+/** Agreement rate per class over the rolling window. A window of 0 means no observations count. */
 export const agreementRate = (root: string, classId: string): AgreementReport => {
   const cls = loadClasses(root).find((c) => c.id === classId);
   if (!cls) throw new Error(`unknown decision class "${classId}"`);
   const window = cls.window ?? 20;
-  const recent = loadLedger(root, classId).slice(-window);
+  const recent = window > 0 ? loadLedger(root, classId).slice(-window) : [];
   const agreements = recent.filter((o) => o.agrees).length;
   return {
     classId,
@@ -189,6 +194,7 @@ export const agreementRate = (root: string, classId: string): AgreementReport =>
     agreements,
     agreementRate: recent.length ? Number((agreements / recent.length).toFixed(3)) : null,
     severeMisses: recent.filter((o) => o.severeMiss).length,
+    unappliedSevereMisses: recent.filter((o) => o.severeMiss && !o.demotionApplied).length,
   };
 };
 
@@ -202,6 +208,17 @@ const applyDemotion = (root: string, classId: string, reason: string): void => {
     cls.lastReviewedAt = new Date().toISOString();
     saveClasses(root, classes);
   }
+};
+
+/** Marks severe misses within the trailing window as having triggered a demotion, so runLevelsEngine does not act on them again. */
+const markSevereMissesApplied = (root: string, classId: string, window: number): void => {
+  if (window <= 0) return;
+  const ledger = loadLedger(root, classId);
+  const start = Math.max(0, ledger.length - window);
+  for (let i = start; i < ledger.length; i++) {
+    if (ledger[i].severeMiss) ledger[i].demotionApplied = true;
+  }
+  saveLedger(root, classId, ledger);
 };
 
 /**
@@ -218,20 +235,21 @@ export const runLevelsEngine = (root: string): LevelChange[] => {
     if (cls.basis !== 'agent-judgement') continue;
     const report = agreementRate(root, cls.id);
 
-    if (report.severeMisses > 0 && cls.level > 0) {
+    if (report.unappliedSevereMisses > 0 && cls.level > 0) {
       const to = Math.max(0, cls.level - 2);
       const change: LevelChange = {
         classId: cls.id,
         from: cls.level,
         to,
         kind: 'demotion',
-        reason: `${report.severeMisses} severe miss(es) in window`,
+        reason: `${report.unappliedSevereMisses} unapplied severe miss(es) in window`,
         at: new Date().toISOString(),
       };
       appendLog(root, change);
       cls.level = to;
       cls.lastReviewedAt = change.at;
       changes.push(change);
+      markSevereMissesApplied(root, cls.id, report.window);
       continue;
     }
 

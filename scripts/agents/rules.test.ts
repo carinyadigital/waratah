@@ -123,7 +123,7 @@ describe('R10 — no direct database access, any agent, any tag', () => {
     const m = manifest({ tags: ['engineering'], policy: { connections: ['staging_postgres'] } });
     const violations = r10(ctx(m));
     expect(violations).toHaveLength(1);
-    expect(violations[0].message).toContain('ADR-0003');
+    expect(violations[0].message).toMatch(/classified database/);
   });
 
   it('fails a database-looking connection name even if unclassified', () => {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CNT03-03 — branch protection requiring the content-qa check.
+# Branch protection requiring the content-qa check.
 # Run as a repo admin: ./scripts/setup-branch-protection.sh carinyaparc/carinyaparc
 set -euo pipefail
 

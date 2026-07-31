@@ -1,4 +1,4 @@
-# agents-deploy — the register's deploy surface (architecture.md §2, §7).
+# agents-deploy — the register's deploy surface.
 #
 # `pnpm agents check` gates every PR touching the register; the matrix job
 # deploys managed agents whose manifests changed. Provider credentials

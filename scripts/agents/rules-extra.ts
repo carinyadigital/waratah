@@ -62,13 +62,13 @@ export const r10: Rule = ({ manifests, connections }) => {
         violations.push({
           rule: 'R10',
           agent: dir,
-          message: `connection "${conn}" is classified database — no agent holds a direct database credential (ADR-0003)`,
+          message: `connection "${conn}" is classified database — no agent holds a direct database credential`,
         });
       } else if (dbLike.test(conn)) {
         violations.push({
           rule: 'R10',
           agent: dir,
-          message: `connection "${conn}" looks like a database — if it is one, it is prohibited (ADR-0003); if not, rename it`,
+          message: `connection "${conn}" looks like a database — if it is one, it is prohibited; if not, rename it`,
         });
       }
     }

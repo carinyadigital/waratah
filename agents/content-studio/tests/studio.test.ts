@@ -164,6 +164,15 @@ describe('REST staging as the agent identity', () => {
     expect(body.slug).toBeUndefined();
     expect(body._status).toBe('draft');
   });
+
+  it('refuses to guess a Payload collection for a surface with none, rather than defaulting to posts', async () => {
+    await expect(
+      stageDraft(
+        { slug: 's', title: 'T', surface: 'landing', content: { root: { type: 'root', children: [] } } },
+        { baseUrl: 'https://cms.example', apiKey: 'KEY', fetchImpl: (async () => new Response('{}')) as typeof fetch },
+      ),
+    ).rejects.toThrow(/no Payload collection/);
+  });
 });
 
 describe('the pack collector', () => {

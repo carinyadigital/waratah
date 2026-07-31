@@ -19,8 +19,20 @@ export interface StageResult {
   url: string;
 }
 
-const collectionFor = (draft: DraftArtifact): 'posts' | 'recipes' =>
-  draft.collection ?? (draft.surface === 'recipes' ? 'recipes' : 'posts');
+const collectionFor = (draft: DraftArtifact): 'posts' | 'recipes' => {
+  if (draft.collection) return draft.collection;
+  switch (draft.surface) {
+    case 'blog':
+      return 'posts';
+    case 'recipes':
+      return 'recipes';
+    case 'landing':
+    case 'newsletter':
+      throw new Error(
+        `surface "${draft.surface}" has no Payload collection to stage into — set draft.collection explicitly`,
+      );
+  }
+};
 
 const headers = (apiKey: string) => ({
   Authorization: `users API-Key ${apiKey}`,

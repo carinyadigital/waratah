@@ -1,6 +1,6 @@
 # Carinya Parc — Positioning
 
-**Human-only write.** Agents read `dist/positioning.json`, never this file, and never propose merges to it without a human decision (product.md §4). This file is hashed on build; every published piece records the hash it was written under.
+**Human-only write.** Agents read `dist/positioning.json`, never this file, and never propose merges to it without a human decision. This file is hashed on build; every published piece records the hash it was written under.
 
 ## Who we are
 
@@ -22,7 +22,7 @@ What we never claim is written in `claim-policy.md`, and that file — not enthu
 
 ## Where we compete
 
-Not on price, not on volume, not on being the biggest regenerative voice in Australia. We compete on **being the documented, visitable, evidence-first example**: the farm you can actually stand on, run by someone who measures everything and shows the working. Twenty adequate posts lose to one everyone quotes; we play the depth game (design.md §11.1).
+Not on price, not on volume, not on being the biggest regenerative voice in Australia. We compete on **being the documented, visitable, evidence-first example**: the farm you can actually stand on, run by someone who measures everything and shows the working. Twenty adequate posts lose to one everyone quotes; we play the depth game.
 
 ## The one-line test
 

@@ -1,8 +1,8 @@
 # Claim policy
 
-**CNT02-02.** The categories we never assert without a primary source, and the claims we never make at all. The prohibition gate and the freshness invariants read the machine block below; humans read the prose. One file, one truth.
+The categories we never assert without a primary source, and the claims we never make at all. The prohibition gate and the freshness invariants read the machine block below; humans read the prose. One file, one truth.
 
-ACCC guidance on environmental and sustainability claims is live and applies directly to regenerative land claims. `mustNotClaim` asserts; it does not protect — anything with regulatory exposure still needs a human who knows the rules (design.md §12).
+ACCC guidance on environmental and sustainability claims is live and applies directly to regenerative land claims. `mustNotClaim` asserts; it does not protect — anything with regulatory exposure still needs a human who knows the rules.
 
 ## Never claimed, full stop
 
@@ -17,7 +17,7 @@ These do not get a source because they do not get said. The gate fails any docum
 
 ## Never asserted without a primary source
 
-Claims matching these categories must be annotated (a Lexical `claim` node) and resolve to a pack entry whose source is a primary source within the category's age limit. Age limits are enforced weekly by `content-monitor` (CNT09-07).
+Claims matching these categories must be annotated (a Lexical `claim` node) and resolve to a pack entry whose source is a primary source within the category's age limit. Age limits are enforced weekly by `content-monitor`.
 
 | Category | Covers | Max source age |
 |---|---|---|

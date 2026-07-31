@@ -56,8 +56,8 @@ const contentFields = (extra: Field[] = []): Field[] => [
     },
   },
   {
-    // CNT09-08: per-surface decay half-life sweep reads this. Human-set at
-    // review; locked to the agent role like every editorial judgement.
+    // Per-surface decay half-life sweep reads this. Human-set at review;
+    // locked to the agent role like every editorial judgement.
     name: 'lastReviewedAt',
     type: 'date',
     access: {
@@ -68,8 +68,8 @@ const contentFields = (extra: Field[] = []): Field[] => [
     },
   },
   {
-    // The positioning hash the piece was written under (design.md §1).
-    // content-monitor compares it against the current hash.
+    // The positioning hash the piece was written under. content-monitor
+    // compares it against the current hash.
     name: 'positioningHash',
     type: 'text',
     admin: {

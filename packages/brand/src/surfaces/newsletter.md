@@ -9,4 +9,4 @@ canonical: false
 
 # Surface: newsletter
 
-The letter from the farm. Warmest register we have — written to the people who already said yes. One story from the paddock, one useful thing, one link back to the canonical page. Never more than one ask. Adaptations narrow the source piece's claims; they never add new ones (CNT08-04).
+The letter from the farm. Warmest register we have — written to the people who already said yes. One story from the paddock, one useful thing, one link back to the canonical page. Never more than one ask. Adaptations narrow the source piece's claims; they never add new ones.

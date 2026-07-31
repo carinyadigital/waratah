@@ -131,7 +131,7 @@ describe('REST staging as the agent identity', () => {
 
     const result = await stageDraft(
       { slug: 's', title: 'T', surface: 'blog', content: { root: { type: 'root', children: [] } } },
-      { baseUrl: 'https://cms.example', apiKey: 'KEY', fetchImpl },
+      { baseUrl: 'https://cms.example', apiKey: 'KEY', positioningHash: 'a'.repeat(64), fetchImpl },
     );
 
     expect(result).toMatchObject({ id: 42, operation: 'created' });
@@ -140,6 +140,7 @@ describe('REST staging as the agent identity', () => {
     expect((create.init!.headers as Record<string, string>).Authorization).toBe('users API-Key KEY');
     const body = JSON.parse(create.init!.body as string);
     expect(body._status).toBe('draft');
+    expect(body.positioningHash).toBe('a'.repeat(64));
   });
 
   it('is idempotent on slug: an existing draft is PATCHed without title/slug', async () => {
@@ -152,7 +153,7 @@ describe('REST staging as the agent identity', () => {
 
     const result = await stageDraft(
       { slug: 'roast', title: 'T', surface: 'recipes', collection: 'recipes', content: { root: { type: 'root', children: [] } } },
-      { baseUrl: 'https://cms.example', apiKey: 'KEY', fetchImpl },
+      { baseUrl: 'https://cms.example', apiKey: 'KEY', positioningHash: 'b'.repeat(64), fetchImpl },
     );
 
     expect(result.operation).toBe('updated');
@@ -163,6 +164,7 @@ describe('REST staging as the agent identity', () => {
     expect(body.title).toBeUndefined();
     expect(body.slug).toBeUndefined();
     expect(body._status).toBe('draft');
+    expect(body.positioningHash).toBe('b'.repeat(64));
   });
 
   it('refuses to guess a Payload collection for a surface with none, rather than defaulting to posts', async () => {

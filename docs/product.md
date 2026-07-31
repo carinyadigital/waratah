@@ -52,7 +52,7 @@ One primary metric per practice, each with a paired guardrail. The guardrail is 
 |---|---|---|---|
 | **Content** | Net new email subscribers | 30-day engaged open rate · unsubscribe rate | Active |
 | **Engineering** | Merged PRs requiring no human code change | Change failure rate · open invariant violations | Planned |
-| **Support** | Enquiries answered within one business day | Escalation rate · human correction rate | Existing (`support-triage`) |
+| **Support** | Enquiries answered within one business day | Escalation rate · human correction rate | Planned (`support-triage` not yet in this register) |
 
 **Why subscribers for content.** Leading rather than lagging, moves weekly, and critically **not bought by volume** — publishing thin pieces pushes subscribers-per-reader down. The metric argues against the failure mode this whole design exists to prevent. Enquiries were the alternative and are too slow and too low-volume to steer by.
 
@@ -104,7 +104,7 @@ A vertical owns an outcome end to end: **the agents it needs, and the work those
 |---|---|---|---|
 | **Content** | The content loop — building it and running it. The corpus and its invariants. | `CNT` | Active |
 | Engineering | The Next.js app | `ENG` | Not yet |
-| Support | Inbound enquiry triage | `SUP` | `support-triage` exists; no vertical |
+| Support | Inbound enquiry triage | `SUP` | Planned — `support-triage` not yet in the register |
 
 **One vertical today, and it owns both halves.** No platform team builds agents for someone else to use. The people who know what the loop needs are the ones building it, which avoids the usual failure of a thing built to spec rather than to purpose.
 

@@ -42,17 +42,17 @@ linear:
 
 | ID | Epic | Outcome | Phase | Pri | Pts | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **CNT01** | Publishing Guardrails | Nothing reaches readers without a human deciding it should | Now | P0 | 13 | — | Not started |
-| **CNT02** | Content Contracts | Published claims are traceable to a source, and prohibited claims cannot ship | Now | P0 | 13 | — | Not started |
-| **CNT03** | Content QA | The guarantees in CNT01 and CNT02 cannot be silently weakened | Now | P0 | 8 | CNT01, CNT02 | Not started |
-| **CNT04** | Authoring Studio | A brief becomes a reviewable draft without a human writing the first version | Now | P1 | 21 | CNT01, CNT02 | Not started |
-| **CNT09** | Corpus Invariants | The corpus stays true to itself without anyone remembering to check | Next | P1 | 8 | CNT02 | Not started |
-| **CNT05** | Register Rules | The register's policy assertions are machine-checked rather than aspirational | Next | P1 | 8 | CNT03 | Not started |
-| **CNT06** | Capture | An idea is never lost between having it and writing it | Next | P2 | 5 | — | Not started |
-| **CNT10** | Intelligence Layer | Evidence about what is working exists, is auditable, and is not narrated noise | Later | P1 | 13 | CNT04, CNT09 | Not started |
-| **CNT07** | Commissioning | What we write about is chosen from evidence rather than from whoever spoke last | Later | P2 | 13 | CNT10 | Not started |
-| **CNT11** | Review Calibration | Review moves from human to agent on measured agreement, not on faith | Later | P2 | 8 | CNT04 | Not started |
-| **CNT08** | Distribution | Published work reaches its audience without a human rewriting it per channel | Later | P3 | 13 | CNT01, CNT04 | Not started |
+| **CNT01** | Publishing Guardrails | Nothing reaches readers without a human deciding it should | Now | P0 | 13 | — | Library complete |
+| **CNT02** | Content Contracts | Published claims are traceable to a source, and prohibited claims cannot ship | Now | P0 | 13 | — | Library complete |
+| **CNT03** | Content QA | The guarantees in CNT01 and CNT02 cannot be silently weakened | Now | P0 | 8 | CNT01, CNT02 | Library complete |
+| **CNT04** | Authoring Studio | A brief becomes a reviewable draft without a human writing the first version | Now | P1 | 21 | CNT01, CNT02 | Partial — Slack initiation open |
+| **CNT09** | Corpus Invariants | The corpus stays true to itself without anyone remembering to check | Next | P1 | 8 | CNT02 | Library complete |
+| **CNT05** | Register Rules | The register's policy assertions are machine-checked rather than aspirational | Next | P1 | 8 | CNT03 | Library complete |
+| **CNT06** | Capture | An idea is never lost between having it and writing it | Next | P2 | 5 | — | Library complete |
+| **CNT10** | Intelligence Layer | Evidence about what is working exists, is auditable, and is not narrated noise | Later | P1 | 13 | CNT04, CNT09 | Library complete |
+| **CNT07** | Commissioning | What we write about is chosen from evidence rather than from whoever spoke last | Later | P2 | 13 | CNT10 | Library complete |
+| **CNT11** | Review Calibration | Review moves from human to agent on measured agreement, not on faith | Later | P2 | 8 | CNT04 | Library complete |
+| **CNT08** | Distribution | Published work reaches its audience without a human rewriting it per channel | Later | P3 | 13 | CNT01, CNT04 | Library complete |
 
 **Sequencing note.** CNT10 is the most valuable epic in the practice and is eighth. That is deliberate — see `design.md` §11. Until there is a corpus and a review record, the analyst has nothing to be right about, and no way to tell whether it is.
 

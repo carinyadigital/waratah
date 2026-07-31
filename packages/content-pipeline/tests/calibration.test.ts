@@ -125,7 +125,7 @@ describe('levels move on evidence, automatically', () => {
     expect(kinds).toContain('demotion');
   });
 
-  it('does not double-demote a severe miss across repeated runLevelsEngine calls', () => {
+  it('a severe miss is not demoted again by the levels engine', () => {
     const root = scaffold();
     const classes = loadClasses(root);
     const cls = classes.find((c) => c.id === 'figure-rederivation')!;
@@ -137,7 +137,8 @@ describe('levels move on evidence, automatically', () => {
     expect(queryClass(root, 'figure-rederivation').level).toBe(2);
 
     // The same severe miss is still inside the trailing window; a second pass must not re-demote it.
-    runLevelsEngine(root);
+    const changes = runLevelsEngine(root);
+    expect(changes.find((c) => c.classId === 'figure-rederivation')).toBeUndefined();
     expect(queryClass(root, 'figure-rederivation').level).toBe(2);
   });
 

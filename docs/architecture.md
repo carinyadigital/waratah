@@ -44,10 +44,12 @@ agents/
 ├── content-qa/
 ├── content-monitor/
 ├── content-distributor/
-├── content-desk/
-└── support-triage/     # Support vertical, existing. No seo-reporter — SEO/AEO
-                          # isn't a vertical and owns no agent; see product.md §7.2
+└── content-desk/
+```
 
+`support-triage` is a planned Support-vertical agent — not in this register yet. Demand artifacts may still name it as a source enum; see `product.md` §7.
+
+```
 packages/
 ├── agent-manifest/             # agent.schema.json + types
 ├── brand/                      # standards layer. see content/design.md §1
@@ -62,7 +64,7 @@ config/connections.yaml         # the connection registry
 
 **Revisit trigger for team directories:** roughly 20+ agents, or separate human owners needing distinct CODEOWNERS and deploy cadences, or per-team policy baselines enforced in CI. If adopted, `_team.yaml` may carry shared defaults — but **`policy:` must never inherit**, so that every agent's security posture stays readable in a single diff.
 
-**`packages/brand/` stays independent of `packages/content-pipeline/`** because it serves agents outside the content practice — `support-triage` reads voice too.
+**`packages/brand/` stays independent of `packages/content-pipeline/`** because it will serve agents outside the content practice — including a future `support-triage` that reads voice.
 
 ## 3. The manifest
 
@@ -154,8 +156,8 @@ CI-enforced by `pnpm agents check`. A rule that cannot be checked is documentati
 | **R8** | Brand assets are referenced by `dist/` path, never duplicated into an agent | ✅ |
 | **R9** | Any agent declaring `cms-draft` names a CMS role whose access rules are asserted by a test in the site repo | ✅ |
 | **R10** | No agent may declare a direct database connection | ✅ |
-| **R11** | Any agent emitting a `read` artifact declares `content.nThreshold` per connected source; the schema rejects empty-by-omission `alternativeExplanations` and `couldNotDetermine` | ⬜ needs schema |
-| **R12** | Any decision class at review level ≥ 3 references a calibration record with n above threshold and zero severe misses in window | ⬜ needs ledger |
+| **R11** | Any agent emitting a `read` artifact declares `content.nThreshold` per connected source; the schema rejects empty-by-omission `alternativeExplanations` and `couldNotDetermine` | ✅ |
+| **R12** | Any decision class at review level ≥ 3 references a calibration record with n above threshold and zero severe misses in window | ✅ |
 
 **R3 and R4 are the two that matter.** Everything else is hygiene around them.
 
@@ -163,7 +165,7 @@ CI-enforced by `pnpm agents check`. A rule that cannot be checked is documentati
 
 **R10 exists because it is the rule most likely to be broken by someone being helpful during a debugging session.** Every guarantee in the Payload access layer becomes decorative the moment an agent holds a direct Postgres credential.
 
-**R11 and R12 are new and not yet enforced.** They need `$defs` entries in `agent.schema.json` and CLI cases. Until then they are documentation — the same caveat that applies to `spendCapUsd`.
+**R11 and R12 are enforced** by `agent.schema.json`, `read.schema.json`, `scripts/agents/rules-extra.ts`, and the calibration ledger under `.agency/calibration/`.
 
 ## 7. The CLI
 
@@ -212,5 +214,4 @@ Being clear-eyed about this is the difference between a security model and a com
 |---|---|
 | Flat registry vs team directories | ~20 agents, or split CODEOWNERS |
 | Whether `spendCapUsd` gets real enforcement | First surprising bill |
-| Whether R11/R12 justify schema work | When `content-analyst` is built |
 | Provider-side attestation of `connections` | If a second connection becomes assertable the way Payload is |

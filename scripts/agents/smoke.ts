@@ -97,6 +97,24 @@ const main = async () => {
     console.log(`read written and schema-validated: ${path.basename(readFile)}`);
     console.log('\n--- run report ---\n');
     console.log(renderAnalystRunReport(b.build() as never, contentDir));
+  } else if (agent === 'content-planner') {
+    const { OpportunitiesBuilder } = await import('../../agents/content-planner/agent/opportunities');
+    const { mkdtempSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const brand = loadBrand(repoPaths(root));
+    const b = new OpportunitiesBuilder('2026-08', brand.positioning.hash, brand.claimPolicy, {
+      reads: ['.agency/content/reads/2026-W31.yaml'],
+    });
+    const verdict = b.propose({
+      title: 'How to read a soil test without a consultant',
+      targetQuery: 'how to read a soil test',
+      surface: 'blog',
+      bet: 'Practitioner-cluster demand is unserved; this converts practitioners at above-cluster rate within 90 days.',
+      evidence: [{ artifact: '.agency/content/reads/2026-W31.yaml', ref: 'finding-0' }],
+    });
+    const contentDir = path.join(mkdtempSync(path.join(tmpdir(), 'planner-smoke-')), 'content');
+    const file = b.writeTo(contentDir);
+    console.log(`opportunity ${verdict}; opportunities artifact written and schema-validated: ${path.basename(file)}`);
   } else {
     console.log(`${agent}: no dry-run spine defined yet — manifest check only`);
   }

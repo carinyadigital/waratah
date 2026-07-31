@@ -85,7 +85,7 @@
       "format": "date",
       "description": "An unstarted brief is a stale opinion. Swept by CNT06-03."
     },
-    "linearRef": { "type": "string", "description": "Empty until synced. tasks.md §16." },
-    "syncedAt": { "type": "string", "format": "date-time" }
+    "linearRef": { "type": ["string", "null"], "description": "Empty until synced. tasks.md §16." },
+    "syncedAt": { "type": ["string", "null"] }
   }
 }

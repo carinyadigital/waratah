@@ -1,0 +1,33 @@
+# Hand-assembled pack — CNT02-10. Normalised claim–source–excerpt–confidence
+# entries; couldNotVerify present and honest.
+slug: measuring-soil-carbon-baseline
+entries:
+  - id: c1
+    claim: Soil organic carbon in Australian agricultural topsoils commonly sits between about 1 and 4 per cent
+    source: https://soilquality.org.au/factsheets/organic-carbon
+    excerpt: Total organic carbon in Australian agricultural soils generally ranges from below 1% in degraded cropping soils to around 4% under long-term pasture.
+    confidence: high
+    verifiedAt: '2026-07-20'
+    mustSupport: true
+  - id: c2
+    claim: Rebuilding soil organic carbon is slow, and gains of a few tenths of a percentage point take years
+    source: https://soilquality.org.au/factsheets/organic-carbon
+    excerpt: Changes in soil organic carbon occur slowly; measurable increases typically take years to a decade under changed management.
+    confidence: high
+    verifiedAt: '2026-07-20'
+    mustSupport: true
+  - id: c3
+    claim: We sampled 40 GPS-logged points across eight paddocks to 30 cm and lab-analysed them for a public baseline
+    source: https://github.com/carinyaparc/carinyaparc
+    excerpt: Sampling design, point locations and lab results are published in the open repository.
+    confidence: high
+    verifiedAt: '2026-07-28'
+  - id: c4
+    claim: The ACCC's guidance on environmental claims requires substantiation before green claims are made
+    source: https://www.accc.gov.au/business/advertising-and-promotions/environmental-and-sustainability-claims
+    excerpt: Businesses making environmental claims must be able to substantiate them; vague or absolute claims risk misleading consumers.
+    confidence: medium
+    verifiedAt: '2026-07-20'
+couldNotVerify:
+  - claim: District-average paddock organic matter figures for The Branch specifically
+    note: NSW DPI publishes regional soil data but nothing at locality resolution; partial verification only via the state-wide mapping. Left out of the piece.

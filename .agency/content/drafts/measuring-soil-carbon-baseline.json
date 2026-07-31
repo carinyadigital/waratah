@@ -1,0 +1,258 @@
+{
+  "slug": "measuring-soil-carbon-baseline",
+  "title": "The baseline comes first: measuring before claiming",
+  "surface": "blog",
+  "collection": "posts",
+  "content": {
+    "root": {
+      "type": "root",
+      "children": [
+        {
+          "type": "heading",
+          "tag": "h2",
+          "children": [
+            {
+              "type": "text",
+              "text": "Why we measured before we claimed",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Every farm like ours wants to tell you the land is getting better. Most are guessing. We decided the first honest thing we could publish was not a promise but a number — the state of our paddocks on the day we started, measured properly, so that every claim we make later has something to be checked against.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "This is not just temperament. ",
+              "version": 1
+            },
+            {
+              "type": "claim",
+              "claimId": "c4",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Australian regulators expect environmental claims to be substantiated before they are made",
+                  "version": 1
+                }
+              ],
+              "version": 1
+            },
+            {
+              "type": "text",
+              "text": " — the ACCC has been explicit about it, and green claims without evidence are exactly the habit this industry needs to lose. The cheapest way to comply is also the most useful one: measure first, talk second.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "heading",
+          "tag": "h2",
+          "children": [
+            {
+              "type": "text",
+              "text": "What we did",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "claim",
+              "claimId": "c3",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "We sampled 40 GPS-logged points across eight paddocks, cored to 30 centimetres, and sent the lot to a lab for analysis",
+                  "version": 1
+                }
+              ],
+              "version": 1
+            },
+            {
+              "type": "text",
+              "text": ". No selective sampling near the good tree lines, and no quiet skipping of the compacted gateway country. The grid was set before anyone walked out with an auger, and the point locations are logged so the same spots can be resampled in two years.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "The results were about what a set of tired grazing paddocks should produce. Nothing to brag about, which is rather the point. ",
+              "version": 1
+            },
+            {
+              "type": "claim",
+              "claimId": "c1",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Organic carbon in Australian agricultural topsoils commonly sits between about 1 and 4 per cent",
+                  "version": 1
+                }
+              ],
+              "version": 1
+            },
+            {
+              "type": "text",
+              "text": ", and ours sit toward the bottom of that range. That is the baseline. It is not a story about how special this place is — it is the before photo, taken with witnesses.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "All of it — sampling design, point locations, lab results — is published in the open repository. If you want to argue with our numbers, you can find them. Open books are the point of the exercise: a measurement nobody can check is just an anecdote with a spreadsheet.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Two decisions mattered more than the gear. First, depth: sampling to 30 centimetres rather than the flattering top ten, because that is where the change we care about will or will not happen. Second, consistency: one lab, one method, the same season each round, so the only variable moving between samplings is the ground itself. Boring choices, deliberately made — comparability is worth more than precision we cannot repeat.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "heading",
+          "tag": "h2",
+          "children": [
+            {
+              "type": "text",
+              "text": "What we expect to happen",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Slowly. Anyone selling you a fast fix for degraded ground is selling you something else too. ",
+              "version": 1
+            },
+            {
+              "type": "claim",
+              "claimId": "c2",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Rebuilding organic carbon in a paddock is slow, and gains of a few tenths of a percentage point take years",
+                  "version": 1
+                }
+              ],
+              "version": 1
+            },
+            {
+              "type": "text",
+              "text": ". We plan to resample the same points on the same grid every two years and publish whatever comes back, including the paddocks that go backwards. Some will. A trend needs at least three points before it deserves the name, which puts our first honest trend line several years away. We can live with that.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "What we will not do is put a number on the future. No forecast tonnage, no promised percentages, no timeline with a marketing department behind it. The paddocks have not earned that yet, and neither have we.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "heading",
+          "tag": "h2",
+          "children": [
+            {
+              "type": "text",
+              "text": "Where the beef comes in",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "The herd is how the plan pays its way while the ground does its slow work. If you would rather meet the end product than the spreadsheet, start with the ",
+              "version": 1
+            },
+            {
+              "type": "link",
+              "fields": {
+                "url": "/slow-roasted-highland-beef",
+                "linkType": "custom"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "slow-roasted Highland beef",
+                  "version": 1
+                }
+              ],
+              "version": 1
+            },
+            {
+              "type": "text",
+              "text": " and taste what the paddocks are feeding. The measuring continues either way — the next sampling round lands in spring, and the numbers go up on this page whether they flatter us or not.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "If you are running your own patch and want the sampling design, take it. It is not clever, it is just written down — which, as far as we can tell, is the main thing missing from most claims made about ground like ours.",
+              "version": 1
+            }
+          ],
+          "version": 1
+        }
+      ],
+      "version": 1,
+      "format": "",
+      "indent": 0,
+      "direction": null
+    }
+  }
+}

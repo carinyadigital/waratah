@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
+version: 1
+name: content-desk
+owner: greg
+description: Interactive desk surface for quarterly market research and positioning review. Human-driven, no deployment, proposes diffs a human merges.
+tags: [content, research]
+
+deploy:
+  platform: claude-subagent
+
+triggers:
+  - type: manual
+
+policy:
+  untrustedInput: true
+  connections: [slack]
+  writes: [artifact-store, tracker]
+  approval: draft-only
+  idempotencyKey: landscape.period
+
+content:
+  voice: packages/brand/dist/carinya-voice.json
+  rubric: packages/brand/dist/editorial-rubric.md
+  positioning: packages/brand/dist/positioning.json
+  emits: [landscape]
+
+observability:
+  traces: none
+  alertChannel: '#carinya-content'

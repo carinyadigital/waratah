@@ -1,0 +1,69 @@
+# agents-deploy — the register's deploy surface (architecture.md §2, §7).
+#
+# `pnpm agents check` gates every PR touching the register; the matrix job
+# deploys managed agents whose manifests changed. Provider credentials
+# (CLAUDE_MANAGED_AGENTS_TOKEN) live here, never in the repo.
+name: agents-deploy
+
+on:
+  pull_request:
+    paths:
+      - 'agents/**'
+      - 'config/connections.yaml'
+      - 'packages/agent-manifest/**'
+      - 'scripts/agents/**'
+  push:
+    branches: [main]
+    paths:
+      - 'agents/**'
+      - 'config/connections.yaml'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Register rules R1–R12
+        run: pnpm agents check
+
+  matrix:
+    needs: check
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: matrix
+        run: echo "matrix=$(pnpm --silent agents matrix)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: matrix
+    if: github.event_name == 'push' && fromJSON(needs.matrix.outputs.matrix).include[0] != null
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy ${{ matrix.agent }}
+        env:
+          CLAUDE_MANAGED_AGENTS_TOKEN: ${{ secrets.CLAUDE_MANAGED_AGENTS_TOKEN }}
+        run: pnpm agents deploy --only ${{ matrix.agent }}

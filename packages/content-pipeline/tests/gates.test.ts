@@ -241,6 +241,18 @@ describe('gate suite', () => {
     expect(suite.results.find((r) => r.gate === 'structure')!.status).toBe('fail');
   });
 
+  it('a crashed gate is reported under its canonical id, not the JS function name', async () => {
+    const brokenPack = { ...pack, entries: undefined as unknown as PackArtifact['entries'] };
+    const suite = await runGates(input(goodDraft(), { pack: brokenPack }));
+    const crashedIds = suite.results
+      .filter((r) => r.failures.some((f) => f.startsWith('gate crashed')))
+      .map((r) => r.gate);
+    expect(crashedIds).toContain('claim-coverage');
+    expect(crashedIds).toContain('brief-conformance');
+    expect(crashedIds).not.toContain('claimCoverage');
+    expect(crashedIds).not.toContain('briefConformance');
+  });
+
   it('the suite makes no model calls and no network calls when external links are skipped', async () => {
     // No fetch spy needed: options.externalLinks 'skip' short-circuits the only
     // network path. This test asserts the run completes with fetch disabled.

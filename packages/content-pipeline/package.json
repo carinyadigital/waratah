@@ -1,0 +1,23 @@
+{
+  "name": "@carinyaparc/content-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Brief/pack/read contracts and the deterministic gate suite. (content/design.md §4–§5)",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas/*": "./src/schemas/*"
+  },
+  "scripts": {
+    "gates": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "vitest": "^2.1.0"
+  }
+}

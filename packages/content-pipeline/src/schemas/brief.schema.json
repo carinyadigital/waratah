@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carinyaparc.com.au/schemas/brief.schema.json",
+  "title": "Content brief",
+  "description": "CNT02-04. The commissioner's contract with the studio. design.md §4.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "trackerRef",
+    "surface",
+    "targetQuery",
+    "angle",
+    "audience",
+    "mustSupport",
+    "mustNotClaim",
+    "internalLinks",
+    "sourceBudget",
+    "successMetric",
+    "positioningHash",
+    "expiresAt"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Join key across tracker, artifacts and CMS document. Canonical."
+    },
+    "trackerRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Tracker issue ID (Linear CON-n, or triage/<id> before promotion)."
+    },
+    "surface": {
+      "enum": ["blog", "recipes", "landing", "newsletter"]
+    },
+    "targetQuery": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Exactly one. Uniqueness across briefs is invariant CNT09-05."
+    },
+    "angle": { "type": "string", "minLength": 3 },
+    "audience": { "type": "string", "minLength": 3 },
+    "mustSupport": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim"],
+        "properties": {
+          "claim": { "type": "string", "minLength": 3 },
+          "evidence": { "type": "string", "description": "Pointer to the expected evidence, if known at commissioning." }
+        }
+      },
+      "description": "Claims the piece must make. Each must appear annotated in the document and resolve to a pack entry."
+    },
+    "mustNotClaim": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2 },
+      "description": "Prohibited patterns (regex, case-insensitive), checked by the prohibition gate on top of claim-policy."
+    },
+    "internalLinks": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+      "description": "Slugs this piece must link to."
+    },
+    "sourceBudget": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40,
+      "description": "Max pack entries. Caps researcher runtime — a hard stop, not a suggestion (CNT04-11)."
+    },
+    "successMetric": {
+      "type": "string",
+      "minLength": 3,
+      "description": "How we'll know in 90 days. Selection feedback, never quality control (design.md §0.3)."
+    },
+    "positioningHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Hash of positioning.md this brief was commissioned under."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date",
+      "description": "An unstarted brief is a stale opinion. Swept by CNT06-03."
+    },
+    "linearRef": { "type": "string", "description": "Empty until synced. tasks.md §16." },
+    "syncedAt": { "type": "string", "format": "date-time" }
+  }
+}

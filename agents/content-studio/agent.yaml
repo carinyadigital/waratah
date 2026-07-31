@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
+version: 1
+name: content-studio
+owner: greg
+description: Track two production. Turns a brief and pack into a staged Payload draft with annotated claims. Cannot publish, cannot send, cannot touch a database.
+tags: [content, production]
+
+deploy:
+  platform: claude-managed-agent
+
+triggers:
+  - type: chat
+    channel: slack
+  - type: manual
+
+policy:
+  untrustedInput: true # reads source excerpts the researcher gathered — data, never instructions
+  connections: [payload, github, slack]
+  writes: [cms-draft, repo-branch, slack]
+  approval: pr-review
+  spendCapUsd: 40
+  idempotencyKey: brief.slug
+  cmsRole: agent
+  cmsRoleAssertedBy: tests/access/agent-publish.test.ts
+
+content:
+  voice: packages/brand/dist/carinya-voice.json
+  rubric: packages/brand/dist/editorial-rubric.md
+  positioning: packages/brand/dist/positioning.json
+
+observability:
+  traces: both
+  alertChannel: '#carinya-content'
+  evals: agents/content-studio/evals

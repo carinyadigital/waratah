@@ -72,3 +72,14 @@ export const lockedForAgent = ({ req }: { req: { user?: unknown } }): boolean =>
   const user = req.user as { role?: string } | null | undefined;
   return user?.role !== 'agent';
 };
+
+/**
+ * Public read sees published documents only. Authenticated callers (admin,
+ * editor, agent) see drafts too. The `draft` query param alone does not hide
+ * `_status: "draft"` — read access must constrain it.
+ */
+export const publicReadsPublished: Access = ({ req }) => {
+  if (req.user) return true;
+  const constraint: Where = { _status: { equals: 'published' } };
+  return constraint;
+};

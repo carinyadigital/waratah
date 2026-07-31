@@ -20,6 +20,7 @@ import {
   agentCannotPublish,
   agentCreatesDraftsOnly,
   lockedForAgent,
+  publicReadsPublished,
 } from '../../src/access/agentCannotPublish';
 import { Posts, Recipes } from '../../src/collections/content';
 
@@ -32,6 +33,7 @@ describe('wiring — the access rules exist and are attached', () => {
     ['posts', Posts],
     ['recipes', Recipes],
   ])('%s uses agentCannotPublish for update and locks title/slug for the agent', (_name, collection) => {
+    expect(collection.access?.read).toBe(publicReadsPublished);
     expect(collection.access?.update).toBe(agentCannotPublish);
     expect(collection.access?.create).toBe(agentCreatesDraftsOnly);
     expect(collection.access?.delete).toBe(agentCannotDelete);
@@ -41,6 +43,17 @@ describe('wiring — the access rules exist and are attached', () => {
     const slug = collection.fields.find((f) => 'name' in f && f.name === 'slug');
     expect(title && 'access' in title && title.access?.update).toBe(lockedForAgent);
     expect(slug && 'access' in slug && slug.access?.update).toBe(lockedForAgent);
+  });
+});
+
+describe('public read cannot see drafts', () => {
+  it('anonymous read is constrained to published documents', () => {
+    expect(publicReadsPublished(anonReq)).toEqual({ _status: { equals: 'published' } });
+  });
+
+  it('authenticated readers are unconstrained', () => {
+    expect(publicReadsPublished(agentReq)).toBe(true);
+    expect(publicReadsPublished(editorReq)).toBe(true);
   });
 });
 

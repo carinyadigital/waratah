@@ -4,6 +4,7 @@ import {
   agentCannotPublish,
   agentCreatesDraftsOnly,
   lockedForAgent,
+  publicReadsPublished,
 } from '../access/agentCannotPublish';
 
 /**
@@ -88,7 +89,7 @@ const contentCollection = (slug: 'posts' | 'recipes', extra: Field[] = []): Coll
     useAsTitle: 'title',
   },
   access: {
-    read: () => true,
+    read: publicReadsPublished,
     create: agentCreatesDraftsOnly,
     update: agentCannotPublish,
     delete: agentCannotDelete,

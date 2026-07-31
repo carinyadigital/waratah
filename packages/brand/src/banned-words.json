@@ -1,0 +1,32 @@
+{
+  "$comment": "Style-lint gate input. Terms are matched case-insensitively as whole phrases. Per-surface additions under perSurface.",
+  "banned": [
+    { "term": "leverage", "reason": "corporate filler", "instead": "use" },
+    { "term": "utilise", "reason": "corporate filler", "instead": "use" },
+    { "term": "utilize", "reason": "corporate filler", "instead": "use" },
+    { "term": "synergy", "reason": "corporate filler" },
+    { "term": "holistic", "reason": "corporate filler; be specific about the practice" },
+    { "term": "cutting-edge", "reason": "hype" },
+    { "term": "streamline", "reason": "corporate filler" },
+    { "term": "robust", "reason": "corporate filler" },
+    { "term": "paradigm", "reason": "corporate filler" },
+    { "term": "delve", "reason": "AI-flavoured filler" },
+    { "term": "eco-friendly", "reason": "greenwash; also prohibited by claim policy" },
+    { "term": "planet-positive", "reason": "greenwash" },
+    { "term": "guilt-free", "reason": "greenwash" },
+    { "term": "good for the planet", "reason": "greenwash; claim something measurable or nothing" },
+    { "term": "truly unique", "reason": "hype stack" },
+    { "term": "absolutely stunning", "reason": "hype stack" },
+    { "term": "world-class", "reason": "hype" },
+    { "term": "arguably", "reason": "hedged mush" },
+    { "term": "it could be said", "reason": "hedged mush" },
+    { "term": "in many ways", "reason": "hedged mush" },
+    { "term": "game-changer", "reason": "hype" },
+    { "term": "elevate", "reason": "menu-speak", "instead": "improve, lift" }
+  ],
+  "perSurface": {
+    "linkedin": [{ "term": "thrilled to announce", "reason": "LinkedIn filler" }],
+    "instagram": [{ "term": "link in bio", "reason": "state where the link is instead" }],
+    "newsletter": [{ "term": "don't miss out", "reason": "urgency-mongering" }]
+  }
+}

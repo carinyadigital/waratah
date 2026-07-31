@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carinyaparc.com.au/schemas/pack.schema.json",
+  "title": "Evidence pack",
+  "description": "CNT02-05. The researcher's normalised output; the writer reads this, not the internet. design.md §4.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slug", "entries", "couldNotVerify"],
+  "properties": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "claim", "source", "excerpt", "confidence", "verifiedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^c[0-9]+$",
+            "description": "Stable id Lexical claim nodes bind to (claimId)."
+          },
+          "claim": { "type": "string", "minLength": 3 },
+          "source": { "type": "string", "format": "uri" },
+          "excerpt": { "type": "string", "minLength": 1, "maxLength": 600, "description": "Short. Normalisation is a filter." },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "verifiedAt": { "type": "string", "format": "date" },
+          "mustSupport": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "couldNotVerify": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "note"],
+        "properties": {
+          "claim": { "type": "string" },
+          "note": { "type": "string", "description": "What was attempted, incl. partial verifications (CNT04-12)." }
+        }
+      },
+      "description": "Required. May not be empty by omission — the key must always be present."
+    }
+  }
+}

@@ -1,6 +1,6 @@
 /**
- * The calibration ledger (design.md §9). Not a reviewer — the record that
- * would justify trusting one.
+ * The calibration ledger. Not a reviewer — the record that would justify
+ * trusting one.
  *
  * The shadow protocol's hiding requirement is the whole validity of the
  * exercise: the agent's verdict is recorded before the human decides, the
@@ -62,7 +62,7 @@ const saveClasses = (root: string, classes: DecisionClass[]): void => {
   writeFileSync(classesFile(root), toYaml({ classes }));
 };
 
-/** design.md §9.1: level, sample size and last review date are returned on query. */
+/** Level, sample size and last review date are returned on query. */
 export const queryClass = (root: string, classId: string): DecisionClass & { sampleSize: number } => {
   const cls = loadClasses(root).find((c) => c.id === classId);
   if (!cls) throw new Error(`unknown decision class "${classId}"`);
@@ -89,7 +89,7 @@ const appendLog = (root: string, change: LevelChange): void => {
 
 export class ShadowProtocolError extends Error {}
 
-/** CNT11-03 — the agent's verdict, recorded before the human decides, invisible to them while deciding. */
+/** The agent's verdict, recorded before the human decides, invisible to them while deciding. */
 export const recordShadowVerdict = (root: string, classId: string, item: string, verdict: string): void => {
   const cls = loadClasses(root).find((c) => c.id === classId);
   if (!cls) throw new Error(`unknown decision class "${classId}"`);
@@ -111,9 +111,9 @@ export const shadowExists = (root: string, classId: string, item: string): boole
   existsSync(shadowFile(root, classId, item));
 
 /**
- * CNT11-04 — the human decides (without seeing the shadow), and both verdicts
- * are stored against the item, paired into the class ledger and — when the
- * item is a published slug — into its review record.
+ * The human decides (without seeing the shadow), and both verdicts are stored
+ * against the item, paired into the class ledger and — when the item is a
+ * published slug — into its review record.
  */
 export const recordHumanDecision = (
   root: string,
@@ -175,7 +175,7 @@ export interface AgreementReport {
   severeMisses: number;
 }
 
-/** CNT11-05 — agreement rate per class over the rolling window. */
+/** Agreement rate per class over the rolling window. */
 export const agreementRate = (root: string, classId: string): AgreementReport => {
   const cls = loadClasses(root).find((c) => c.id === classId);
   if (!cls) throw new Error(`unknown decision class "${classId}"`);
@@ -205,10 +205,10 @@ const applyDemotion = (root: string, classId: string, reason: string): void => {
 };
 
 /**
- * CNT11-06 — the levels engine. Promotion: agreement above threshold across a
- * full window of that class, zero severe misses in window, one level at a
- * time, never past the ceiling. Demotion for severe misses is applied at
- * decision time; this pass also catches any recorded but unapplied ones.
+ * The levels engine. Promotion: agreement above threshold across a full
+ * window of that class, zero severe misses in window, one level at a time,
+ * never past the ceiling. Demotion for severe misses is applied at decision
+ * time; this pass also catches any recorded but unapplied ones.
  */
 export const runLevelsEngine = (root: string): LevelChange[] => {
   const classes = loadClasses(root);

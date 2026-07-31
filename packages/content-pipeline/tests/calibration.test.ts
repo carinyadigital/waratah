@@ -27,7 +27,7 @@ const scaffold = (): string => {
 };
 
 describe('decision classes are named and levelled', () => {
-  it('seeds match design.md §9.2 starting positions', () => {
+  it('seeds match the starting positions for each decision class', () => {
     const byId = Object.fromEntries(loadClasses(scaffold()).map((c) => [c.id, c]));
     expect(byId['structural-schema-conformance'].level).toBe(4);
     expect(byId['link-prohibition-checks'].level).toBe(4);

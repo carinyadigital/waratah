@@ -1,0 +1,88 @@
+# The connection registry. (architecture.md §5)
+#
+# Every connection an agent may declare in policy.connections is registered
+# here with an owner, a kind, and a rotation policy. R2 asserts declared
+# connections exist here; R10 prohibits any agent declaring a connection of
+# kind "database" (ADR-0003).
+#
+# kind vocabulary: cms | code | chat | analytics | search | seo | email |
+#                  observability | hosting | spreadsheet | database
+
+connections:
+  github:
+    kind: code
+    owner: greg
+    rotation:
+      cadence: quarterly
+      method: Fine-grained PAT re-issued in GitHub settings; stored as repo/org secret.
+
+  payload:
+    kind: cms
+    owner: greg
+    rotation:
+      # CNT01-09 — key lifecycle for the agent identity.
+      cadence: quarterly
+      method: >-
+        Rotate the agent user's API key in the Payload Admin UI
+        (users → content-studio@agents.carinyaparc.com.au → regenerate API key),
+        then update the CONTENT_AGENT_API_KEY secret in the managed-agent
+        provider and in GitHub Actions. Disabling the key (enableAPIKey: false)
+        stops the agent immediately; no other identity is affected
+        (asserted by tests/access/agent-publish.test.ts).
+      revocation: Disable enableAPIKey on the agent user. Effect is immediate.
+
+  slack:
+    kind: chat
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Reinstall the Slack app to refresh the bot token.
+
+  sheets:
+    kind: spreadsheet
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Rotate the service-account key in Google Cloud console.
+
+  ga4:
+    kind: analytics
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Rotate the service-account key in Google Cloud console.
+
+  gsc:
+    kind: search
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Rotate the service-account key in Google Cloud console.
+
+  ahrefs:
+    kind: seo
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Regenerate the API token in the Ahrefs dashboard.
+
+  esp:
+    kind: email
+    owner: greg
+    rotation:
+      cadence: quarterly
+      method: Regenerate the ESP API key; update provider secrets.
+
+  sentry:
+    kind: observability
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Rotate the auth token in Sentry settings.
+
+  vercel:
+    kind: hosting
+    owner: greg
+    rotation:
+      cadence: yearly
+      method: Rotate the deploy token in Vercel settings.

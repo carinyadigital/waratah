@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
 import { OpportunitiesBuilder } from '../agent/opportunities';
 import { commission, TargetQueryCollisionError, type CommissionInput } from '../agent/commission';
-import { loadQueue, promote, PromotionDeniedError } from '../agent/queue';
+import { demote, loadQueue, promote, PromotionDeniedError, pruneExpiredFromQueue } from '../agent/queue';
 import { Triage } from '../../content-monitor/agent/triage';
 import type { ClaimPolicy } from '../../../packages/content-pipeline/src/gates/types';
 
@@ -141,5 +141,26 @@ describe('the capped, human-promoted queue', () => {
     writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 1, ready: [] }));
     promote(contentDir, a.slug, 'Jonno');
     expect(() => promote(contentDir, b.slug, 'Jonno')).toThrow(/cap/);
+  });
+
+  it('demotion requires a named human; agent-shaped names are refused', () => {
+    const root = scaffoldRepo();
+    const contentDir = path.join(root, '.agency/content');
+    const { slug } = commission(root, withId(commissionInput()), new Date('2026-08-01'));
+    writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 2, ready: [] }));
+    promote(contentDir, slug, 'Jonno');
+
+    expect(() => demote(contentDir, slug, 'content-planner')).toThrow(PromotionDeniedError);
+    expect(demote(contentDir, slug, 'Jonno').ready).not.toContain(slug);
+  });
+
+  it('the expiry sweep may prune a stale slug without a human name', () => {
+    const root = scaffoldRepo();
+    const contentDir = path.join(root, '.agency/content');
+    const { slug } = commission(root, withId(commissionInput()), new Date('2026-08-01'));
+    writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 2, ready: [] }));
+    promote(contentDir, slug, 'Jonno');
+
+    expect(pruneExpiredFromQueue(contentDir, slug).ready).not.toContain(slug);
   });
 });

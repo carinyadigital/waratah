@@ -6,6 +6,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
+import { looksLikeAgent } from '../../../packages/content-pipeline/src/humanApproval';
 
 export interface ReadyQueue {
   cap: number;
@@ -26,17 +27,13 @@ export const queueHasRoom = (contentDir: string): boolean => {
   return queue.ready.length < queue.cap;
 };
 
-/** Looks like an agent identity, not a person. The gate errs toward refusing. */
-const agentLike = /^$|agent|bot|studio|planner|analyst|monitor|distributor|desk|-qa$|^ci$/i;
-
 export class PromotionDeniedError extends Error {}
 
 /**
  * The promotion gate. Only a named human promotes, and never past the cap.
- * There is deliberately no other writer of queue.yaml in the codebase.
  */
 export const promote = (contentDir: string, slug: string, by: string): ReadyQueue => {
-  if (agentLike.test(by.trim())) {
+  if (looksLikeAgent(by)) {
     throw new PromotionDeniedError(
       `promotion requires a named human (got "${by}") — the planner files to Triage; a person decides what enters the queue`,
     );
@@ -56,9 +53,27 @@ export const promote = (contentDir: string, slug: string, by: string): ReadyQueu
   return queue;
 };
 
-export const demote = (contentDir: string, slug: string): ReadyQueue => {
+const removeFromQueue = (contentDir: string, slug: string): ReadyQueue => {
   const queue = loadQueue(contentDir);
   queue.ready = queue.ready.filter((s) => s !== slug);
   writeFileSync(queueFile(contentDir), toYaml(queue));
   return queue;
 };
+
+/** The demotion gate. Only a named human demotes — same guard as promotion. */
+export const demote = (contentDir: string, slug: string, by: string): ReadyQueue => {
+  if (looksLikeAgent(by)) {
+    throw new PromotionDeniedError(
+      `demotion requires a named human (got "${by}") — a person decides what leaves the queue, same as what enters it`,
+    );
+  }
+  return removeFromQueue(contentDir, slug);
+};
+
+/**
+ * System cleanup only: drops a slug whose backing brief has expired. Not a
+ * priority decision, so it carries no human-approver check — see `demote`
+ * for that. Used by the weekly expiry sweep; other callers should use
+ * `demote`.
+ */
+export const pruneExpiredFromQueue = (contentDir: string, slug: string): ReadyQueue => removeFromQueue(contentDir, slug);

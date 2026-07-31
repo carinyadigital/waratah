@@ -1,4 +1,4 @@
-# content-monitor — weekly corpus invariants. (design.md §7; tasks.md CNT09)
+# content-monitor — weekly corpus invariants.
 # Deterministic, no model calls. Violations are filed into Triage under
 # .agency/triage/ with idempotencyKey invariant.id+page and pushed as a
 # commit; a Linear sync picks them up from there.
@@ -11,7 +11,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/brand/**' # positioning change → immediate re-check (CNT09-03)
+      - 'packages/brand/**' # positioning change → immediate re-check
   workflow_dispatch: {}
 
 permissions:

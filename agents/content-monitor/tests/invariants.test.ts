@@ -45,7 +45,7 @@ const withLinkTo = (slug: string, target: string): CorpusDoc => ({
 const brief = (slug: string, targetQuery: string): BriefArtifact =>
   ({ slug, targetQuery }) as BriefArtifact;
 
-describe('CNT09-02 — triage idempotency', () => {
+describe('triage idempotency', () => {
   it('filing twice for an unresolved violation produces no duplicate', () => {
     const triage = new Triage(mkdtempSync(path.join(tmpdir(), 'triage-')));
     expect(triage.fileViolation('target-query-unique', 'a+b', 'collision', 'evidence')).toBe('filed');
@@ -61,7 +61,7 @@ describe('CNT09-02 — triage idempotency', () => {
   });
 });
 
-describe('CNT09-04 — slug join and orphans, both directions', () => {
+describe('slug join and orphans, both directions', () => {
   it('published page without brief or pack is flagged; brief without any document is orphaned', () => {
     const violations = checkBriefAndPack([doc('published-page')], ['other-brief'], [], ['published-page']);
     const kinds = violations.map((v) => v.invariant);
@@ -72,7 +72,7 @@ describe('CNT09-04 — slug join and orphans, both directions', () => {
   });
 });
 
-describe('CNT09-05 — the cannibalisation check', () => {
+describe('the cannibalisation check', () => {
   it('two briefs targeting one query are flagged, case-insensitively', () => {
     const violations = checkTargetQueryUniqueness([
       brief('a', 'Soil Carbon Measurement'),
@@ -84,7 +84,7 @@ describe('CNT09-05 — the cannibalisation check', () => {
   });
 });
 
-describe('CNT09-06 — internal link graph', () => {
+describe('internal link graph', () => {
   it('a page with no inbound links is flagged; linked pages are not', () => {
     const corpus = [withLinkTo('a', 'b'), doc('b'), doc('orphan')];
     const violations = checkInternalLinkGraph(corpus);
@@ -92,7 +92,7 @@ describe('CNT09-06 — internal link graph', () => {
   });
 });
 
-describe('CNT09-07 — source freshness per claim-policy category', () => {
+describe('source freshness per claim-policy category', () => {
   const policy = {
     prohibited: [],
     categories: [{ id: 'environmental-outcome', maxSourceAgeMonths: 12, patterns: ['soil (organic )?carbon'] }],
@@ -122,7 +122,7 @@ describe('CNT09-07 — source freshness per claim-policy category', () => {
   });
 });
 
-describe('CNT09-08 — positioning hash and decay half-life', () => {
+describe('positioning hash and decay half-life', () => {
   it('flags pages written under a previous positioning hash', () => {
     const current = 'b'.repeat(64);
     const violations = checkPositioningHash(
@@ -144,7 +144,7 @@ describe('CNT09-08 — positioning hash and decay half-life', () => {
   });
 });
 
-describe('design.md §7 — mustSupport still resolves on the live corpus', () => {
+describe('mustSupport still resolves on the live corpus', () => {
   it('flags a mustSupport annotation deleted during a human edit', () => {
     const pack: PackArtifact = {
       slug: 'p',

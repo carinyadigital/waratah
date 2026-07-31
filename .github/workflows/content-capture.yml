@@ -1,4 +1,4 @@
-# Capture — Slack to Triage in one step (CNT06-S1).
+# Capture — Slack to Triage in one step.
 #
 # A Slack workflow (reacji or shortcut on a message in #carinya-content)
 # posts a repository_dispatch event with the message text and author.

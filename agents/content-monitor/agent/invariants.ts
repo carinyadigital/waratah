@@ -1,6 +1,6 @@
 /**
- * CNT09-S2/S3 — the invariants (design.md §7). Pure functions over plain
- * inputs: the runner assembles the corpus, these decide. No model calls.
+ * The invariants. Pure functions over plain inputs: the runner assembles the
+ * corpus, these decide. No model calls.
  */
 import { collectClaims, collectLinks, type LexicalDocument } from '../../../packages/content-pipeline/src/lexical/claim';
 import { internalSlug } from '../../../packages/content-pipeline/src/gates/links';
@@ -22,7 +22,7 @@ export interface Violation {
   evidence: string;
 }
 
-/** CNT09-04 — every published document has a brief and a pack; orphans both directions. */
+/** Every published document has a brief and a pack; orphans both directions. */
 export const checkBriefAndPack = (
   published: CorpusDoc[],
   briefSlugs: string[],
@@ -64,7 +64,7 @@ export const checkBriefAndPack = (
   return violations;
 };
 
-/** CNT09-05 — the cannibalisation check: every targetQuery maps to exactly one canonical page. */
+/** The cannibalisation check: every targetQuery maps to exactly one canonical page. */
 export const checkTargetQueryUniqueness = (briefs: BriefArtifact[]): Violation[] => {
   const byQuery = new Map<string, string[]>();
   for (const brief of briefs) {
@@ -81,7 +81,7 @@ export const checkTargetQueryUniqueness = (briefs: BriefArtifact[]): Violation[]
     }));
 };
 
-/** CNT09-06a — every page has at least one internal link in. */
+/** Every page has at least one internal link in. */
 export const checkInternalLinkGraph = (corpus: CorpusDoc[]): Violation[] => {
   const inbound = new Map<string, number>(corpus.map((d) => [d.slug, 0]));
   for (const doc of corpus) {
@@ -100,7 +100,7 @@ export const checkInternalLinkGraph = (corpus: CorpusDoc[]): Violation[] => {
     }));
 };
 
-/** CNT09-06b — every external link resolves. The fetch is injected; offline runs skip. */
+/** Every external link resolves. The fetch is injected; offline runs skip. */
 export const checkExternalLinks = async (
   corpus: CorpusDoc[],
   packs: PackArtifact[],
@@ -146,7 +146,7 @@ export const checkExternalLinks = async (
   return violations;
 };
 
-/** CNT09-07 — regulated claims' sources are within their category's age limit. */
+/** Regulated claims' sources are within their category's age limit. */
 export const checkSourceFreshness = (
   packs: PackArtifact[],
   policy: ClaimPolicy,
@@ -174,7 +174,7 @@ export const checkSourceFreshness = (
   return violations;
 };
 
-/** CNT09-08a — no page predates the current positioning hash. */
+/** No page predates the current positioning hash. */
 export const checkPositioningHash = (corpus: CorpusDoc[], currentHash: string): Violation[] =>
   corpus
     .filter((d) => d.positioningHash && d.positioningHash !== currentHash)
@@ -185,7 +185,7 @@ export const checkPositioningHash = (corpus: CorpusDoc[], currentHash: string): 
       evidence: `written under ${d.positioningHash!.slice(0, 12)}…, current is ${currentHash.slice(0, 12)}… — re-review against positioning.md`,
     }));
 
-/** CNT09-08b — no page unreviewed past its surface's decay half-life. */
+/** No page unreviewed past its surface's decay half-life. */
 export const checkDecay = (
   corpus: CorpusDoc[],
   surfaces: Record<string, SurfaceSpec>,
@@ -209,7 +209,7 @@ export const checkDecay = (
   return violations;
 };
 
-/** design.md §7 — every mustSupport claim still resolves: pack ↔ annotation re-check on the live corpus. */
+/** Every mustSupport claim still resolves: pack ↔ annotation re-check on the live corpus. */
 export const checkMustSupportStillResolves = (corpus: CorpusDoc[], packs: PackArtifact[]): Violation[] => {
   const violations: Violation[] = [];
   const packBySlug = new Map(packs.map((p) => [p.slug, p]));

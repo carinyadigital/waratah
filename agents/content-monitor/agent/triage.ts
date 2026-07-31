@@ -1,5 +1,5 @@
 /**
- * CNT09-02 — Triage filing with idempotency.
+ * Triage filing with idempotency.
  *
  * The tracker item names the invariant, the page and the evidence. The
  * idempotency key is `invariant.id + page`: re-running the monitor never
@@ -86,7 +86,7 @@ export class Triage {
     return 'filed';
   }
 
-  /** Generic filing for capture (CNT06) and recommendations (CNT10). */
+  /** Generic filing for capture ideas and analyst recommendations. */
   fileItem(item: Omit<TriageItem, 'filedAt' | 'status'> & { status?: TriageItem['status'] }): 'filed' | 'duplicate' {
     const existing = this.get(item.id);
     if (existing && existing.status === 'open') return 'duplicate';

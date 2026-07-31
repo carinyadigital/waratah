@@ -9,16 +9,16 @@ import {
 /**
  * Shared shape for the content collections (`posts`, `recipes`).
  *
- * CNT01-02: `versions: { drafts: true }` injects `_status`, which is the
- * hinge the whole publish denial swings on (design.md §6.2).
+ * `versions: { drafts: true }` injects `_status`, which is the hinge the
+ * whole publish denial swings on.
  *
- * CNT01-05: collection-level access wires in `agentCannotPublish`.
- * CNT01-07: field-level locks on `title` and `slug` — the join key and the
- * public URL are not the agent's to change.
+ * Collection-level access wires in `agentCannotPublish`. Field-level locks
+ * on `title` and `slug` — the join key and the public URL are not the
+ * agent's to change.
  *
  * `updatedBy` is populated server-side from the authenticated user on every
  * save, so Payload version history attributes every staged draft to the
- * agent identity (CNT01-S1 acceptance criterion).
+ * agent identity.
  */
 const contentFields = (extra: Field[] = []): Field[] => [
   {
@@ -36,7 +36,7 @@ const contentFields = (extra: Field[] = []): Field[] => [
     unique: true,
     index: true,
     admin: {
-      description: 'Join key across tracker, artifacts and CMS. Canonical. (design.md §4)',
+      description: 'Join key across tracker, artifacts and CMS. Canonical.',
     },
     access: {
       update: lockedForAgent,
@@ -53,6 +53,27 @@ const contentFields = (extra: Field[] = []): Field[] => [
     admin: {
       hidden: true,
       readOnly: true,
+    },
+  },
+  {
+    // CNT09-08: per-surface decay half-life sweep reads this. Human-set at
+    // review; locked to the agent role like every editorial judgement.
+    name: 'lastReviewedAt',
+    type: 'date',
+    access: {
+      update: lockedForAgent,
+    },
+    admin: {
+      description: 'Set when a human re-reviews the live page. content-monitor flags pages past their surface half-life.',
+    },
+  },
+  {
+    // The positioning hash the piece was written under (design.md §1).
+    // content-monitor compares it against the current hash.
+    name: 'positioningHash',
+    type: 'text',
+    admin: {
+      description: 'sha256 of positioning.md at write time. Recorded by the studio at staging.',
     },
   },
   ...extra,

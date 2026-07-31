@@ -1,13 +1,13 @@
 /**
- * CNT02-07 — the Payload editor half of the claim annotation: a Lexical
- * inline element node carrying a stable `claimId`, registered as a server
- * feature so staged documents containing claim nodes round-trip through
- * Payload's editor state. The deterministic JSON contract the gates walk
- * lives in @carinyaparc/content-pipeline (src/lexical/claim.ts) and does not
- * depend on this file.
+ * The Payload editor half of the claim annotation: a Lexical inline element
+ * node carrying a stable `claimId`, registered as a server feature so staged
+ * documents containing claim nodes round-trip through Payload's editor state.
+ * The deterministic JSON contract the gates walk lives in
+ * @carinyaparc/content-pipeline (src/lexical/claim.ts) and does not depend on
+ * this file.
  *
- * Risk R1 fallback (a sibling `claims` array with character offsets) was not
- * needed: the inline-feature API carries `claimId` as serialized node state.
+ * A sibling `claims` array with character offsets was not needed: the
+ * inline-feature API carries `claimId` as serialized node state.
  */
 import { createNode, createServerFeature } from '@payloadcms/richtext-lexical';
 import {

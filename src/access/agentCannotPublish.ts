@@ -1,7 +1,7 @@
 import type { Access, Where } from 'payload';
 
 /**
- * CNT01-04 — The publish denial, in code. (design.md §6.2, ADR-0001)
+ * The publish denial, in code.
  *
  * Collection-level `update` access for content collections with
  * `versions: { drafts: true }` enabled.
@@ -16,10 +16,10 @@ import type { Access, Where } from 'payload';
  *    are not currently published. A published document is entirely out of
  *    reach, so the agent cannot unpublish or edit live content either.
  *
- * Note the asymmetry (tasks.md CNT01-S2): collection-level access may return
- * a query constraint; field-level access returns only a boolean. The publish
- * block must live here, at collection level. Field locks (title, slug) live
- * at field level — see `lockedForAgent`.
+ * Note the asymmetry: collection-level access may return a query constraint;
+ * field-level access returns only a boolean. The publish block must live
+ * here, at collection level. Field locks (title, slug) live at field level —
+ * see `lockedForAgent`.
  *
  * Payload's Admin UI hides Publish/Unpublish for any user whose constraint
  * prevents publishing, so the rule is visible in the interface as well as
@@ -63,7 +63,7 @@ export const agentCannotDelete: Access = ({ req }) => {
 };
 
 /**
- * CNT01-07 — field-level lock for the join key and public URL.
+ * Field-level lock for the join key and public URL.
  * Field-level access returns only a boolean: `false` means the incoming
  * value for this field is stripped from the update, while the rest of the
  * document update proceeds (partial-update semantics, asserted by test).

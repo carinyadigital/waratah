@@ -1,5 +1,5 @@
 /**
- * CNT03-04 — the CNT01 guarantee, checked continuously.
+ * The publish-denial guarantee, checked continuously.
  *
  * This test fails if the access function is removed, renamed, unwired or
  * weakened. It asserts three layers, cheapest first:
@@ -11,8 +11,8 @@
  *  3. Behaviour — the full Payload integration suite in
  *     agent-publish.test.ts exercises the same rules against a live config.
  *
- * Wired into content-qa.yml (CNT03-05): a regression here fails the workflow
- * on the PR and again on the merge commit.
+ * Wired into content-qa.yml: a regression here fails the workflow on the PR
+ * and again on the merge commit.
  */
 import { describe, expect, it } from 'vitest';
 import {

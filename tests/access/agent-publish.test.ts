@@ -1,11 +1,10 @@
 /**
- * CNT01-06 / CNT01-08 — integration tests for the publishing guardrails.
+ * Integration tests for the publishing guardrails.
  *
  * These run against Payload's Local API with `overrideAccess: false`, which
  * evaluates exactly the same server-side access functions as every HTTP
  * surface (REST, GraphQL). The acceptance criterion is that denial happens
- * server-side regardless of API surface — this is that assertion. The REST
- * staging call itself is documented in docs/agent-publishing.md.
+ * server-side regardless of API surface — this is that assertion.
  */
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -51,7 +50,7 @@ afterAll(async () => {
   await payload?.destroy?.();
 });
 
-describe('CNT01-S1 — the agent identity exists and can stage', () => {
+describe('the agent identity exists and can stage', () => {
   it('agent user exists with role "agent" and an API key surface', async () => {
     const doc = await payload.findByID({ collection: 'users', id: agent.id });
     expect(doc.role).toBe('agent');
@@ -81,7 +80,7 @@ describe('CNT01-S1 — the agent identity exists and can stage', () => {
   });
 });
 
-describe('CNT01-S2 — the agent cannot publish', () => {
+describe('the agent cannot publish', () => {
   it('agent staging succeeds, publishing is denied server-side', async () => {
     const doc = await payload.create({
       collection: 'posts',
@@ -178,7 +177,7 @@ describe('CNT01-S2 — the agent cannot publish', () => {
   });
 });
 
-describe('CNT01-S3 — the join key and URL are locked (partial-update semantics)', () => {
+describe('the join key and URL are locked (partial-update semantics)', () => {
   it('locked fields are denied while the rest of the update proceeds', async () => {
     const doc = await payload.create({
       collection: 'posts',

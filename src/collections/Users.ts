@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload';
 
 /**
- * CNT01-01 — the agent identity is a Payload user. (design.md §6.1)
+ * The agent identity is a Payload user.
  *
  * `useAPIKey: true` gives the agent an API key to authenticate REST calls.
- * Two properties follow free (ADR-0001): provenance — version history
- * attributes every staged draft to this identity — and revocation — rotating
- * or disabling one key stops the agent, touching nothing else.
+ * Two properties follow free: provenance — version history attributes every
+ * staged draft to this identity — and revocation — rotating or disabling one
+ * key stops the agent, touching nothing else.
  */
 const isAdmin = ({ req }: { req: { user?: unknown } }): boolean =>
   (req.user as { role?: string } | null | undefined)?.role === 'admin';
@@ -34,8 +34,8 @@ export const Users: CollectionConfig = {
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'Editor', value: 'editor' },
-        // CNT01-01: the role content agents authenticate as. Can stage
-        // drafts, cannot publish — see src/access/agentCannotPublish.ts.
+        // The role content agents authenticate as. Can stage drafts, cannot
+        // publish — see src/access/agentCannotPublish.ts.
         { label: 'Agent', value: 'agent' },
       ],
       access: {

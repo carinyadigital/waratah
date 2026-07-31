@@ -70,6 +70,33 @@ const main = async () => {
     console.log('\n--- run report (as it would post to the Slack thread) ---\n');
     console.log(report);
     if (!suite.ok) process.exit(1);
+  } else if (agent === 'content-analyst') {
+    // Dry run against one pre-registered question with fixture figures: the
+    // deterministic spine (builder disciplines, artifact write, run report)
+    // exercised end to end without credentials.
+    const { ReadBuilder, loadRegisteredQuestions } = await import('../../agents/content-analyst/agent/read');
+    const { renderAnalystRunReport } = await import('../../agents/content-analyst/agent/runReport');
+    const { mkdtempSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+
+    const agentDir = path.join(root, 'agents', 'content-analyst');
+    const questions = loadRegisteredQuestions(agentDir);
+    const brand = loadBrand(repoPaths(root));
+    const b = new ReadBuilder('2026-W31', brand.positioning.hash, questions, { ga4: 400, gsc: 200, ahrefs: 100, esp: 150 });
+    b.addFinding({
+      question: questions[0],
+      finding: 'Net new subscribers flat week over week; no cluster moved outside noise',
+      figures: [{ value: 9, query: 'esp: net_new_subscribers window=7d', n: 640, window: '7d', source: 'esp' }],
+      cluster: 'topic-area',
+      confidence: 'medium',
+      alternativeExplanations: ['List too small for weekly movement to mean anything yet'],
+    });
+    b.recordCouldNotDetermine('Cluster attribution — GA4 cluster dimension not yet populated for the two live drafts');
+    const contentDir = path.join(mkdtempSync(path.join(tmpdir(), 'analyst-smoke-')), 'content');
+    const { readFile } = b.writeTo(contentDir);
+    console.log(`read written and schema-validated: ${path.basename(readFile)}`);
+    console.log('\n--- run report ---\n');
+    console.log(renderAnalystRunReport(b.build() as never, contentDir));
   } else {
     console.log(`${agent}: no dry-run spine defined yet — manifest check only`);
   }

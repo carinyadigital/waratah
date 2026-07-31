@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carinyaparc.com.au/schemas/read.schema.json",
+  "title": "Analyst read",
+  "description": "CNT02-06. The analyst's auditable output. design.md §4.3. Pre-registered questions, per-figure query and n, required alternativeExplanations and couldNotDetermine.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["period", "positioningHash", "questions", "findings", "couldNotDetermine", "recommendations"],
+  "properties": {
+    "period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(W[0-9]{2}|[0-9]{2})$",
+      "description": "ISO week (2026-W31) or month (2026-07). Also the idempotency key."
+    },
+    "positioningHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 8 },
+      "description": "Pre-registered — asked BEFORE looking (CNT10-03). Read from config, never invented per run."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding", "figures", "cluster", "confidence", "exploratory", "alternativeExplanations"],
+        "properties": {
+          "finding": { "type": "string", "minLength": 8 },
+          "figures": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "query", "n", "window"],
+              "properties": {
+                "value": { "type": ["number", "string"] },
+                "query": {
+                  "type": "string",
+                  "minLength": 3,
+                  "description": "Exact GA4/GSC/Ahrefs/ESP query, re-runnable. Every number traces to something re-runnable."
+                },
+                "n": { "type": "integer", "minimum": 0, "description": "Sample size. Always." },
+                "window": { "type": "string", "minLength": 3 },
+                "source": { "enum": ["ga4", "gsc", "ahrefs", "esp"] },
+                "direction": {
+                  "enum": ["up", "down", "flat"],
+                  "description": "A directional claim. Rejected at write when n is below the declared threshold for its source (CNT10-06)."
+                }
+              }
+            }
+          },
+          "cluster": {
+            "enum": ["topic-area", "angle-type", "format", "funnel-intent"],
+            "description": "Cluster, never piece (design.md §4.4)."
+          },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "exploratory": {
+            "type": "boolean",
+            "description": "Not pre-registered. Labelled, and carries no recommendation alone."
+          },
+          "alternativeExplanations": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 8 },
+            "description": "Required, non-empty. An analyst that never offers a rival explanation is being confident, not careful."
+          }
+        }
+      }
+    },
+    "couldNotDetermine": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Required. Undeterminable things appear here rather than being omitted."
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "rationale", "prediction"],
+        "properties": {
+          "action": {
+            "enum": ["write", "update", "consolidate", "redirect", "delete", "leave-alone"],
+            "description": "Symmetric vocabulary — an analyst that can only add can't be trusted to say when to stop."
+          },
+          "target": { "type": "string", "description": "Slug or cluster the action applies to." },
+          "rationale": { "type": "string", "minLength": 8 },
+          "basedOn": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Indices into findings. A recommendation resting only on exploratory findings is rejected at write."
+          },
+          "prediction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["claim", "baseline", "horizon", "confidence", "ifWrong"],
+            "properties": {
+              "claim": { "type": "string", "minLength": 8 },
+              "baseline": { "type": "string", "minLength": 1 },
+              "horizon": { "type": "string", "format": "date" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+              "ifWrong": { "type": "string", "minLength": 8, "description": "What being wrong would imply — falsifiability, stated up front." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

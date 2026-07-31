@@ -1,0 +1,62 @@
+# The decision-class register (design.md §9.1–9.2). Per class, never
+# wholesale: each climbs its own ladder on measured agreement.
+#
+# levels: 0 human decides · 1 shadow verdicts logged · 2 agent decides, human
+# reviews 100% · 3 agent decides, human audits a sample · 4 agent decides,
+# human sees escalations.
+#
+# basis: deterministic-check classes are the gates themselves — their oracle
+# is the check, and they sit at 4 by construction. agent-judgement classes
+# move only on calibration records (R12). never classes do not graduate with
+# better models: classified by reversibility and blast radius, not difficulty.
+classes:
+  - id: structural-schema-conformance
+    description: Artifact and document schema conformance
+    basis: deterministic-check
+    level: 4
+    ceiling: 4
+
+  - id: link-prohibition-checks
+    description: Link resolution and prohibited-claim pattern checks
+    basis: deterministic-check
+    level: 4
+    ceiling: 4
+
+  - id: claim-traceability
+    description: Every annotated claim resolves to a pack entry, both directions
+    basis: deterministic-check
+    level: 4
+    ceiling: 4
+
+  - id: figure-rederivation
+    description: Re-deriving figures in a read from their recorded queries
+    basis: agent-judgement
+    level: 1
+    ceiling: 4
+    agreementThreshold: 0.9
+    window: 20
+    minSample: 10
+
+  - id: draft-quality
+    description: Whether a staged draft meets the rubric well enough to edit rather than reject
+    basis: agent-judgement
+    level: 0
+    ceiling: 2
+    agreementThreshold: 0.85
+    window: 30
+    minSample: 15
+
+  - id: what-to-commission
+    description: Which opportunity becomes a brief
+    basis: agent-judgement
+    level: 0
+    ceiling: 2
+    agreementThreshold: 0.9
+    window: 12
+    minSample: 8
+
+  - id: publish-send-spend
+    description: Publishing, sending, spending — anything irreversible
+    basis: never
+    level: 0
+    ceiling: 0

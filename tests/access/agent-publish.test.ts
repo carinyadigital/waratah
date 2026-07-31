@@ -42,8 +42,8 @@ beforeAll(async () => {
     collection: 'users',
     data: { email: 'content-studio@agents.carinyaparc.com.au', password: 'test-password-2', role: 'agent' },
   });
-  admin = asUser(adminDoc, 'admin');
-  agent = asUser(agentDoc, 'agent');
+  admin = asUser(adminDoc as unknown as { id: string | number; email: string }, 'admin');
+  agent = asUser(agentDoc as unknown as { id: string | number; email: string }, 'agent');
 });
 
 afterAll(async () => {

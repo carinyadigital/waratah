@@ -81,8 +81,8 @@ export interface LoadedManifest {
 }
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
-// @ts-expect-error ajv-formats CJS default export
-(addFormats.default ?? addFormats)(ajv);
+const applyFormats = (addFormats as unknown as { default?: typeof addFormats }).default ?? addFormats;
+applyFormats(ajv);
 const schema = JSON.parse(readFileSync(path.join(here, '..', 'agent.schema.json'), 'utf8'));
 export const validateManifest = ajv.compile(schema);
 

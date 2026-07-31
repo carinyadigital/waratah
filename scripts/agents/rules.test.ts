@@ -21,7 +21,9 @@ const connections = {
   },
 };
 
-const manifest = (over: Partial<Manifest> & { policy?: Partial<Manifest['policy']> }): Manifest =>
+const manifest = (
+  over: Omit<Partial<Manifest>, 'policy'> & { policy?: Partial<Manifest['policy']> },
+): Manifest =>
   ({
     version: 1,
     name: 'test-agent',

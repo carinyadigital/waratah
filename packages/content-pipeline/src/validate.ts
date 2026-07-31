@@ -12,8 +12,8 @@ import addFormats from 'ajv-formats';
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
-// @ts-expect-error ajv-formats CJS default export
-(addFormats.default ?? addFormats)(ajv);
+const applyFormats = (addFormats as unknown as { default?: typeof addFormats }).default ?? addFormats;
+applyFormats(ajv);
 
 export type SchemaName = 'brief' | 'pack' | 'read' | 'draft' | 'demand' | 'opportunities' | 'review';
 

@@ -15,10 +15,15 @@ export interface ReadyQueue {
 
 const queueFile = (contentDir: string) => path.join(contentDir, 'queue.yaml');
 
+const DEFAULT_CAP = 3;
+
 export const loadQueue = (contentDir: string): ReadyQueue => {
   const file = queueFile(contentDir);
-  if (!existsSync(file)) return { cap: 3, ready: [] };
-  return parseYaml(readFileSync(file, 'utf8')) as ReadyQueue;
+  if (!existsSync(file)) return { cap: DEFAULT_CAP, ready: [] };
+  const parsed = parseYaml(readFileSync(file, 'utf8')) as Partial<ReadyQueue>;
+  const cap = typeof parsed.cap === 'number' && Number.isFinite(parsed.cap) && parsed.cap > 0 ? parsed.cap : DEFAULT_CAP;
+  const ready = Array.isArray(parsed.ready) ? parsed.ready.filter((s): s is string => typeof s === 'string') : [];
+  return { cap, ready };
 };
 
 export const queueHasRoom = (contentDir: string): boolean => {

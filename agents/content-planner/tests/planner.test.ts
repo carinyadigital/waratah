@@ -142,4 +142,22 @@ describe('the capped, human-promoted queue', () => {
     promote(contentDir, a.slug, 'Jonno');
     expect(() => promote(contentDir, b.slug, 'Jonno')).toThrow(/cap/);
   });
+
+  it('a missing or invalid cap defaults to 3 rather than disabling the gate', () => {
+    const root = scaffoldRepo();
+    const contentDir = path.join(root, '.agency/content');
+    const a = commission(root, withId(commissionInput()), new Date('2026-08-01'));
+    writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ ready: [a.slug, 'x', 'y'] }));
+    expect(loadQueue(contentDir).cap).toBe(3);
+    const b = commission(
+      root,
+      withId(
+        commissionInput({
+          opportunity: { ...candidate(), title: 'Another brief', targetQuery: 'another soil question' } as never,
+        }),
+      ),
+      new Date('2026-08-01'),
+    );
+    expect(() => promote(contentDir, b.slug, 'Jonno')).toThrow(/cap/);
+  });
 });

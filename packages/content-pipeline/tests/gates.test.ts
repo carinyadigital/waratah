@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   claimNode,
   doc,
@@ -8,6 +8,7 @@ import {
   textNode,
 } from '../src/lexical/claim';
 import { runGates } from '../src/gates/index';
+import { resolveExternalLink } from '../src/gates/links';
 import { validateArtifact } from '../src/validate';
 import type { BrandDist, BriefArtifact, DraftArtifact, GateInput, PackArtifact } from '../src/gates/types';
 
@@ -266,6 +267,35 @@ describe('gate suite', () => {
       expect(suite.ok).toBe(true);
     } finally {
       globalThis.fetch = originalFetch;
+    }
+  });
+});
+
+describe('resolveExternalLink — shared by the links gate and content-monitor', () => {
+  it('falls back from HEAD to GET on 405, and treats >=400 as a failure', async () => {
+    const methods: string[] = [];
+    const fetchImpl = (async (_url: string, init?: RequestInit) => {
+      methods.push(init!.method!);
+      return methods.length === 1 ? new Response(null, { status: 405 }) : new Response(null, { status: 200 });
+    }) as typeof fetch;
+
+    expect(await resolveExternalLink('https://example.com/redirected', fetchImpl)).toEqual({ ok: true });
+    expect(methods).toEqual(['HEAD', 'GET']);
+
+    const brokenFetch = (async () => new Response(null, { status: 404 })) as typeof fetch;
+    expect(await resolveExternalLink('https://example.com/missing', brokenFetch)).toEqual({ ok: false, status: 404 });
+  });
+
+  it('clears the abort timer even when fetch throws, not just on the success path', async () => {
+    vi.useFakeTimers();
+    try {
+      const failingFetch = (() => Promise.reject(new Error('ECONNREFUSED'))) as unknown as typeof fetch;
+      const result = await resolveExternalLink('https://dead.example', failingFetch);
+      expect(result).toEqual({ ok: false, error: 'ECONNREFUSED' });
+      // A leaked timer (the bug this replaced) would leave the 10s abort() pending here.
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
     }
   });
 });

@@ -1,6 +1,6 @@
 /**
- * CNT02-09 (part) — links. External links resolve; the brief's internalLinks
- * are present in the document.
+ * Links. External links resolve; the brief's internalLinks are present in
+ * the document.
  */
 import { collectLinks } from '../lexical/claim';
 import type { Gate, GateResult } from './types';

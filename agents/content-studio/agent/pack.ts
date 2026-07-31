@@ -1,5 +1,5 @@
 /**
- * CNT04-10/11/12 — pack emission against pack.schema.json.
+ * Pack emission against pack.schema.json.
  *
  * The collector enforces the researcher's two disciplines mechanically:
  * `sourceBudget` is a hard stop (add() refuses past the budget), and

@@ -1,8 +1,8 @@
 /**
- * CNT04-13 — the threaded Slack run report. Whether the run completed or
- * failed, the thread carries the draft link, per-gate status and the full
- * couldNotVerify list. Formatting is mrkdwn; posting is the provider's chat
- * write (policy.writes includes slack).
+ * The threaded Slack run report. Whether the run completed or failed, the
+ * thread carries the draft link, per-gate status and the full couldNotVerify
+ * list. Formatting is mrkdwn; posting is the provider's chat write
+ * (policy.writes includes slack).
  */
 import type { GateLoopReport } from './gateLoop';
 import type { StageResult } from './stage';

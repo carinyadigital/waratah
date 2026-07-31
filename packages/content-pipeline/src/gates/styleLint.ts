@@ -1,6 +1,6 @@
 /**
- * CNT02-09 (part) — style lint. banned-words.json plus per-surface rules.
- * Catches banned words, not bad writing (design.md §12).
+ * Style lint. banned-words.json plus per-surface rules.
+ * Catches banned words, not bad writing.
  */
 import { textOf } from '../lexical/claim';
 import type { Gate, GateResult } from './types';

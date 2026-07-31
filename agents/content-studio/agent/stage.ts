@@ -1,9 +1,9 @@
 /**
- * CNT04-07 — Payload REST staging as the agent identity.
+ * Payload REST staging as the agent identity.
  *
  * Always `draft=true`, always `_status: "draft"`. Idempotent on brief.slug:
  * an existing draft for the slug is PATCHed, never duplicated. The agent's
- * key cannot publish regardless (CNT01), but this client does not even ask.
+ * key cannot publish regardless, but this client does not even ask.
  */
 import type { DraftArtifact } from '../../../packages/content-pipeline/src/gates/types';
 

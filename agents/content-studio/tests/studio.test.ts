@@ -29,7 +29,7 @@ const pack: PackArtifact = {
   couldNotVerify: [{ claim: 'a locality figure', note: 'state data only' }],
 };
 
-describe('CNT04-05 — claim anchoring', () => {
+describe('claim anchoring', () => {
   it('converts [[cN:text]] markers into claim nodes bound to pack entry ids', () => {
     const nodes = anchorParagraph('We measured. [[c1:the number rose]] across paddocks.', pack);
     const claimNodes = nodes.filter((n) => n.type === 'claim');
@@ -56,7 +56,7 @@ describe('CNT04-05 — claim anchoring', () => {
   });
 });
 
-describe('CNT04-06 — the gate loop', () => {
+describe('the gate loop', () => {
   const brand: BrandDist = {
     positioning: { hash: 'a'.repeat(64) },
     claimPolicy: { prohibited: [], categories: [] },
@@ -120,7 +120,7 @@ describe('CNT04-06 — the gate loop', () => {
   });
 });
 
-describe('CNT04-07 — REST staging as the agent identity', () => {
+describe('REST staging as the agent identity', () => {
   it('creates a draft with the API key header and draft=true, never touching _status published', async () => {
     const calls: { url: string; init?: RequestInit }[] = [];
     const fetchImpl = (async (url: string, init?: RequestInit) => {
@@ -166,7 +166,7 @@ describe('CNT04-07 — REST staging as the agent identity', () => {
   });
 });
 
-describe('CNT04-11/12 — the pack collector', () => {
+describe('the pack collector', () => {
   it('sourceBudget is a hard stop, not a suggestion', () => {
     const collector = new PackCollector('s', 2);
     collector.add({ claim: 'a', source: 'https://x.org/1', excerpt: 'e', confidence: 'high', verifiedAt: '2026-07-01' });
@@ -197,7 +197,7 @@ describe('CNT04-11/12 — the pack collector', () => {
   });
 });
 
-describe('CNT04-13 — the run report', () => {
+describe('the run report', () => {
   it('carries draft link, gate status and the full couldNotVerify list', async () => {
     const loop = {
       ok: true,
@@ -241,7 +241,7 @@ describe('CNT04-13 — the run report', () => {
   });
 });
 
-describe('CNT04-08 — edit distance and locus', () => {
+describe('edit distance and locus', () => {
   it('computes survival fraction and names the rewritten section', () => {
     const staged: DraftArtifact['content'] = {
       root: {

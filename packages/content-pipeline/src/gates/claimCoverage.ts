@@ -1,13 +1,13 @@
 /**
- * CNT02-08 — the gate that matters. Pure structural work over serialized
- * editor JSON (design.md §5.1): no model calls, both directions checked.
+ * The gate that matters. Pure structural work over serialized editor JSON:
+ * no model calls, both directions checked.
  *
  *  1. Every annotated claim resolves to a pack entry.
  *  2. Every pack entry flagged mustSupport appears in the document.
  *  3. Every brief.mustSupport claim has a mustSupport pack entry backing it.
  *
- * Checks completeness, not truth (design.md §12): it catches a claim with no
- * source, never a claim with a bad one.
+ * Checks completeness, not truth: it catches a claim with no source, never a
+ * claim with a bad one.
  */
 import { collectClaims } from '../lexical/claim';
 import type { Gate, GateResult } from './types';

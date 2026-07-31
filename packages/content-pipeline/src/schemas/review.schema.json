@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/review.schema.json",
   "title": "Review record",
-  "description": "CNT04-S3 / design.md §8. Per piece, at merge. Ten seconds of human time, the only per-piece quality signal that arrives fast enough to act on, and the sole input to CNT11. A piece cannot be marked published with an incomplete record.",
+  "description": "Per piece, at merge. Ten seconds of human time, the only per-piece quality signal that arrives fast enough to act on, and the sole input to the shadow-review agent. A piece cannot be marked published with an incomplete record.",
   "type": "object",
   "additionalProperties": false,
   "required": ["slug", "editDistance", "editLocus", "humanScore", "whatWasWrong", "gateAttempts", "publishedAt", "positioningHash"],
@@ -35,7 +35,7 @@
     "positioningHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "shadow": {
       "type": "object",
-      "description": "CNT11-04 — agent shadow verdicts paired with this record. Recorded before the human decided; never shown to them while deciding.",
+      "description": "Agent shadow verdicts paired with this record. Recorded before the human decided; never shown to them while deciding.",
       "additionalProperties": false,
       "properties": {
         "verdicts": {

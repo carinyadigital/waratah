@@ -1,5 +1,5 @@
 /**
- * CNT04-06 — pass 5, the gate loop. Bounded retry, honest failure report.
+ * Pass 5, the gate loop. Bounded retry, honest failure report.
  * The reviser is the model at runtime and a stub in tests; the loop's
  * guarantees are mechanical either way: it never exceeds the budget, never
  * reports success while a gate fails, and names the unsatisfied gates when

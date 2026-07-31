@@ -1,5 +1,5 @@
 /**
- * CNT02-09 (part) — readability. Flesch reading ease, banded per surface.
+ * Readability. Flesch reading ease, banded per surface.
  * Deterministic approximation; the band is the check, not the score's third
  * decimal place.
  */

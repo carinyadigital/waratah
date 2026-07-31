@@ -1,5 +1,5 @@
 {
-  "$comment": "CNT04-04 — the containment surface, as configuration a test can assert. The writer's tool list excludes web_search, web_fetch and bash: it reads the pack, not the internet (design.md §2.2, containment property 2). No subagent gets bash. The test lives in agents/content-studio/tests/containment.test.ts.",
+  "$comment": "The containment surface, as configuration a test can assert. The writer's tool list excludes web_search, web_fetch and bash: it reads the pack, not the internet. No subagent gets bash. The test lives in agents/content-studio/tests/containment.test.ts.",
   "subagents": {
     "researcher": {
       "tools": ["web_search", "web_fetch", "read_artifact", "write_pack"],

@@ -1,9 +1,9 @@
 /**
- * CNT02-09 (part) — structure. The staged document validates against the
- * draft artifact schema (which encodes the Payload document shape the studio
- * stages: slug, title, surface, and a well-formed Lexical tree whose claim
- * nodes carry claimIds). Word count against the surface spec lives here too —
- * it is a structural property of the surface.
+ * Structure. The staged document validates against the draft artifact schema
+ * (which encodes the Payload document shape the studio stages: slug, title,
+ * surface, and a well-formed Lexical tree whose claim nodes carry claimIds).
+ * Word count against the surface spec lives here too — it is a structural
+ * property of the surface.
  */
 import { textOf } from '../lexical/claim';
 import { validateArtifact } from '../validate';

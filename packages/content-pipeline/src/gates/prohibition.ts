@@ -1,5 +1,5 @@
 /**
- * CNT02-09 (part) — the prohibition gate.
+ * The prohibition gate.
  *
  *  - Absolute prohibitions (claim-policy `prohibited` + the brief's
  *    mustNotClaim patterns) fail wherever they appear, annotated or not.

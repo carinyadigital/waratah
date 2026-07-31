@@ -1,5 +1,5 @@
 /**
- * CNT04-05 — pass 2, claim anchoring.
+ * Pass 2, claim anchoring.
  *
  * The writer works in marked text: `[[c3:the claimed text]]` binds a span to
  * pack entry c3. This module converts marked paragraphs into Lexical JSON

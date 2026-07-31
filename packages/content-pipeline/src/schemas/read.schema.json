@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/read.schema.json",
   "title": "Analyst read",
-  "description": "CNT02-06. The analyst's auditable output. design.md §4.3. Pre-registered questions, per-figure query and n, required alternativeExplanations and couldNotDetermine.",
+  "description": "The analyst's auditable output. Pre-registered questions, per-figure query and n, required alternativeExplanations and couldNotDetermine.",
   "type": "object",
   "additionalProperties": false,
   "required": ["period", "positioningHash", "questions", "findings", "couldNotDetermine", "recommendations"],
@@ -17,7 +17,7 @@
       "type": "array",
       "minItems": 1,
       "items": { "type": "string", "minLength": 8 },
-      "description": "Pre-registered — asked BEFORE looking (CNT10-03). Read from config, never invented per run."
+      "description": "Pre-registered — asked BEFORE looking. Read from config, never invented per run."
     },
     "findings": {
       "type": "array",
@@ -46,14 +46,14 @@
                 "source": { "enum": ["ga4", "gsc", "ahrefs", "esp"] },
                 "direction": {
                   "enum": ["up", "down", "flat"],
-                  "description": "A directional claim. Rejected at write when n is below the declared threshold for its source (CNT10-06)."
+                  "description": "A directional claim. Rejected at write when n is below the declared threshold for its source."
                 }
               }
             }
           },
           "cluster": {
             "enum": ["topic-area", "angle-type", "format", "funnel-intent"],
-            "description": "Cluster, never piece (design.md §4.4)."
+            "description": "Cluster, never piece."
           },
           "confidence": { "enum": ["high", "medium", "low"] },
           "exploratory": {

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/pack.schema.json",
   "title": "Evidence pack",
-  "description": "CNT02-05. The researcher's normalised output; the writer reads this, not the internet. design.md §4.2.",
+  "description": "The researcher's normalised output; the writer reads this, not the internet.",
   "type": "object",
   "additionalProperties": false,
   "required": ["slug", "entries", "couldNotVerify"],
@@ -37,7 +37,7 @@
         "required": ["claim", "note"],
         "properties": {
           "claim": { "type": "string" },
-          "note": { "type": "string", "description": "What was attempted, incl. partial verifications (CNT04-12)." }
+          "note": { "type": "string", "description": "What was attempted, incl. partial verifications." }
         }
       },
       "description": "Required. May not be empty by omission — the key must always be present."

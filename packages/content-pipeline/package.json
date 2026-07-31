@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Brief/pack/read contracts and the deterministic gate suite. (content/design.md §4–§5)",
+  "description": "Brief/pack/read contracts and the deterministic gate suite.",
   "exports": {
     ".": "./src/index.ts",
     "./schemas/*": "./src/schemas/*"

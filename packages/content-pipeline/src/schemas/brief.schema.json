@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/brief.schema.json",
   "title": "Content brief",
-  "description": "CNT02-04. The commissioner's contract with the studio. design.md §4.1.",
+  "description": "The commissioner's contract with the studio.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -37,7 +37,7 @@
     "targetQuery": {
       "type": "string",
       "minLength": 3,
-      "description": "Exactly one. Uniqueness across briefs is invariant CNT09-05."
+      "description": "Exactly one. Uniqueness across briefs is an invariant."
     },
     "angle": { "type": "string", "minLength": 3 },
     "audience": { "type": "string", "minLength": 3 },
@@ -68,12 +68,12 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 40,
-      "description": "Max pack entries. Caps researcher runtime — a hard stop, not a suggestion (CNT04-11)."
+      "description": "Max pack entries. Caps researcher runtime — a hard stop, not a suggestion."
     },
     "successMetric": {
       "type": "string",
       "minLength": 3,
-      "description": "How we'll know in 90 days. Selection feedback, never quality control (design.md §0.3)."
+      "description": "How we'll know in 90 days. Selection feedback, never quality control."
     },
     "positioningHash": {
       "type": "string",
@@ -83,9 +83,9 @@
     "expiresAt": {
       "type": "string",
       "format": "date",
-      "description": "An unstarted brief is a stale opinion. Swept by CNT06-03."
+      "description": "An unstarted brief is a stale opinion. Swept by the commissioner."
     },
-    "linearRef": { "type": ["string", "null"], "description": "Empty until synced. tasks.md §16." },
+    "linearRef": { "type": ["string", "null"], "description": "Empty until synced." },
     "syncedAt": { "type": ["string", "null"] }
   }
 }

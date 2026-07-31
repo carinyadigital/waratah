@@ -95,7 +95,7 @@ const input = (draft: DraftArtifact, over: Partial<GateInput> = {}): GateInput =
   ...over,
 });
 
-describe('schemas (CNT02-S2)', () => {
+describe('schemas', () => {
   it('accepts a valid brief and rejects one missing required fields', () => {
     expect(validateArtifact('brief', brief).valid).toBe(true);
     const { positioningHash: _drop, ...rest } = brief;
@@ -138,7 +138,7 @@ describe('schemas (CNT02-S2)', () => {
   });
 });
 
-describe('gate suite (CNT02-S3)', () => {
+describe('gate suite', () => {
   it('a well-formed piece passes every gate', async () => {
     const suite = await runGates(input(goodDraft()));
     expect(suite.results.map((r) => `${r.gate}:${r.status}`)).toEqual([

@@ -1,7 +1,7 @@
 /**
- * CNT02-09 (part) — brief conformance. The slug has a brief, the brief is
- * schema-valid, the trackerRef is well-formed, positioningHash is recorded,
- * and the draft is the piece the brief commissioned.
+ * Brief conformance. The slug has a brief, the brief is schema-valid, the
+ * trackerRef is well-formed, positioningHash is recorded, and the draft is
+ * the piece the brief commissioned.
  */
 import { validateArtifact } from '../validate';
 import type { Gate, GateResult } from './types';

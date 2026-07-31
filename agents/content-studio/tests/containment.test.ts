@@ -1,9 +1,8 @@
 /**
- * CNT04-04 — not a formality. The writer having no web access is one of the
- * four containment properties in design.md §2.2, and the only one a test can
- * assert. This test fails if anyone adds web_search, web_fetch or bash to
- * the writer's tool list, gives bash to any subagent, or widens the
- * manifest's write surface.
+ * Not a formality. The writer having no web access is one of the four
+ * containment properties, and the only one a test can assert. This test fails
+ * if anyone adds web_search, web_fetch or bash to the writer's tool list,
+ * gives bash to any subagent, or widens the manifest's write surface.
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -34,7 +33,7 @@ describe('the writer reads the pack, not the internet', () => {
   });
 });
 
-describe('the manifest envelope stays shut (CNT04-S1)', () => {
+describe('the manifest envelope stays shut', () => {
   it('declares no cms-publish, no email-send, no social-post', () => {
     expect(manifest.policy.writes).not.toContain('cms-publish');
     expect(manifest.policy.writes).not.toContain('email-send');

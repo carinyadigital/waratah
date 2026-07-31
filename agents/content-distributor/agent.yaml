@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
+version: 1
+name: content-distributor
+owner: greg
+description: Adapts published work per surface and drafts sends. The only agent that can reach an audience; every send is approved by a human, per send.
+tags: [content, distribution]
+
+deploy:
+  platform: claude-managed-agent
+
+triggers:
+  - type: chat
+    channel: slack
+  - type: manual
+
+policy:
+  untrustedInput: true
+  connections: [esp, slack]
+  writes: [artifact-store, tracker, slack, email-send, social-post]
+  approval: human # R4: consequential writes require human approval — check fails for anything weaker
+  spendCapUsd: 20
+  idempotencyKey: send.id
+
+content:
+  voice: packages/brand/dist/carinya-voice.json
+  rubric: packages/brand/dist/editorial-rubric.md
+  positioning: packages/brand/dist/positioning.json
+
+observability:
+  traces: both
+  alertChannel: '#carinya-content'
+  evals: agents/content-distributor/evals

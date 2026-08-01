@@ -2,7 +2,7 @@
  * Close the review record at publish.
  *
  * Usage:
- *   pnpm tsx scripts/reviews/close-review.ts --slug <slug> \
+ *   pnpm tsx agents/content/ops/reviews/close-review.ts --slug <slug> \
  *     --published-file <path to published doc JSON> \
  *     --human-score 4 --what-was-wrong "opening hedged; tightened it" \
  *     --gate-attempts 2
@@ -15,10 +15,10 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
-import { computeEdit } from '../../packages/content-pipeline/src/review';
-import { arg } from '../../packages/content-pipeline/src/cliArgs';
-import { assertValid } from '../../packages/content-pipeline/src/validate';
-import type { DraftArtifact } from '../../packages/content-pipeline/src/gates/types';
+import { computeEdit } from '@carinyaparc/content-pipeline';
+import { arg } from '@carinyaparc/content-pipeline';
+import { assertValid } from '@carinyaparc/content-pipeline';
+import type { DraftArtifact } from '@carinyaparc/content-pipeline';
 
 const fail = (msg: string): never => {
   console.error(`cannot close review: ${msg}`);

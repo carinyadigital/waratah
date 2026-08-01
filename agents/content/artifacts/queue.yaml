@@ -2,7 +2,7 @@
 #
 # Publishing rate is pinned to human review capacity, permanently. The cap is
 # the number of briefs one reviewer can honestly carry at once; promotion is
-# via `pnpm tsx scripts/queue/promote.ts --slug <slug> --by <your name>`.
+# via `pnpm tsx agents/content/ops/queue/promote.ts --slug <slug> --by <your name>`.
 cap: 3
 ready:
   - measuring-soil-carbon-baseline

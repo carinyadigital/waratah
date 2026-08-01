@@ -1,8 +1,8 @@
 /**
  * The horizon scoring job. Runs weekly with the monitor:
  *
- *   pnpm tsx scripts/predictions/score-horizon.ts                # mark due + report
- *   pnpm tsx scripts/predictions/score-horizon.ts \
+ *   pnpm tsx agents/content/ops/predictions/score-horizon.ts                # mark due + report
+ *   pnpm tsx agents/content/ops/predictions/score-horizon.ts \
  *     --id 2026-W31-r1 --outcome correct --note "re-ran the query: +41 subscribers vs baseline 12"
  *
  * At horizon the prediction is scored regardless of whether anyone asked.
@@ -11,8 +11,8 @@
  */
 import path from 'node:path';
 import process from 'node:process';
-import { calibrationSummary, markDue, scorePrediction } from '../../agents/content/analyst/agent/predictions';
-import { arg } from '../../packages/content-pipeline/src/cliArgs';
+import { calibrationSummary, markDue, scorePrediction } from '../../analyst/agent/predictions';
+import { arg } from '@carinyaparc/content-pipeline';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const contentDir = path.join(root, 'agents', 'content', 'artifacts');

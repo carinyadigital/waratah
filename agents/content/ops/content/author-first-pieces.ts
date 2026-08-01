@@ -16,9 +16,9 @@ import {
   paragraph,
   textNode,
   textOf,
-} from '../../packages/content-pipeline/src/lexical/claim';
-import { assertValid } from '../../packages/content-pipeline/src/validate';
-import type { DraftArtifact } from '../../packages/content-pipeline/src/gates/types';
+} from '@carinyaparc/content-pipeline';
+import { assertValid } from '@carinyaparc/content-pipeline';
+import type { DraftArtifact } from '@carinyaparc/content-pipeline';
 
 const t = textNode;
 

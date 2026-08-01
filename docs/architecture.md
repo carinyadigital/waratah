@@ -30,37 +30,36 @@ Everything in this document exists to make that claim enforceable rather than as
 
 ```
 agents/
-├── content-analyst/
-│   ├── agent.yaml              # canonical manifest
-│   ├── agent/                  # implementation, platform-shaped
-│   ├── instructions.md
-│   └── evals/
-├── content-planner/
-├── content-studio/
-├── content-qa/
-├── content-monitor/
-├── content-distributor/
-└── content-desk/
+└── content/
+    ├── team.yaml                 # identity + shared dirs. NEVER policy
+    ├── workflow.yaml
+    ├── artifacts/                # briefs, packs, drafts, triage, …
+    ├── ops/                      # capture, queue, distribution, …
+    ├── analyst/                  # agent.yaml + agent/ + tests/
+    ├── planner/
+    ├── studio/
+    ├── qa/
+    ├── monitor/
+    ├── distributor/
+    └── desk/
+
+packages/                         # shared kernel
+├── agent-manifest/               # schema, types, loader, R1–R13
+├── workflow/                     # paths, gate runner, revision loop, approvals
+├── brand/                        # standards layer (hashed dist/)
+├── content-store/                # neutral document + CMS port
+├── content-store-payload/        # Payload REST adapter only
+├── content-pipeline/             # content gates + artifact schemas
+└── runtime/adapters/             # claude | cursor-cloud | github-actions
+
+governance/                       # calibration, reviews, delivery workpapers
+config/connections.yaml           # the only place vendor names appear
+scripts/agents/cli.ts             # list | check | matrix | deploy
 ```
 
-`support-triage` is a planned Support-vertical agent — not in this register yet. Demand artifacts may still name it as a source enum; see `product.md` §7.
+Discovery: a directory is an agent iff it holds an `agent.yaml`. Team-shared directories are listed in `team.yaml`. **`policy:` must never inherit.**
 
-```
-packages/
-├── agent-manifest/             # agent.schema.json + types
-├── brand/                      # standards layer. see content/design.md §1
-└── content-pipeline/           # brief/pack/read schemas, the gates
-
-scripts/agents/cli.ts           # list | check | matrix | deploy
-config/connections.yaml         # the connection registry
-.github/workflows/agents-deploy.yml
-```
-
-**The registry stays flat.** Team membership is carried by multi-valued `tags`, not by directory. Directory grouping is redundant with tags and breaks for agents belonging to several teams. It also preserves the simple `agents/*/agent.yaml` glob used by the CLI and the deploy workflow's `paths:` filter.
-
-**Revisit trigger for team directories:** roughly 20+ agents, or separate human owners needing distinct CODEOWNERS and deploy cadences, or per-team policy baselines enforced in CI. If adopted, `_team.yaml` may carry shared defaults — but **`policy:` must never inherit**, so that every agent's security posture stays readable in a single diff.
-
-**`packages/brand/` stays independent of `packages/content-pipeline/`** because it will serve agents outside the content practice — including a future `support-triage` that reads voice.
+**`packages/brand/` stays independent of `packages/content-pipeline/`** because it will serve agents outside the content practice.
 
 ## 3. The manifest
 

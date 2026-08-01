@@ -6,7 +6,7 @@
  * which runs this script and commits the Triage item. This CLI is also usable
  * directly:
  *
- *   pnpm tsx scripts/capture/capture.ts --author jonno --text "what about a piece on ..."
+ *   pnpm tsx agents/content/ops/capture/capture.ts --author jonno --text "what about a piece on ..."
  *
  * Raw-text preservation is the contract: the item carries the idea verbatim.
  * No interpretation, no expansion, no prioritisation — a capture step that
@@ -15,8 +15,8 @@
  */
 import { createHash } from 'node:crypto';
 import process from 'node:process';
-import { Triage, type TriageItem } from '../../agents/content/monitor/agent/triage';
-import { arg } from '../../packages/content-pipeline/src/cliArgs';
+import { Triage, type TriageItem } from '../../monitor/agent/triage';
+import { arg } from '@carinyaparc/content-pipeline';
 
 export interface CaptureInput {
   text: string;

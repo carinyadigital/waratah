@@ -1,16 +1,16 @@
 /**
  * The human half of the promotion gate:
  *
- *   pnpm tsx scripts/queue/promote.ts --slug <slug> --by "Jonno"
- *   pnpm tsx scripts/queue/promote.ts --demote <slug> --by "Jonno"
+ *   pnpm tsx agents/content/ops/queue/promote.ts --slug <slug> --by "Jonno"
+ *   pnpm tsx agents/content/ops/queue/promote.ts --demote <slug> --by "Jonno"
  *
  * Agents file to Triage; promotion and demotion both refuse agent-shaped
  * names — a person decides what enters and leaves the queue.
  */
 import path from 'node:path';
 import process from 'node:process';
-import { demote, promote } from '../../agents/content/planner/agent/queue';
-import { arg } from '../../packages/content-pipeline/src/cliArgs';
+import { demote, promote } from '../../planner/agent/queue';
+import { arg } from '@carinyaparc/content-pipeline';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const contentDir = path.join(root, 'agents', 'content', 'artifacts');

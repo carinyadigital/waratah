@@ -44,7 +44,7 @@ jobs:
         env:
           CAPTURE_TEXT: ${{ github.event.client_payload.text || inputs.text }}
           CAPTURE_AUTHOR: ${{ github.event.client_payload.author || inputs.author }}
-        run: pnpm tsx scripts/capture/capture.ts
+        run: pnpm tsx agents/content/ops/capture/capture.ts
 
       - name: Commit
         run: |

@@ -1,7 +1,7 @@
 /**
  * The human half of the send approval:
  *
- *   pnpm tsx scripts/distribution/approve-send.ts --adaptation <path.yaml> --by "Jonno"
+ *   pnpm tsx agents/content/ops/distribution/approve-send.ts --adaptation <path.yaml> --by "Jonno"
  *
  * Approval binds to the adaptation's content hash — editing the adaptation
  * invalidates it. One approval, one send.
@@ -10,9 +10,9 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml } from 'yaml';
-import { approveSend } from '../../agents/content/distributor/agent/sends';
-import type { Adaptation } from '../../agents/content/distributor/agent/adapt';
-import { arg } from '../../packages/content-pipeline/src/cliArgs';
+import { approveSend } from '../../distributor/agent/sends';
+import type { Adaptation } from '../../distributor/agent/adapt';
+import { arg } from '@carinyaparc/content-pipeline';
 
 const root = path.resolve(arg('root') ?? process.cwd());
 const file = arg('adaptation');

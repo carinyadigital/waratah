@@ -33,7 +33,23 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
 
-  agents/content: {}
+  agents/content:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../packages/workflow
+      yaml:
+        specifier: ^2.9.0
+        version: 2.9.0
 
   agents/content/analyst:
     dependencies:

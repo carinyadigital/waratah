@@ -43,10 +43,10 @@ jobs:
         run: pnpm monitor --external-links check
 
       - name: Expiry sweep — stale briefs out of the ready queue
-        run: pnpm tsx scripts/capture/expiry-sweep.ts
+        run: pnpm tsx agents/content/ops/capture/expiry-sweep.ts
 
       - name: Horizon scoring — predictions due are marked, never forgotten
-        run: pnpm tsx scripts/predictions/score-horizon.ts
+        run: pnpm tsx agents/content/ops/predictions/score-horizon.ts
 
       - name: Calibration levels engine — promotion and demotion on evidence
         run: pnpm tsx scripts/calibration/calibrate.ts levels

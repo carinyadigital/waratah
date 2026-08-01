@@ -3,7 +3,7 @@ type: ADR
 id: ADR-0001
 status: Accepted
 date: 2026-07-30
-owner: greg
+owner: jonno
 ---
 
 # ADR-0001 — Payload CMS for content storage and publishing

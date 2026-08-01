@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
 version: 1
 name: content-distributor
-owner: greg
+owner: jonno
 description: Adapts published work per surface and drafts sends. The only agent that can reach an audience; every send is approved by a human, per send.
 tags: [content, distribution]
 

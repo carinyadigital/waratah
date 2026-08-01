@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
 version: 1
 name: content-studio
-owner: greg
+owner: jonno
 description: Track two production. Turns a brief and pack into a staged Payload draft with annotated claims. Cannot publish, cannot send, cannot touch a database.
 tags: [content, production]
 

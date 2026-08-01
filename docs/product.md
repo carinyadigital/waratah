@@ -2,7 +2,7 @@
 type: Product
 scope: agent-workforce
 version: '1.0'
-owner: greg
+owner: jonno
 status: Draft
 last_updated: 2026-07-31
 clock: quarterly

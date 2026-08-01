@@ -3,7 +3,7 @@ type: ADR
 id: ADR-0002
 status: Accepted
 date: 2026-07-31
-owner: greg
+owner: jonno
 ---
 
 # ADR-0002 — Managed Agents as the default runtime

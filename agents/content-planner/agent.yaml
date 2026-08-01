@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
 version: 1
 name: content-planner
-owner: greg
+owner: jonno
 description: Track one commissioning. Synthesises intelligence into ranked opportunities and briefs on a monthly clock. No CMS, no repo, files to Triage only.
 tags: [content, commissioning]
 

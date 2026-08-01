@@ -2,7 +2,7 @@
 type: Design
 practice: content
 version: '3.0'
-owner: greg
+owner: jonno
 status: Draft
 last_updated: 2026-07-31
 related:
@@ -412,7 +412,7 @@ Seven agents. `product.md` warns against being wrong about too many, so each ear
 ```yaml
 version: 1
 name: content-analyst
-owner: greg
+owner: jonno
 description: Track one intelligence. Reads performance and audience signals, emits a read artifact. No CMS, no repo, no send.
 tags: [content, intelligence]
 
@@ -454,7 +454,7 @@ No `payload`, no `repo-branch`, no send. The strong model and wide tool access a
 ```yaml
 version: 1
 name: content-monitor
-owner: greg
+owner: jonno
 description: Weekly corpus invariant check. Files violations to tracker. No model calls.
 tags: [content, ci]
 

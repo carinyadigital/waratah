@@ -2,16 +2,12 @@
 type: Architecture
 scope: agent-workforce
 version: '3.0'
-owner: greg
+owner: jonno
 status: Draft
 last_updated: 2026-07-31
 clock: continuous
 related:
-  - README.md
   - product.md
-  - content/design.md
-  - content/tasks.md
-  - decisions/README.md
 ---
 
 # Agent Platform Architecture

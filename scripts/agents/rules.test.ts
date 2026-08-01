@@ -13,11 +13,11 @@ import { r9, r10, r11 } from './rules-extra';
 
 const connections = {
   connections: {
-    payload: { kind: 'cms', owner: 'greg', rotation: { cadence: 'quarterly' } },
-    slack: { kind: 'chat', owner: 'greg', rotation: { cadence: 'yearly' } },
-    ga4: { kind: 'analytics', owner: 'greg', rotation: { cadence: 'yearly' } },
-    gsc: { kind: 'search', owner: 'greg', rotation: { cadence: 'yearly' } },
-    staging_postgres: { kind: 'database', owner: 'greg', rotation: { cadence: 'never' } },
+    payload: { kind: 'cms', owner: 'jonno', rotation: { cadence: 'quarterly' } },
+    slack: { kind: 'chat', owner: 'jonno', rotation: { cadence: 'yearly' } },
+    ga4: { kind: 'analytics', owner: 'jonno', rotation: { cadence: 'yearly' } },
+    gsc: { kind: 'search', owner: 'jonno', rotation: { cadence: 'yearly' } },
+    staging_postgres: { kind: 'database', owner: 'jonno', rotation: { cadence: 'never' } },
   },
 };
 
@@ -27,7 +27,7 @@ const manifest = (
   ({
     version: 1,
     name: 'test-agent',
-    owner: 'greg',
+    owner: 'jonno',
     description: 'a test agent that does testing things',
     tags: ['content'],
     deploy: { platform: 'claude-managed-agent' },

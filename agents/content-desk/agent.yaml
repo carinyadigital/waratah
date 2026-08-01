@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
 version: 1
 name: content-desk
-owner: greg
+owner: jonno
 description: Interactive desk surface for quarterly market research and positioning review. Human-driven, no deployment, proposes diffs a human merges.
 tags: [content, research]
 

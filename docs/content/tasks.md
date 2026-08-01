@@ -3,9 +3,9 @@ type: Tasks
 practice: content
 level: epic+story+task
 version: '2.1'
-owner: greg
+owner: jonno
 status: Draft
-last_updated: 2026-07-31
+last_updated: 2026-08-01
 source: design.md
 related:
   - design.md
@@ -42,17 +42,17 @@ linear:
 
 | ID | Epic | Outcome | Phase | Pri | Pts | Depends | Status |
 |---|---|---|---|---|---|---|---|
-| **CNT01** | Publishing Guardrails | Nothing reaches readers without a human deciding it should | Now | P0 | 13 | — | Library complete |
-| **CNT02** | Content Contracts | Published claims are traceable to a source, and prohibited claims cannot ship | Now | P0 | 13 | — | Library complete |
-| **CNT03** | Content QA | The guarantees in CNT01 and CNT02 cannot be silently weakened | Now | P0 | 8 | CNT01, CNT02 | Library complete |
-| **CNT04** | Authoring Studio | A brief becomes a reviewable draft without a human writing the first version | Now | P1 | 21 | CNT01, CNT02 | Partial — Slack initiation open |
-| **CNT09** | Corpus Invariants | The corpus stays true to itself without anyone remembering to check | Next | P1 | 8 | CNT02 | Library complete |
-| **CNT05** | Register Rules | The register's policy assertions are machine-checked rather than aspirational | Next | P1 | 8 | CNT03 | Library complete |
-| **CNT06** | Capture | An idea is never lost between having it and writing it | Next | P2 | 5 | — | Library complete |
-| **CNT10** | Intelligence Layer | Evidence about what is working exists, is auditable, and is not narrated noise | Later | P1 | 13 | CNT04, CNT09 | Library complete |
-| **CNT07** | Commissioning | What we write about is chosen from evidence rather than from whoever spoke last | Later | P2 | 13 | CNT10 | Library complete |
-| **CNT11** | Review Calibration | Review moves from human to agent on measured agreement, not on faith | Later | P2 | 8 | CNT04 | Library complete |
-| **CNT08** | Distribution | Published work reaches its audience without a human rewriting it per channel | Later | P3 | 13 | CNT01, CNT04 | Library complete |
+| **CNT01** | Publishing Guardrails | Nothing reaches readers without a human deciding it should | Now | P0 | 13 | — | Verified complete — 10/10 tasks pass (validation 2026-08-01) |
+| **CNT02** | Content Contracts | Published claims are traceable to a source, and prohibited claims cannot ship | Now | P0 | 13 | — | Verified complete — 10/10 tasks pass (validation 2026-08-01) |
+| **CNT03** | Content QA | The guarantees in CNT01 and CNT02 cannot be silently weakened | Now | P0 | 8 | CNT01, CNT02 | In-progress — 6/7 pass; CNT03-03 unverifiable from code (live GitHub branch-protection state), see G6 |
+| **CNT04** | Authoring Studio | A brief becomes a reviewable draft without a human writing the first version | Now | P1 | 21 | CNT01, CNT02 | In-progress — 10/13 pass; CNT04-02 no evidence of an executed deploy, CNT04-09 not enforced at Payload publish, CNT04-13 no Slack trigger handler in repo, see G7 |
+| **CNT09** | Corpus Invariants | The corpus stays true to itself without anyone remembering to check | Next | P1 | 8 | CNT02 | In-progress — 7/8 pass; CNT09-06 external-link invariant wrapper untested end to end, see G8 |
+| **CNT05** | Register Rules | The register's policy assertions are machine-checked rather than aspirational | Next | P1 | 8 | CNT03 | Verified complete — 6/6 tasks pass (validation 2026-08-01) |
+| **CNT06** | Capture | An idea is never lost between having it and writing it | Next | P2 | 5 | — | Verified complete — 3/3 tasks pass (validation 2026-08-01) |
+| **CNT10** | Intelligence Layer | Evidence about what is working exists, is auditable, and is not narrated noise | Later | P1 | 13 | CNT04, CNT09 | In-progress — 8/9 pass; CNT10-02 no evidence of an executed deploy, see G9 |
+| **CNT07** | Commissioning | What we write about is chosen from evidence rather than from whoever spoke last | Later | P2 | 13 | CNT10 | In-progress — 5/8 pass; CNT07-02 no evidence of an executed deploy, CNT07-04 landscape has no producer, CNT07-06 collision check covers briefs only not published corpus, see G10 |
+| **CNT11** | Review Calibration | Review moves from human to agent on measured agreement, not on faith | Later | P2 | 8 | CNT04 | In-progress — 5/6 pass; CNT11-04 mechanism verified but no live review records exist yet, see G11 |
+| **CNT08** | Distribution | Published work reaches its audience without a human rewriting it per channel | Later | P3 | 13 | CNT01, CNT04 | In-progress — 6/7 pass; CNT08-07 no cluster-level attribution, see G12 |
 
 **Sequencing note.** CNT10 is the most valuable epic in the practice and is eighth. That is deliberate — see `design.md` §11. Until there is a corpus and a review record, the analyst has nothing to be right about, and no way to tell whether it is.
 
@@ -782,7 +782,14 @@ And per-piece subscriber attribution is available to content-analyst by cluster
 | G2 | Payload collection names assumed as `posts` and `recipes` | CNT01-01, CNT02-09 |
 | G3 | Plugin version pinned as `1.4.0` throughout; unconfirmed | Every `skills.plugin` pin |
 | G4 | Subscriber target figures unset | CNT10 success criteria |
-| G5 | Owners unassigned — manifests name `greg` as agent owner, no delivery owner | Every task carries `Owner: TBD` |
+| G5 | Owners unassigned — manifests name `jonno` as agent owner, no delivery owner | Every task carries `Owner: TBD` |
+| G6 | Branch protection on `main` cannot be confirmed from the repo — `scripts/setup-branch-protection.sh` and `docs/branch-protection.md` exist but live GitHub state is unverifiable from code | CNT03-03 |
+| G7 | `content-studio` has no CI/deploy-log evidence of an executed deploy or smoke run (`scripts/agents/smoke.ts` exists but isn't wired into `.github/workflows/agents-deploy.yml`); review-record completeness (`humanScore`/`whatWasWrong`) is enforced only at the `close-review.ts` CLI/schema level, with no Payload `beforeChange`/access hook blocking publish; no in-repo code receives a Slack-posted brief slug — only the manifest's chat-trigger declaration and the outbound report renderer exist | CNT04-02, CNT04-09, CNT04-13 |
+| G8 | `checkExternalLinks` (the content-monitor invariant wrapper — URL aggregation and violation shaping) has no dedicated unit test; only its underlying `resolveExternalLink` primitive is tested, in a different package | CNT09-06 |
+| G9 | `content-analyst` has no persisted or logged evidence of an executed deploy or smoke run — same gap as CNT04-02 | CNT10-02 |
+| G10 | `content-planner` has the same unexecuted-deploy gap as G9; the `landscape` artifact has no producer, schema, or builder anywhere in the codebase, so synthesis is never exercised with reads+demand+landscape together; the `targetQuery` collision check (commission-time and weekly monitor) compares only against other briefs, never against the published corpus | CNT07-02, CNT07-04, CNT07-06 |
+| G11 | Shadow-verdict pairing into review records (CNT11-S2/S3) is implemented and covered by fixture tests, but no live `.agency/content/reviews/*.yaml` files exist yet to demonstrate it against real CNT04-S3 output | CNT11-04 |
+| G12 | Send attribution (`sendsForSlug`) is per-slug only — no function joins sends to content clusters, and `content-analyst`'s `read.ts` never imports or calls the distributor's `sends.ts` | CNT08-07 |
 
 ---
 

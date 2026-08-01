@@ -3,7 +3,7 @@ type: ADR
 id: ADR-0004
 status: Accepted
 date: 2026-07-31
-owner: greg
+owner: jonno
 ---
 
 # ADR-0004 — No Local API endpoint is exposed to agents

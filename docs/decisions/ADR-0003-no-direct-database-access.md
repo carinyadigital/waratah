@@ -3,7 +3,7 @@ type: ADR
 id: ADR-0003
 status: Accepted
 date: 2026-07-30
-owner: greg
+owner: jonno
 ---
 
 # ADR-0003 — No agent holds a direct database credential

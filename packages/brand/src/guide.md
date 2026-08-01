@@ -4,7 +4,7 @@ source_of_truth: https://github.com/carinyaparc/design-system
 note: >
   This file mirrors the human-authored Brand Guide and design tokens in the
   design-system repo (brand/Brand Guide.dc.html, tokens/*.css, readme.md).
-  It is a working copy for brand-creative tooling, not a new source — update
+  It is a source of truth for machine-consumable visual tokens in this repo; upstream is the design-system, not a new source — update
   the design-system repo first, then resync this file. For production code,
   use tailwindcss/carinya-tokens.css from that repo directly, not this doc.
 last_synced: 2026-07-31

@@ -21,7 +21,6 @@ policy:
   spendCapUsd: 40
   idempotencyKey: brief.slug
   cmsRole: agent
-  cmsRoleAssertedBy: tests/access/agent-publish.test.ts
 
 content:
   voice: packages/brand/dist/carinya-voice.json

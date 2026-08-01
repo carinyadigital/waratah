@@ -3,8 +3,6 @@
  * the register; R9–R11 with the generalisation epic; R12 arrives with the
  * calibration ledger.
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Manifest } from '../../packages/agent-manifest/src/index';
@@ -13,7 +11,16 @@ import { r9, r10, r11 } from './rules-extra';
 
 const connections = {
   connections: {
-    payload: { kind: 'cms', owner: 'jonno', rotation: { cadence: 'quarterly' } },
+    payload: {
+      kind: 'cms',
+      owner: 'jonno',
+      rotation: { cadence: 'quarterly' },
+      assertion: {
+        repo: 'carinyaparc/website',
+        testPath: 'apps/site/src/lib/payload/agent-publish.test.ts',
+        commitSha: '654236c232904172c9054c3333dfd64e91cc990f',
+      },
+    },
     slack: { kind: 'chat', owner: 'jonno', rotation: { cadence: 'yearly' } },
     ga4: { kind: 'analytics', owner: 'jonno', rotation: { cadence: 'yearly' } },
     gsc: { kind: 'search', owner: 'jonno', rotation: { cadence: 'yearly' } },
@@ -93,28 +100,36 @@ describe('R5/R7 — scheduled and unattended writers', () => {
   });
 });
 
-describe('R9 — cms-draft implies an asserted role', () => {
-  it('fails without cmsRole, without cmsRoleAssertedBy, and when the named test is absent', () => {
+describe('R9 — cms-draft implies a pinned access assertion', () => {
+  it('fails without cmsRole, without a cms connection, and without an assertion pin', () => {
     const noRole = manifest({ policy: { writes: ['cms-draft'], connections: ['payload'] } });
     expect(r9(ctx(noRole))[0].message).toContain('cmsRole');
 
-    const noTest = manifest({ policy: { writes: ['cms-draft'], cmsRole: 'agent' } });
-    expect(r9(ctx(noTest))[0].message).toContain('cmsRoleAssertedBy');
+    const noCms = manifest({ policy: { writes: ['cms-draft'], cmsRole: 'agent', connections: ['slack'] } });
+    expect(r9(ctx(noCms))[0].message).toMatch(/kind cms/);
 
-    const missingFile = manifest({
-      policy: { writes: ['cms-draft'], cmsRole: 'agent', cmsRoleAssertedBy: 'tests/access/gone.test.ts' },
+    const unpinned = {
+      connections: {
+        ...connections.connections,
+        payload: { kind: 'cms', owner: 'jonno', rotation: { cadence: 'quarterly' } },
+      },
+    };
+    const noPin = manifest({
+      policy: { writes: ['cms-draft'], cmsRole: 'agent', connections: ['payload'] },
     });
-    expect(r9(ctx(missingFile))[0].message).toContain('does not exist');
+    const violations = r9({
+      root: '/nonexistent',
+      manifests: [{ dir: noPin.name, file: 'x', manifest: noPin }],
+      connections: unpinned,
+    });
+    expect(violations[0].message).toMatch(/assertion/);
   });
 
-  it('passes when the named assertion test exists in the repo', () => {
-    const root = mkdtempSync(path.join(tmpdir(), 'r9-'));
-    mkdirSync(path.join(root, 'tests/access'), { recursive: true });
-    writeFileSync(path.join(root, 'tests/access/agent-publish.test.ts'), '// assertion');
+  it('passes when the cms connection carries a well-formed pin', () => {
     const ok = manifest({
-      policy: { writes: ['cms-draft'], cmsRole: 'agent', cmsRoleAssertedBy: 'tests/access/agent-publish.test.ts' },
+      policy: { writes: ['cms-draft'], cmsRole: 'agent', connections: ['payload'] },
     });
-    expect(r9(ctx(ok, root))).toHaveLength(0);
+    expect(r9(ctx(ok))).toHaveLength(0);
   });
 });
 

@@ -18,7 +18,12 @@ connections:
 
   payload:
     kind: cms
+    provider: payload
     owner: jonno
+    assertion:
+      repo: carinyaparc/website
+      testPath: apps/site/src/lib/payload/agent-publish.test.ts
+      commitSha: 654236c232904172c9054c3333dfd64e91cc990f
     rotation:
       # Key lifecycle for the agent identity.
       cadence: quarterly
@@ -28,7 +33,8 @@ connections:
         then update the CONTENT_AGENT_API_KEY secret in the managed-agent
         provider and in GitHub Actions. Disabling the key (enableAPIKey: false)
         stops the agent immediately; no other identity is affected
-        (asserted by tests/access/agent-publish.test.ts).
+        (asserted by apps/site/src/lib/payload/agent-publish.test.ts in
+        carinyaparc/website at the pinned commitSha above).
       revocation: Disable enableAPIKey on the agent user. Effect is immediate.
 
   slack:

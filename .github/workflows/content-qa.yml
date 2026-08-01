@@ -1,13 +1,15 @@
 # content-qa — the deterministic gate agent.
 #
 # Two jobs, one suite:
-#   - pull_request: gates + access assertions on the PR, with a per-gate PR
-#     comment that updates in place.
+#   - pull_request: gates on the PR, with a per-gate PR comment that updates
+#     in place.
 #   - push to main: the same suite re-run on the merge commit. A gate that
 #     only runs pre-merge can be routed around by force-push or admin merge;
 #     this one cannot be skipped. Branch protection must require this check.
 #
-# No model calls anywhere in this workflow.
+# Publish-denial access assertions live in carinyaparc/website and are pinned
+# here by R9 (connections.yaml assertion.commitSha). No model calls anywhere
+# in this workflow.
 name: content-qa
 
 on:
@@ -16,8 +18,8 @@ on:
       - '.agency/content/**'
       - 'packages/brand/**'
       - 'packages/content-pipeline/**'
-      - 'src/**'
-      - 'tests/**'
+      - 'packages/content-store/**'
+      - 'packages/content-store-payload/**'
       - '.github/workflows/content-qa.yml'
   push:
     branches: [main]
@@ -52,10 +54,6 @@ jobs:
         run: |
           pnpm gates --format markdown --out gate-report.md
         # external links are checked for real here — that is the point of CI
-
-      - name: Access assertions
-        if: always()
-        run: pnpm vitest run tests/access
 
       - name: Gate report as PR comment
         if: always() && github.event_name == 'pull_request'

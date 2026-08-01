@@ -103,11 +103,11 @@
         "idempotencyKey": { "type": "string" },
         "cmsRole": {
           "type": "string",
-          "description": "R9: required alongside cms-draft. Names the CMS role whose access rules are asserted by a test in the site repo."
+          "description": "R9: required alongside cms-draft. Names the CMS role whose access rules are asserted by a pinned test in the site repo."
         },
         "cmsRoleAssertedBy": {
           "type": "string",
-          "description": "R9: repo-relative path of the test asserting the named role's access rules."
+          "description": "Deprecated. Access assertion pins live on the cms connection in connections.yaml."
         }
       }
     },

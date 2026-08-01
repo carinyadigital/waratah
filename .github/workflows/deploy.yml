@@ -1,0 +1,41 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Provider to deploy to
+        required: true
+        default: claude
+        type: choice
+        options: [claude, cursor]
+      dry-run:
+        description: Render and report without publishing
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.provider }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Refuses to deploy anything that does not match the committed artifact,
+      # so what ships is always what was reviewed.
+      - name: Built output matches the repo
+        run: pnpm build:check
+
+      - name: Deploy
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANALYTICS_MCP_URL: ${{ secrets.ANALYTICS_MCP_URL }}
+        run: pnpm deploy --provider ${{ inputs.provider }} ${{ inputs.dry-run && '--dry-run' || '' }}

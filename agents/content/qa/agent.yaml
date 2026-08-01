@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=../../../packages/agent-manifest/agent.schema.json
+version: 2
+name: content-qa
+team: content
+owner: jonno
+description: Deterministic gate suite on the artifacts PR and the merge commit, plus the access-rule assertion. No model calls.
+tags: [ci]
+
+capability:
+  kind: deterministic
+  model: none
+  workflow: verify
+
+policy:
+  untrustedInput: false
+  connections: [code]
+  writes: [pr-comment]
+  approval: none
+  idempotencyKey: pr.head-sha
+
+bindings:
+  - provider: github-actions
+    mode: workflow
+    workflow: .github/workflows/content-qa.yml
+    harness: none
+
+triggers:
+  - type: repo-event
+    event: pull_request
+    paths: ['agents/content/artifacts/**', 'packages/brand/**', 'packages/content-pipeline/**', 'packages/content-store/**']
+  - type: repo-event
+    event: push
+
+observability:
+  traces: none
+  alertChannel: '#carinya-content'

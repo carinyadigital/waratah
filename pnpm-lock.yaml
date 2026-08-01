@@ -33,6 +33,113 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
 
+  agents/content: {}
+
+  agents/content/analyst:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/desk:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/distributor:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/monitor:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/planner:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/qa:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
+  agents/content/studio:
+    dependencies:
+      '@carinyaparc/content-pipeline':
+        specifier: workspace:*
+        version: link:../../../packages/content-pipeline
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../../../packages/content-store
+      '@carinyaparc/content-store-payload':
+        specifier: workspace:*
+        version: link:../../../packages/content-store-payload
+      '@carinyaparc/workflow':
+        specifier: workspace:*
+        version: link:../../../packages/workflow
+
   packages/agent-manifest:
     dependencies:
       ajv:

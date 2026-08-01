@@ -1,5 +1,7 @@
 packages:
   - 'packages/*'
+  - 'agents/*'
+  - 'agents/*/*'
 allowBuilds:
   esbuild: true
   sharp: true

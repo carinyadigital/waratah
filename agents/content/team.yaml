@@ -1,0 +1,10 @@
+# Content team identity and shared layout.
+# policy: must never appear here — every agent's blast radius stays in its own agent.yaml.
+
+name: content
+owner: jonno
+shared:
+  - artifacts
+  - ops
+  - pipeline
+extension: ../../../packages/agent-manifest/extensions/content.schema.json

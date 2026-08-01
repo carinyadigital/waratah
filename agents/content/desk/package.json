@@ -1,0 +1,12 @@
+{
+  "name": "@carinyaparc/agent-content-desk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@carinyaparc/content-pipeline": "workspace:*",
+    "@carinyaparc/content-store": "workspace:*",
+    "@carinyaparc/content-store-payload": "workspace:*",
+    "@carinyaparc/workflow": "workspace:*"
+  }
+}

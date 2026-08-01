@@ -24,14 +24,18 @@ import {
 } from '../../packages/content-pipeline/src/artifacts';
 import { arg } from '../../packages/content-pipeline/src/cliArgs';
 import { runGates } from '../../packages/content-pipeline/src/gates/index';
-import { renderRunReport } from '../../agents/content-studio/agent/runReport';
+import { renderRunReport } from '../../agents/content/studio/agent/runReport';
 
 const agent = arg('agent') ?? 'content-studio';
 const root = path.resolve(arg('root', process.cwd())!);
 
 const main = async () => {
   // 1. The manifest passes the register rules.
-  const ctx = { root, manifests: loadManifests(root).filter((m) => m.dir === agent), connections: loadConnections(root) };
+  const ctx = {
+    root,
+    manifests: loadManifests(root).filter((m) => m.dir === agent || m.manifest?.name === agent || m.dir.endsWith(`/${agent.replace(/^content-/, '')}`)),
+    connections: loadConnections(root),
+  };
   if (!ctx.manifests.length || !ctx.manifests[0].manifest) throw new Error(`no manifest for ${agent}`);
   const violations = [...coreRules, ...extraRules].flatMap((r) => r(ctx));
   if (violations.length) {
@@ -70,15 +74,15 @@ const main = async () => {
     // Dry run against one pre-registered question with fixture figures: the
     // deterministic spine (builder disciplines, artifact write, run report)
     // exercised end to end without credentials.
-    const { ReadBuilder, loadRegisteredQuestions } = await import('../../agents/content-analyst/agent/read');
-    const { renderAnalystRunReport } = await import('../../agents/content-analyst/agent/runReport');
+    const { ReadBuilder, loadRegisteredQuestions } = await import('../../agents/content/analyst/agent/read');
+    const { renderAnalystRunReport } = await import('../../agents/content/analyst/agent/runReport');
     const { mkdtempSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
 
-    const agentDir = path.join(root, 'agents', 'content-analyst');
+    const agentDir = path.join(root, 'agents', 'content', 'analyst');
     const questions = loadRegisteredQuestions(agentDir);
     const brand = loadBrand(repoPaths(root));
-    const b = new ReadBuilder('2026-W31', brand.positioning.hash, questions, { ga4: 400, gsc: 200, ahrefs: 100, esp: 150 });
+    const b = new ReadBuilder('2026-W31', brand.positioning.hash, questions, { analytics: 400, search: 200, seo: 100, esp: 150 });
     b.addFinding({
       question: questions[0],
       finding: 'Net new subscribers flat week over week; no cluster moved outside noise',
@@ -94,7 +98,7 @@ const main = async () => {
     console.log('\n--- run report ---\n');
     console.log(renderAnalystRunReport(b.build() as never, contentDir));
   } else if (agent === 'content-planner') {
-    const { OpportunitiesBuilder } = await import('../../agents/content-planner/agent/opportunities');
+    const { OpportunitiesBuilder } = await import('../../agents/content/planner/agent/opportunities');
     const { mkdtempSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
     const brand = loadBrand(repoPaths(root));

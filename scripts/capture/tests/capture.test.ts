@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { stringify as toYaml } from 'yaml';
 import { capture } from '../capture';
 import { sweepExpiredBriefs } from '../expiry-sweep';
-import { Triage } from '../../../agents/content-monitor/agent/triage';
-import { loadQueue, promote } from '../../../agents/content-planner/agent/queue';
+import { Triage } from '../../../agents/content/monitor/agent/triage';
+import { loadQueue, promote } from '../../../agents/content/planner/agent/queue';
 
 const IDEA = `what about a piece on why the creek crossing silts up every  winter??
 half-formed but there's something in it — maybe tie to the riparian planting`;

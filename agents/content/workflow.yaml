@@ -1,0 +1,27 @@
+# Content workflow shape. Steps map to agents under this team directory.
+workflow: content
+artifacts: ./artifacts
+steps:
+  - id: intake
+    agent: desk
+    emits: [landscape]
+  - id: sense
+    agent: analyst
+    emits: [read, demand]
+  - id: commission
+    agent: planner
+    emits: [opportunities, brief]
+  - id: produce
+    agent: studio
+    emits: [pack, draft]
+    gates: content-suite
+  - id: verify
+    agent: qa
+    gates: content-suite
+    approval: pr-review
+  - id: act
+    agent: distributor
+    approval: human
+  - id: observe
+    agent: monitor
+    emits: [violations]

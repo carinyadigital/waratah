@@ -11,7 +11,7 @@
  */
 import path from 'node:path';
 import process from 'node:process';
-import { calibrationSummary, markDue, scorePrediction } from '../../analyst/agent/predictions';
+import { calibrationSummary, markDue, scorePrediction } from '../../content-analyst/agent/predictions';
 import { arg } from '@carinyaparc/content-pipeline';
 
 const root = path.resolve(arg('root') ?? process.cwd());

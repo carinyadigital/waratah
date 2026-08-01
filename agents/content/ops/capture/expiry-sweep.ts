@@ -10,8 +10,8 @@ import { existsSync, mkdirSync, renameSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { hasDraft, listBriefSlugs, loadBrief, repoPaths } from '@carinyaparc/content-pipeline';
-import { Triage } from '../../monitor/agent/triage';
-import { loadQueue, pruneExpiredFromQueue } from '../../planner/agent/queue';
+import { Triage } from '../../content-monitor/agent/triage';
+import { loadQueue, pruneExpiredFromQueue } from '../../content-planner/agent/queue';
 
 export interface ExpiryReport {
   expired: { slug: string; expiresAt: string; trackerRef: string }[];

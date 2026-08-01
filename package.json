@@ -12,7 +12,7 @@
     "agents": "tsx scripts/agents/cli.ts",
     "gates": "tsx packages/content-pipeline/src/cli.ts",
     "build:brand": "tsx packages/brand/build.ts",
-    "monitor": "tsx agents/content/monitor/agent/run.ts",
+    "monitor": "tsx agents/content/content-monitor/agent/run.ts",
     "test": "pnpm build:brand && vitest run",
     "typecheck": "tsc --noEmit"
   },

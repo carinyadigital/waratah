@@ -15,7 +15,7 @@ import path from 'node:path';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
 import { assertValid } from '@carinyaparc/content-pipeline';
 import type { BriefArtifact } from '@carinyaparc/content-pipeline';
-import { Triage } from '../../monitor/agent/triage';
+import { Triage } from '../../content-monitor/agent/triage';
 import { queueHasRoom } from './queue';
 
 export interface CommissionInput {

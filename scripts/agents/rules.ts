@@ -31,11 +31,13 @@ const agentBasename = (dir: string): string => dir.split('/').filter(Boolean).po
 
 const expectedName = (dir: string, team?: string): string => {
   const base = agentBasename(dir);
-  if (dir.includes('/') && team) return `${team}-${base}`;
+  // Prefer full agent names as directory names (content-analyst). Only prefix
+  // short role dirs (analyst → content-analyst) when they lack the team prefix.
+  if (dir.includes('/') && team && !base.startsWith(`${team}-`)) return `${team}-${base}`;
   return base;
 };
 
-/** R1 — every agent directory has a schema-valid agent.yaml; name equals team-dir when nested. */
+/** R1 — every agent directory has a schema-valid agent.yaml; name matches the directory basename. */
 export const r1: Rule = ({ manifests }) => {
   const violations: Violation[] = [];
   for (const { dir, manifest } of manifests) {

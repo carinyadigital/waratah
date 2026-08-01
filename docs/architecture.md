@@ -35,13 +35,13 @@ agents/
     ├── workflow.yaml
     ├── artifacts/                # briefs, packs, drafts, triage, …
     ├── ops/                      # capture, queue, distribution, …
-    ├── analyst/                  # agent.yaml + agent/ + tests/
-    ├── planner/
-    ├── studio/
-    ├── qa/
-    ├── monitor/
-    ├── distributor/
-    └── desk/
+    ├── content-analyst/          # full agent name as directory
+    ├── content-planner/
+    ├── content-studio/
+    ├── content-qa/
+    ├── content-monitor/
+    ├── content-distributor/
+    └── content-desk/
 
 packages/                         # shared kernel
 ├── agent-manifest/               # schema, types, loader, R1–R13

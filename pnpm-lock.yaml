@@ -51,7 +51,7 @@ importers:
         specifier: ^2.9.0
         version: 2.9.0
 
-  agents/content/analyst:
+  agents/content/content-analyst:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -66,7 +66,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/desk:
+  agents/content/content-desk:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -81,7 +81,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/distributor:
+  agents/content/content-distributor:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -96,7 +96,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/monitor:
+  agents/content/content-monitor:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -111,7 +111,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/planner:
+  agents/content/content-planner:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -126,7 +126,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/qa:
+  agents/content/content-qa:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*
@@ -141,7 +141,7 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/workflow
 
-  agents/content/studio:
+  agents/content/content-studio:
     dependencies:
       '@carinyaparc/content-pipeline':
         specifier: workspace:*

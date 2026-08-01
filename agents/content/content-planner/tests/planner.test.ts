@@ -6,7 +6,7 @@ import { parse as parseYaml, stringify as toYaml } from 'yaml';
 import { OpportunitiesBuilder } from '../agent/opportunities';
 import { commission, TargetQueryCollisionError, type CommissionInput } from '../agent/commission';
 import { demote, loadQueue, promote, PromotionDeniedError, pruneExpiredFromQueue } from '../agent/queue';
-import { Triage } from '../../monitor/agent/triage';
+import { Triage } from '../../content-monitor/agent/triage';
 import type { ClaimPolicy } from '@carinyaparc/content-pipeline';
 
 const HASH = 'a'.repeat(64);

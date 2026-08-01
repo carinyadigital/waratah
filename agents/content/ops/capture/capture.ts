@@ -15,7 +15,7 @@
  */
 import { createHash } from 'node:crypto';
 import process from 'node:process';
-import { Triage, type TriageItem } from '../../monitor/agent/triage';
+import { Triage, type TriageItem } from '../../content-monitor/agent/triage';
 import { arg } from '@carinyaparc/content-pipeline';
 
 export interface CaptureInput {

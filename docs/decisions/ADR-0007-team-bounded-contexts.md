@@ -18,7 +18,7 @@ A flat `agents/<name>/` registry conflates discovery with ownership. Tags carry 
 
 ## Decision
 
-**Physical layout groups by team; the logical registry stays flat.** Discovery globs `agents/*/*/agent.yaml` (and still accepts a flat `agents/*/agent.yaml` during transition). An agent's global identity is `name: ${team}-${dir}`.
+**Physical layout groups by team; the logical registry stays flat.** Discovery globs `agents/*/*/agent.yaml` (and still accepts a flat `agents/*/agent.yaml` during transition). An agent's global identity is its fully qualified directory name (e.g. `content-analyst` under `agents/content/`), matching `name:` in the manifest. Short role directories are discouraged so two teams cannot both own an ambiguous `analyst/`.
 
 Each team directory holds:
 

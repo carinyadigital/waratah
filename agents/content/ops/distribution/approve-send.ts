@@ -10,8 +10,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { parse as parseYaml } from 'yaml';
-import { approveSend } from '../../distributor/agent/sends';
-import type { Adaptation } from '../../distributor/agent/adapt';
+import { approveSend } from '../../content-distributor/agent/sends';
+import type { Adaptation } from '../../content-distributor/agent/adapt';
 import { arg } from '@carinyaparc/content-pipeline';
 
 const root = path.resolve(arg('root') ?? process.cwd());

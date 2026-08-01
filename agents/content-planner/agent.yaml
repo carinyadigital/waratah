@@ -1,37 +1,42 @@
 # yaml-language-server: $schema=../../packages/agent-manifest/agent.schema.json
-version: 1
+version: 2
 name: content-planner
+team: content
 owner: jonno
 description: Track one commissioning. Synthesises intelligence into ranked opportunities and briefs on a monthly clock. No CMS, no repo, files to Triage only.
-tags: [content, commissioning]
+tags: [commissioning]
 
-deploy:
-  platform: claude-managed-agent
-  schedule: '0 8 1 * *'
-  timezone: Australia/Sydney
+capability:
+  kind: conversational
+  model: strong
+  workflow: commission
+
+policy:
+  untrustedInput: true
+  connections: [chat]
+  writes: [artifact-store, tracker, chat]
+  approval: draft-only
+  spendCapUsd: 30
+  idempotencyKey: opportunities.period
+
+extensions:
+  content:
+    emits: [opportunities, brief]
+
+bindings:
+  - provider: claude
+    mode: managed
+    schedule: '0 8 1 * *'
+    timezone: Australia/Sydney
 
 triggers:
   - type: schedule
     cron: '0 8 1 * *'
     timezone: Australia/Sydney
   - type: chat
-    channel: slack
-
-policy:
-  untrustedInput: true
-  connections: [slack]
-  writes: [artifact-store, tracker, slack]
-  approval: draft-only
-  spendCapUsd: 30
-  idempotencyKey: opportunities.period
-
-content:
-  voice: packages/brand/dist/carinya-voice.json
-  rubric: packages/brand/dist/editorial-rubric.md
-  positioning: packages/brand/dist/positioning.json
-  emits: [opportunities, brief]
+    channel: chat
 
 observability:
   traces: both
   alertChannel: '#carinya-content'
-  evals: agents/content-planner/evals
+  evals: ./evals

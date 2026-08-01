@@ -87,6 +87,8 @@ importers:
         specifier: workspace:*
         version: link:../content-store
 
+  packages/runtime: {}
+
   packages/workflow: {}
 
 packages:

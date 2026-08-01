@@ -2,65 +2,66 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/agent.schema.json",
   "title": "Agent manifest",
-  "description": "The register's contract. policy is the load-bearing block: everything else describes how the agent runs; policy describes what it can do to the world.",
+  "description": "The register's contract. policy is the load-bearing block. capability is portable. bindings are the only vendor-aware block.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "name", "owner", "description", "tags", "deploy", "triggers", "policy", "observability"],
+  "required": ["version", "name", "team", "owner", "description", "tags", "capability", "policy", "bindings", "observability"],
   "properties": {
-    "version": { "const": 1 },
+    "version": { "const": 2 },
     "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
-    "owner": { "type": "string", "minLength": 1, "description": "A human." },
-    "description": { "type": "string", "minLength": 10, "description": "One line. What it does and what it may not do." },
+    "team": { "type": "string", "minLength": 1 },
+    "owner": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 10 },
     "tags": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "string" },
-      "description": "Practice membership, multi-valued. The registry stays flat."
+      "items": { "type": "string" }
     },
-    "deploy": { "$ref": "#/$defs/deploy" },
-    "triggers": {
+    "capability": { "$ref": "#/$defs/capability" },
+    "policy": { "$ref": "#/$defs/policy" },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Team-specific blocks validated against the team's schema fragment."
+    },
+    "bindings": {
       "type": "array",
       "minItems": 1,
+      "items": { "$ref": "#/$defs/binding" }
+    },
+    "triggers": {
+      "type": "array",
       "items": { "$ref": "#/$defs/trigger" }
     },
-    "policy": { "$ref": "#/$defs/policy" },
-    "content": { "$ref": "#/$defs/content" },
     "observability": { "$ref": "#/$defs/observability" }
   },
   "$defs": {
-    "deploy": {
+    "capability": {
       "type": "object",
-      "required": ["platform"],
+      "additionalProperties": false,
+      "required": ["kind"],
       "properties": {
-        "platform": {
-          "enum": ["claude-managed-agent", "vercel-eve", "vercel-next-mounted", "github-actions", "claude-subagent"]
+        "kind": { "enum": ["conversational", "deterministic", "interactive"] },
+        "model": { "enum": ["strong", "standard", "none"] },
+        "workflow": { "type": "string", "description": "Step id from the team's workflow.yaml" }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "required": ["provider"],
+      "properties": {
+        "provider": { "type": "string", "minLength": 1 },
+        "mode": { "type": "string" },
+        "schedule": { "type": "string" },
+        "timezone": { "type": "string" },
+        "workflow": { "type": "string", "pattern": "^\\.github/workflows/.+\\.yml$" },
+        "harness": { "enum": ["none"] },
+        "spendCapAcknowledged": {
+          "type": "boolean",
+          "description": "Required when the binding's adapter cannot enforce spendCapUsd."
         }
       },
-      "allOf": [
-        {
-          "if": { "properties": { "platform": { "const": "claude-managed-agent" } } },
-          "then": {
-            "properties": {
-              "platform": true,
-              "schedule": { "type": "string" },
-              "timezone": { "type": "string" }
-            },
-            "additionalProperties": false
-          }
-        },
-        {
-          "if": { "properties": { "platform": { "const": "github-actions" } } },
-          "then": {
-            "required": ["workflow"],
-            "properties": {
-              "platform": true,
-              "workflow": { "type": "string", "pattern": "^\\.github/workflows/.+\\.yml$" },
-              "harness": { "enum": ["none"] }
-            },
-            "additionalProperties": false
-          }
-        }
-      ]
+      "additionalProperties": false
     },
     "trigger": {
       "type": "object",
@@ -80,14 +81,14 @@
         "artifact-store",
         "tracker",
         "pr-comment",
-        "slack",
+        "chat",
         "repo-branch",
         "cms-draft",
         "cms-publish",
         "email-send",
         "social-post",
         "repo-main",
-        "vercel-deploy"
+        "deploy"
       ]
     },
     "policy": {
@@ -95,51 +96,13 @@
       "additionalProperties": false,
       "required": ["untrustedInput", "connections", "writes", "approval"],
       "properties": {
-        "untrustedInput": { "type": "boolean", "description": "Does it read content it didn't author?" },
+        "untrustedInput": { "type": "boolean" },
         "connections": { "type": "array", "items": { "type": "string" } },
         "writes": { "type": "array", "items": { "$ref": "#/$defs/write" } },
         "approval": { "enum": ["none", "draft-only", "pr-review", "human"] },
         "spendCapUsd": { "type": "number", "exclusiveMinimum": 0 },
         "idempotencyKey": { "type": "string" },
-        "cmsRole": {
-          "type": "string",
-          "description": "R9: required alongside cms-draft. Names the CMS role whose access rules are asserted by a pinned test in the site repo."
-        },
-        "cmsRoleAssertedBy": {
-          "type": "string",
-          "description": "Deprecated. Access assertion pins live on the cms connection in connections.yaml."
-        }
-      }
-    },
-    "content": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Content-practice agents. R8: brand assets referenced by dist/ path, never duplicated. R11: any agent emitting a read artifact declares nThreshold per connected source.",
-      "if": {
-        "properties": { "emits": { "contains": { "const": "read" } } },
-        "required": ["emits"]
-      },
-      "then": {
-        "required": ["nThreshold"]
-      },
-      "properties": {
-        "voice": { "type": "string", "pattern": "^packages/brand/dist/" },
-        "rubric": { "type": "string", "pattern": "^packages/brand/dist/" },
-        "positioning": { "type": "string", "pattern": "^packages/brand/dist/" },
-        "nThreshold": {
-          "type": "object",
-          "additionalProperties": { "type": "integer", "minimum": 1 },
-          "description": "Per-source minimum n below which a directional claim may not be asserted."
-        },
-        "clusters": {
-          "type": "array",
-          "items": { "enum": ["topic-area", "angle-type", "format", "funnel-intent"] }
-        },
-        "emits": {
-          "type": "array",
-          "items": { "enum": ["read", "demand", "opportunities", "brief", "landscape"] },
-          "description": "Artifact kinds this agent writes. R11 triggers on \"read\"."
-        }
+        "cmsRole": { "type": "string" }
       }
     },
     "observability": {
@@ -148,7 +111,7 @@
       "required": ["traces", "alertChannel"],
       "properties": {
         "traces": { "enum": ["none", "platform", "otel", "both"] },
-        "alertChannel": { "type": "string", "pattern": "^#" },
+        "alertChannel": { "type": "string" },
         "evals": { "type": "string" }
       }
     }

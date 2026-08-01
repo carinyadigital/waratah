@@ -1,31 +1,30 @@
 # The connection registry.
 #
-# Every connection an agent may declare in policy.connections is registered
-# here with an owner, a kind, and a rotation policy. R2 asserts declared
-# connections exist here; R10 prohibits any agent declaring a connection of
-# kind "database".
+# Keys are capability names agents declare in policy.connections.
+# Provider names appear only here. R2 asserts declared connections exist;
+# R10 prohibits any agent declaring a connection of kind "database".
 #
 # kind vocabulary: cms | code | chat | analytics | search | seo | email |
 #                  observability | hosting | spreadsheet | database
 
 connections:
-  github:
+  code:
+    provider: github
     kind: code
     owner: jonno
     rotation:
       cadence: quarterly
       method: Fine-grained PAT re-issued in GitHub settings; stored as repo/org secret.
 
-  payload:
-    kind: cms
+  cms:
     provider: payload
+    kind: cms
     owner: jonno
     assertion:
       repo: carinyaparc/website
       testPath: apps/site/src/lib/payload/agent-publish.test.ts
       commitSha: 654236c232904172c9054c3333dfd64e91cc990f
     rotation:
-      # Key lifecycle for the agent identity.
       cadence: quarterly
       method: >-
         Rotate the agent user's API key in the Payload Admin UI
@@ -37,35 +36,40 @@ connections:
         carinyaparc/website at the pinned commitSha above).
       revocation: Disable enableAPIKey on the agent user. Effect is immediate.
 
-  slack:
+  chat:
+    provider: slack
     kind: chat
     owner: jonno
     rotation:
       cadence: yearly
       method: Reinstall the Slack app to refresh the bot token.
 
-  sheets:
+  spreadsheet:
+    provider: sheets
     kind: spreadsheet
     owner: jonno
     rotation:
       cadence: yearly
       method: Rotate the service-account key in Google Cloud console.
 
-  ga4:
+  analytics:
+    provider: ga4
     kind: analytics
     owner: jonno
     rotation:
       cadence: yearly
       method: Rotate the service-account key in Google Cloud console.
 
-  gsc:
+  search:
+    provider: gsc
     kind: search
     owner: jonno
     rotation:
       cadence: yearly
       method: Rotate the service-account key in Google Cloud console.
 
-  ahrefs:
+  seo:
+    provider: ahrefs
     kind: seo
     owner: jonno
     rotation:
@@ -73,20 +77,23 @@ connections:
       method: Regenerate the API token in the Ahrefs dashboard.
 
   esp:
+    provider: tbd
     kind: email
     owner: jonno
     rotation:
       cadence: quarterly
       method: Regenerate the ESP API key; update provider secrets.
 
-  sentry:
+  observability:
+    provider: sentry
     kind: observability
     owner: jonno
     rotation:
       cadence: yearly
       method: Rotate the auth token in Sentry settings.
 
-  vercel:
+  hosting:
+    provider: vercel
     kind: hosting
     owner: jonno
     rotation:

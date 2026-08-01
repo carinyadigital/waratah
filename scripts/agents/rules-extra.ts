@@ -175,10 +175,10 @@ export const r11: Rule = ({ manifests, connections }) => {
   const violations: Violation[] = [];
   for (const { dir, manifest } of manifests) {
     if (!manifest?.policy) continue;
-    const emitsRead = (manifest.content?.emits ?? []).includes('read');
+    const emitsRead = (manifest.extensions?.content?.emits ?? []).includes('read');
     if (!emitsRead) continue;
 
-    const thresholds = manifest.content?.nThreshold ?? {};
+    const thresholds = manifest.extensions?.content?.nThreshold ?? {};
     const needing = (manifest.policy.connections ?? []).filter((c) =>
       N_THRESHOLD_KINDS.has(connections.connections?.[c]?.kind ?? ''),
     );
@@ -195,7 +195,7 @@ export const r11: Rule = ({ manifests, connections }) => {
         violations.push({
           rule: 'R11',
           agent: dir,
-          message: `emits read from "${source}" without content.nThreshold.${source} — below-n directional claims would be unblockable`,
+          message: `emits read from "${source}" without extensions.content.nThreshold.${source} — below-n directional claims would be unblockable`,
         });
       }
     }

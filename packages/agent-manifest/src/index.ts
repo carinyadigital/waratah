@@ -8,32 +8,25 @@ import { parse as parseYaml } from 'yaml';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-export type Platform =
-  | 'claude-managed-agent'
-  | 'vercel-eve'
-  | 'vercel-next-mounted'
-  | 'github-actions'
-  | 'claude-subagent';
-
 export type Write =
   | 'artifact-store'
   | 'tracker'
   | 'pr-comment'
-  | 'slack'
+  | 'chat'
   | 'repo-branch'
   | 'cms-draft'
   | 'cms-publish'
   | 'email-send'
   | 'social-post'
   | 'repo-main'
-  | 'vercel-deploy';
+  | 'deploy';
 
 export const CONSEQUENTIAL_WRITES: Write[] = [
   'cms-publish',
   'email-send',
   'social-post',
   'repo-main',
-  'vercel-deploy',
+  'deploy',
 ];
 
 export interface Trigger {
@@ -45,14 +38,28 @@ export interface Trigger {
   paths?: string[];
 }
 
+export interface Binding {
+  provider: string;
+  mode?: string;
+  schedule?: string;
+  timezone?: string;
+  workflow?: string;
+  harness?: 'none';
+  spendCapAcknowledged?: boolean;
+}
+
 export interface Manifest {
-  version: 1;
+  version: 2;
   name: string;
+  team: string;
   owner: string;
   description: string;
   tags: string[];
-  deploy: { platform: Platform; schedule?: string; timezone?: string; workflow?: string; harness?: 'none' };
-  triggers: Trigger[];
+  capability: {
+    kind: 'conversational' | 'deterministic' | 'interactive';
+    model?: 'strong' | 'standard' | 'none';
+    workflow?: string;
+  };
   policy: {
     untrustedInput: boolean;
     connections: string[];
@@ -61,16 +68,17 @@ export interface Manifest {
     spendCapUsd?: number;
     idempotencyKey?: string;
     cmsRole?: string;
-    cmsRoleAssertedBy?: string;
   };
-  content?: {
-    voice?: string;
-    rubric?: string;
-    positioning?: string;
-    nThreshold?: Record<string, number>;
-    clusters?: string[];
-    emits?: string[];
+  extensions?: {
+    content?: {
+      nThreshold?: Record<string, number>;
+      clusters?: string[];
+      emits?: string[];
+    };
+    [k: string]: unknown;
   };
+  bindings: Binding[];
+  triggers?: Trigger[];
   observability: { traces: 'none' | 'platform' | 'otel' | 'both'; alertChannel: string; evals?: string };
 }
 
@@ -86,22 +94,54 @@ applyFormats(ajv);
 const schema = JSON.parse(readFileSync(path.join(here, '..', 'agent.schema.json'), 'utf8'));
 export const validateManifest = ajv.compile(schema);
 
+const contentExtSchema = JSON.parse(
+  readFileSync(path.join(here, '..', 'extensions', 'content.schema.json'), 'utf8'),
+);
+export const validateContentExtension = ajv.compile(contentExtSchema);
+
+/**
+ * Discover agents. Supports flat `agents/<name>/agent.yaml` and nested
+ * `agents/<team>/<name>/agent.yaml`. A directory is an agent iff it holds
+ * an agent.yaml.
+ */
 export const loadManifests = (root: string): LoadedManifest[] => {
   const agentsDir = path.join(root, 'agents');
   if (!existsSync(agentsDir)) return [];
-  return readdirSync(agentsDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .flatMap((d) => {
-      const file = path.join(agentsDir, d.name, 'agent.yaml');
-      // A directory is an agent iff it holds an agent.yaml. Team-shared
-      // directories (artifacts, ops, …) sit alongside without a manifest.
-      if (!existsSync(file)) return [];
-      return [{ dir: d.name, file, manifest: parseYaml(readFileSync(file, 'utf8')) as Manifest }];
-    });
+
+  const out: LoadedManifest[] = [];
+
+  const visit = (dir: string, rel: string) => {
+    const file = path.join(dir, 'agent.yaml');
+    if (existsSync(file)) {
+      out.push({
+        dir: rel.replace(/\\/g, '/'),
+        file,
+        manifest: parseYaml(readFileSync(file, 'utf8')) as Manifest,
+      });
+      return;
+    }
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      // Skip known team-shared directories that never hold an agent.
+      if (['artifacts', 'ops', 'pipeline', 'schemas'].includes(entry.name)) continue;
+      visit(path.join(dir, entry.name), rel ? `${rel}/${entry.name}` : entry.name);
+    }
+  };
+
+  visit(agentsDir, '');
+  return out;
 };
 
+export interface ConnectionEntry {
+  kind: string;
+  owner: string;
+  rotation: unknown;
+  provider?: string;
+  assertion?: { repo: string; testPath: string; commitSha: string };
+}
+
 export interface ConnectionRegistry {
-  connections: Record<string, { kind: string; owner: string; rotation: unknown }>;
+  connections: Record<string, ConnectionEntry>;
 }
 
 export const loadConnections = (root: string): ConnectionRegistry => {

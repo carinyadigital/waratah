@@ -1,0 +1,19 @@
+{
+  "id": "github-actions",
+  "description": "GitHub Actions — deterministic checks with no model calls.",
+  "modes": ["workflow"],
+  "capabilities": {
+    "spendCap": "none",
+    "schedule": true,
+    "secretsIsolation": true
+  },
+  "options": {
+    "type": "object",
+    "properties": {
+      "mode": { "const": "workflow" },
+      "workflow": { "type": "string", "pattern": "^\\.github/workflows/.+\\.yml$" },
+      "harness": { "enum": ["none"] }
+    },
+    "required": ["mode", "workflow"]
+  }
+}

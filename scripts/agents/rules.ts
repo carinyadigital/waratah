@@ -1,16 +1,17 @@
 /**
  * Policy rules, CI-enforced by `pnpm agents check`.
  * A rule that cannot be checked is documentation, and is marked as such.
- * R1–R8 land with the register; R9–R12 are added as later epics deliver them.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import {
   CONSEQUENTIAL_WRITES,
+  validateContentExtension,
   validateManifest,
   type ConnectionRegistry,
   type LoadedManifest,
 } from '../../packages/agent-manifest/src/index';
+import { loadAdapters } from '../../packages/runtime/src/index';
 
 export interface RuleContext {
   root: string;
@@ -26,7 +27,15 @@ export interface Violation {
 
 export type Rule = (ctx: RuleContext) => Violation[];
 
-/** R1 — every agents/<dir> has a schema-valid agent.yaml whose name matches its directory. */
+const agentBasename = (dir: string): string => dir.split('/').filter(Boolean).pop() ?? dir;
+
+const expectedName = (dir: string, team?: string): string => {
+  const base = agentBasename(dir);
+  if (dir.includes('/') && team) return `${team}-${base}`;
+  return base;
+};
+
+/** R1 — every agent directory has a schema-valid agent.yaml; name equals team-dir when nested. */
 export const r1: Rule = ({ manifests }) => {
   const violations: Violation[] = [];
   for (const { dir, manifest } of manifests) {
@@ -39,8 +48,22 @@ export const r1: Rule = ({ manifests }) => {
         violations.push({ rule: 'R1', agent: dir, message: `${err.instancePath || '/'} ${err.message}` });
       }
     }
-    if (manifest.name && manifest.name !== dir) {
-      violations.push({ rule: 'R1', agent: dir, message: `name "${manifest.name}" does not match directory "${dir}"` });
+    const want = expectedName(dir, manifest.team);
+    if (manifest.name && manifest.name !== want && manifest.name !== agentBasename(dir)) {
+      violations.push({
+        rule: 'R1',
+        agent: dir,
+        message: `name "${manifest.name}" does not match expected "${want}"`,
+      });
+    }
+    if (manifest.extensions?.content && !validateContentExtension(manifest.extensions.content)) {
+      for (const err of validateContentExtension.errors ?? []) {
+        violations.push({
+          rule: 'R1',
+          agent: dir,
+          message: `extensions.content${err.instancePath || ''} ${err.message}`,
+        });
+      }
     }
   }
   return violations;
@@ -53,9 +76,18 @@ export const r2: Rule = ({ manifests, connections }) => {
     if (!manifest?.policy) continue;
     for (const conn of manifest.policy.connections ?? []) {
       const entry = connections.connections?.[conn];
-      if (!entry) violations.push({ rule: 'R2', agent: dir, message: `connection "${conn}" is not registered in config/connections.yaml` });
+      if (!entry)
+        violations.push({
+          rule: 'R2',
+          agent: dir,
+          message: `connection "${conn}" is not registered in config/connections.yaml`,
+        });
       else if (!entry.owner || !entry.rotation)
-        violations.push({ rule: 'R2', agent: dir, message: `connection "${conn}" lacks an owner or rotation policy` });
+        violations.push({
+          rule: 'R2',
+          agent: dir,
+          message: `connection "${conn}" lacks an owner or rotation policy`,
+        });
     }
   }
   return violations;
@@ -67,13 +99,17 @@ export const r3: Rule = ({ manifests }) => {
   for (const { dir, manifest } of manifests) {
     if (!manifest?.policy) continue;
     if (manifest.policy.untrustedInput === true && manifest.policy.approval === 'none') {
-      violations.push({ rule: 'R3', agent: dir, message: 'untrustedInput: true may not pair with approval: none' });
+      violations.push({
+        rule: 'R3',
+        agent: dir,
+        message: 'untrustedInput: true may not pair with approval: none',
+      });
     }
   }
   return violations;
 };
 
-/** R4 — any consequential write requires approval: human or pr-review. R4′ — a content agent may declare cms-draft, never cms-publish. */
+/** R4 — consequential writes need human/pr-review. R4′ — content team may never declare cms-publish. */
 export const r4: Rule = ({ manifests }) => {
   const violations: Violation[] = [];
   for (const { dir, manifest } of manifests) {
@@ -87,22 +123,52 @@ export const r4: Rule = ({ manifests }) => {
         message: `consequential write(s) ${consequential.join(', ')} require approval human or pr-review (found "${manifest.policy.approval}")`,
       });
     }
-    if ((manifest.tags ?? []).includes('content') && writes.includes('cms-publish')) {
-      violations.push({ rule: "R4'", agent: dir, message: 'a content agent may never declare cms-publish' });
+    if (manifest.team === 'content' && writes.includes('cms-publish')) {
+      violations.push({
+        rule: "R4'",
+        agent: dir,
+        message: 'a content agent may never declare cms-publish',
+      });
     }
   }
   return violations;
 };
 
-/** R5 — any agent with a schedule trigger declares spendCapUsd. github-actions agents are exempt: no model calls, no spend. */
-export const r5: Rule = ({ manifests }) => {
+/**
+ * R5 — scheduled model-backed agents declare spendCapUsd.
+ * When a binding's adapter cannot enforce the cap, the binding must set
+ * spendCapAcknowledged: true (or the adapter must declare spendCap: enforced).
+ */
+export const r5: Rule = ({ root, manifests }) => {
   const violations: Violation[] = [];
+  const adapters = loadAdapters(root);
+  const byId = new Map(adapters.map((a) => [a.id, a]));
+
   for (const { dir, manifest } of manifests) {
     if (!manifest) continue;
-    const scheduled = (manifest.triggers ?? []).some((t) => t.type === 'schedule');
-    const modelPlatform = manifest.deploy?.platform !== 'github-actions';
-    if (scheduled && modelPlatform && !manifest.policy?.spendCapUsd) {
+    const scheduled =
+      (manifest.triggers ?? []).some((t) => t.type === 'schedule') ||
+      (manifest.bindings ?? []).some((b) => Boolean(b.schedule));
+    const modelBindings = (manifest.bindings ?? []).filter((b) => b.provider !== 'github-actions');
+    if (!scheduled || !modelBindings.length) continue;
+
+    if (!manifest.policy?.spendCapUsd) {
       violations.push({ rule: 'R5', agent: dir, message: 'schedule trigger requires policy.spendCapUsd' });
+      continue;
+    }
+
+    for (const binding of modelBindings) {
+      const adapter = byId.get(binding.provider);
+      if (!adapter) continue;
+      if (adapter.capabilities.spendCap === 'enforced') continue;
+      if (adapter.capabilities.spendCap === 'none') continue;
+      if (!binding.spendCapAcknowledged) {
+        violations.push({
+          rule: 'R5',
+          agent: dir,
+          message: `binding provider "${binding.provider}" cannot enforce spendCapUsd — set spendCapAcknowledged: true on the binding or lower the cap onto an enforcing adapter`,
+        });
+      }
     }
   }
   return violations;
@@ -120,40 +186,122 @@ export const r6: Rule = ({ manifests }) => {
   return violations;
 };
 
-/** R7 — any unattended writer declares idempotencyKey. Unattended = triggered by schedule, repo-event or webhook; writer = any declared write. */
+/** R7 — any unattended writer declares idempotencyKey. */
 export const r7: Rule = ({ manifests }) => {
   const violations: Violation[] = [];
   for (const { dir, manifest } of manifests) {
     if (!manifest?.policy) continue;
-    const unattended = (manifest.triggers ?? []).some((t) => ['schedule', 'repo-event', 'webhook'].includes(t.type));
+    const unattended = (manifest.triggers ?? []).some((t) =>
+      ['schedule', 'repo-event', 'webhook'].includes(t.type),
+    );
     if (unattended && (manifest.policy.writes ?? []).length && !manifest.policy.idempotencyKey) {
-      violations.push({ rule: 'R7', agent: dir, message: 'unattended writer requires policy.idempotencyKey' });
+      violations.push({
+        rule: 'R7',
+        agent: dir,
+        message: 'unattended writer requires policy.idempotencyKey',
+      });
     }
   }
   return violations;
 };
 
-/** R8 — brand assets are referenced by dist/ path, never duplicated into an agent. */
+/**
+ * R8 — brand assets live under packages/brand/; agents never duplicate them
+ * and never restate brand paths in the manifest (resolved by the workflow).
+ */
 export const r8: Rule = ({ root, manifests }) => {
   const violations: Violation[] = [];
-  for (const { dir, manifest } of manifests) {
-    const content = manifest?.content;
-    if (!content) continue;
-    for (const key of ['voice', 'rubric', 'positioning'] as const) {
-      const ref = content[key];
-      if (!ref) continue;
-      if (!ref.startsWith('packages/brand/dist/')) {
-        violations.push({ rule: 'R8', agent: dir, message: `content.${key} must reference packages/brand/dist/, found "${ref}"` });
-      }
-    }
-    // The duplication half: no brand source files copied under the agent dir.
-    for (const banned of ['positioning.md', 'voice.md', 'claim-policy.md', 'editorial-rubric.md', 'banned-words.json']) {
+  for (const { dir } of manifests) {
+    for (const banned of [
+      'positioning.md',
+      'voice.md',
+      'claim-policy.md',
+      'editorial-rubric.md',
+      'banned-words.json',
+      'guide.md',
+    ]) {
       if (existsSync(path.join(root, 'agents', dir, banned))) {
-        violations.push({ rule: 'R8', agent: dir, message: `brand asset "${banned}" duplicated into the agent directory` });
+        violations.push({
+          rule: 'R8',
+          agent: dir,
+          message: `brand asset "${banned}" duplicated into the agent directory`,
+        });
       }
     }
   }
   return violations;
 };
 
-export const coreRules: Rule[] = [r1, r2, r3, r4, r5, r6, r7, r8];
+/** Bindings must name an installed adapter. */
+export const rBindings: Rule = ({ root, manifests }) => {
+  const violations: Violation[] = [];
+  const ids = new Set(loadAdapters(root).map((a) => a.id));
+  for (const { dir, manifest } of manifests) {
+    if (!manifest?.bindings) continue;
+    for (const b of manifest.bindings) {
+      if (!ids.has(b.provider)) {
+        violations.push({
+          rule: 'R1',
+          agent: dir,
+          message: `binding provider "${b.provider}" is not an installed adapter under packages/runtime/adapters/`,
+        });
+      }
+    }
+  }
+  return violations;
+};
+
+/**
+ * R13 — packages/ may not import from agents/. An agent may not import from
+ * another team. No package may import a vendor SDK except its own adapter.
+ */
+export const r13: Rule = ({ root }) => {
+  const violations: Violation[] = [];
+  const packagesDir = path.join(root, 'packages');
+  if (!existsSync(packagesDir)) return violations;
+
+  const walkTs = (dir: string): string[] => {
+    if (!existsSync(dir)) return [];
+    const out: string[] = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === 'dist') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...walkTs(full));
+      else if (entry.name.endsWith('.ts')) out.push(full);
+    }
+    return out;
+  };
+
+  const importRe = /from\s+['"]([^'"]+)['"]/g;
+
+  for (const file of walkTs(packagesDir)) {
+    const rel = path.relative(root, file);
+    const pkg = rel.split(path.sep)[1];
+    const text = readFileSync(file, 'utf8');
+    for (const match of text.matchAll(importRe)) {
+      const spec = match[1];
+      if (spec.includes('/agents/') || spec.startsWith('../../../agents')) {
+        violations.push({
+          rule: 'R13',
+          agent: `pkg:${pkg}`,
+          message: `${rel} imports from agents/ — packages may not depend on agents`,
+        });
+      }
+      // Vendor SDKs only in their adapter package.
+      if (
+        (spec === 'payload' || spec.startsWith('@payloadcms/')) &&
+        pkg !== 'content-store-payload'
+      ) {
+        violations.push({
+          rule: 'R13',
+          agent: `pkg:${pkg}`,
+          message: `${rel} imports Payload SDK — only content-store-payload may`,
+        });
+      }
+    }
+  }
+
+  return violations;
+};
+
+export const coreRules: Rule[] = [r1, r2, r3, r4, r5, r6, r7, r8, rBindings, r13];

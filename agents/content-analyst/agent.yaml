@@ -1,38 +1,33 @@
-# The portable agent definition. One source, built to any target host.
+# Identity, model tier, permissions, and per-target overlay.
 #
-# Convention over configuration, like a skill or a plugin: this file carries
-# identity, model tier, permissions and per-target overlay. Everything else is
-# discovered from the directories beside it. Adding a connector is adding a
-# file, never editing a list in two places.
+# Connectors, schedules, tools and skills are discovered from the directories
+# beside this file. Adding one is adding a file, never editing a list here.
 #
-#   instructions.md      the system prompt. One file, one source of truth.
+#   instructions.md      system prompt
+#   questions.yaml       pre-registered questions, read at runtime
 #   connectors/*.yaml    one MCP server per file
 #   schedules/*.yaml     one run per file
-#   questions.yaml       agent-specific input, read at runtime
-#
-# Nothing below names a vendor. Vendors are named in connectors/ and in the
-# target overlay, and nowhere else.
 
 schema: v1
 name: content-analyst
 description: >-
   Answers pre-registered performance questions from analytics and emits one read
-  artifact with the arithmetic showing. Reads only: it holds no write credential
-  to anything it reports on.
+  with the arithmetic showing. Reads only: it holds no write credential to
+  anything it reports on.
 
 instructions: ./instructions.md
 
-# A tier, not a model id. Each target resolves it and prints what it resolved to,
-# so `strong` never hides what was actually deployed.
+# A tier, not a model id. Each target resolves it and records what it resolved
+# to, so `strong` never hides what was deployed.
 model: strong
 
 permissions:
-  # Anything not named here needs a human. The default is the whole point.
+  # Anything not named here needs a human.
   default: ask
   connectors:
-    analytics: allow # read-only source, nothing it can break
+    analytics: allow
 
-targets:
+providers:
   claude:
     mode: managed
   cursor:

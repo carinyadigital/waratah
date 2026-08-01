@@ -1,0 +1,4 @@
+name: weekly-performance
+description: The performance run. Answers questions.yaml against the last full week.
+cron: '0 7 * * MON'
+timezone: Australia/Sydney

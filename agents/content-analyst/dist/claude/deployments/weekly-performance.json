@@ -1,0 +1,8 @@
+{
+  "name": "content-analyst-weekly-performance",
+  "description": "The performance run. Answers questions.yaml against the last full week.",
+  "schedule": {
+    "expression": "0 7 * * MON",
+    "timezone": "Australia/Sydney"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carinyaparc.com.au/schemas/agent.schema.json",
+  "title": "Portable agent definition",
+  "description": "Identity, model tier, permissions, and per-provider overlay. Connectors, schedules, tools and skills are discovered from sibling directories and are never listed here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "name", "description", "instructions", "model", "permissions"],
+  "properties": {
+    "schema": { "const": "v1" },
+    "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "description": { "type": "string", "minLength": 10 },
+    "instructions": { "type": "string", "description": "Path to the system prompt, relative to this file." },
+    "model": {
+      "enum": ["strong", "standard", "fast"],
+      "description": "A tier. Each provider resolves it to a real id and records the resolution in the built output."
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default"],
+      "properties": {
+        "default": { "enum": ["ask", "allow", "deny"] },
+        "connectors": {
+          "type": "object",
+          "additionalProperties": { "enum": ["ask", "allow", "deny"] }
+        }
+      }
+    },
+    "providers": {
+      "type": "object",
+      "description": "Per-provider overlay. The only block that may carry vendor-specific settings.",
+      "additionalProperties": false,
+      "properties": {
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "enum": ["managed"] },
+            "environment": { "type": "string", "description": "Environment id sessions run in. Omit for the account default." }
+          }
+        },
+        "cursor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scope": { "enum": ["private", "team"] },
+            "memory": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

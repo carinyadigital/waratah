@@ -2,7 +2,10 @@
  * The gate suite. Deterministic, no model calls. Grows monotonically from
  * human catches — every time the editor catches something, ask whether it
  * could have been a check.
+ *
+ * Content-specific gates stay here; the suite runner lives in @carinyaparc/workflow.
  */
+import { runGateSuite, type SuiteResult as WorkflowSuite } from '@carinyaparc/workflow';
 import type { Gate, GateInput, GateResult } from './types';
 import { briefConformance } from './briefConformance';
 import { claimCoverage } from './claimCoverage';
@@ -22,9 +25,6 @@ export const gates: Gate[] = [
   briefConformance,
 ];
 
-// The JS function identifier (e.g. `claimCoverage`) doesn't always match the
-// gate's own canonical, kebab-case `gate` id (e.g. `claim-coverage`) returned
-// on pass/fail — this keeps a crash reported under the same id callers match on.
 const gateNames = new Map<Gate, string>([
   [structure, 'structure'],
   [claimCoverage, 'claim-coverage'],
@@ -43,22 +43,11 @@ export interface SuiteResult {
 }
 
 export const runGates = async (input: GateInput): Promise<SuiteResult> => {
-  const results: GateResult[] = [];
-  for (const gate of gates) {
-    try {
-      results.push(await gate(input));
-    } catch (err) {
-      results.push({
-        gate: gateNames.get(gate) ?? gate.name ?? 'unknown',
-        status: 'fail',
-        failures: [`gate crashed: ${(err as Error).message}`],
-      });
-    }
-  }
+  const suite: WorkflowSuite = await runGateSuite(input, gates, {
+    nameOf: (gate) => gateNames.get(gate) ?? gate.name ?? 'unknown',
+  });
   return {
-    slug: input.slug,
-    ok: results.every((r) => r.status !== 'fail'),
-    results,
+    ...suite,
     couldNotVerify: input.pack.couldNotVerify ?? [],
   };
 };

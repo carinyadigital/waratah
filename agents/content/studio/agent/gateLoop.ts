@@ -5,16 +5,10 @@
  * reports success while a gate fails, and names the unsatisfied gates when
  * it stops.
  */
-import { runGates, type SuiteResult } from '@carinyaparc/content-pipeline';
-import type { GateInput, DraftArtifact } from '@carinyaparc/content-pipeline';
+import { runGates, type GateInput, type DraftArtifact } from '@carinyaparc/content-pipeline';
+import { revisionLoop, type RevisionLoopReport, type SuiteResult } from '@carinyaparc/workflow';
 
-export interface GateLoopReport {
-  ok: boolean;
-  attempts: number;
-  final: SuiteResult;
-  /** Gates still failing when the loop stopped, with their messages — the honest failure report. */
-  unsatisfied: { gate: string; failures: string[] }[];
-}
+export type GateLoopReport = RevisionLoopReport;
 
 export type Reviser = (draft: DraftArtifact, failing: SuiteResult) => Promise<DraftArtifact> | DraftArtifact;
 
@@ -23,23 +17,14 @@ export const gateLoop = async (
   revise: Reviser,
   maxAttempts = 3,
 ): Promise<GateLoopReport> => {
-  if (maxAttempts < 1) throw new Error('maxAttempts must be at least 1');
-  let draft = input.draft;
-  let suite = await runGates({ ...input, draft });
-  let attempts = 1;
-
-  while (!suite.ok && attempts < maxAttempts) {
-    draft = await revise(draft, suite);
-    suite = await runGates({ ...input, draft });
-    attempts += 1;
-  }
-
-  return {
-    ok: suite.ok,
-    attempts,
-    final: suite,
-    unsatisfied: suite.results
-      .filter((r) => r.status === 'fail')
-      .map((r) => ({ gate: r.gate, failures: r.failures })),
-  };
+  const { report } = await revisionLoop({
+    initial: input.draft,
+    maxAttempts,
+    run: async (draft) => {
+      const suite = await runGates({ ...input, draft });
+      return { slug: suite.slug, ok: suite.ok, results: suite.results };
+    },
+    revise,
+  });
+  return report;
 };

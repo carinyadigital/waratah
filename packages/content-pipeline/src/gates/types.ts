@@ -88,11 +88,7 @@ export interface GateInput {
 
 export type GateStatus = 'pass' | 'fail' | 'skip';
 
-export interface GateResult {
-  gate: string;
-  status: GateStatus;
-  failures: string[];
-  notes?: string[];
-}
+export type { GateResult } from '@carinyaparc/workflow';
+import type { GateResult } from '@carinyaparc/workflow';
 
 export type Gate = (input: GateInput) => Promise<GateResult> | GateResult;

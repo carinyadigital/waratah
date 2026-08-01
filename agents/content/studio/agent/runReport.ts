@@ -1,14 +1,12 @@
 /**
  * The threaded Slack run report. Whether the run completed or failed, the
  * thread carries the draft link, per-gate status and the full couldNotVerify
- * list. Formatting is mrkdwn; posting is the provider's chat write
- * (policy.writes includes slack).
+ * list. Formatting is mrkdwn; posting is the provider's chat write.
  */
+import type { PackArtifact } from '@carinyaparc/content-pipeline';
+import { renderGateTable, renderUnsatisfied } from '@carinyaparc/workflow';
 import type { GateLoopReport } from './gateLoop';
 import type { StageResult } from './stage';
-import type { PackArtifact } from '@carinyaparc/content-pipeline';
-
-const icon = { pass: '✅', fail: '❌', skip: '⏭️' } as const;
 
 export interface RunReportInput {
   slug: string;
@@ -28,18 +26,10 @@ export const renderRunReport = ({ slug, loop, staged, pack }: RunReportInput): s
 
   if (staged) lines.push(`Draft: ${staged.url} (${staged.operation})`);
 
-  lines.push('', '*Gates*');
-  for (const r of loop.final.results) {
-    lines.push(`${icon[r.status]} ${r.gate}`);
-    if (r.status === 'fail') for (const f of r.failures) lines.push(`    • ${f}`);
-  }
+  lines.push('', renderGateTable(loop.final.results));
 
-  if (!loop.ok) {
-    lines.push('', '*What I could not satisfy*');
-    for (const u of loop.unsatisfied) {
-      lines.push(`• *${u.gate}*: ${u.failures.join('; ')}`);
-    }
-  }
+  const unsat = renderUnsatisfied(loop);
+  if (unsat) lines.push('', unsat);
 
   lines.push('', `*couldNotVerify* (${pack.couldNotVerify.length})`);
   if (pack.couldNotVerify.length === 0) {

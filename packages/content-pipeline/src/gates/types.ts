@@ -1,4 +1,4 @@
-import type { LexicalDocument } from '../lexical/claim';
+import type { Document } from '@carinyaparc/content-store';
 
 export interface BriefArtifact {
   slug: string;
@@ -34,13 +34,12 @@ export interface PackArtifact {
   couldNotVerify: { claim: string; note: string }[];
 }
 
+/** Staged draft artifact. Content is the provider-neutral document model. */
 export interface DraftArtifact {
   slug: string;
   title: string;
   surface: 'blog' | 'recipes' | 'landing' | 'newsletter';
-  collection?: 'posts' | 'recipes';
-  payloadId?: string | number;
-  content: LexicalDocument;
+  content: Document;
 }
 
 export interface ClaimPolicy {

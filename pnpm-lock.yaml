@@ -75,6 +75,9 @@ importers:
 
   packages/content-pipeline:
     dependencies:
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../content-store
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
@@ -91,6 +94,14 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@26.1.2)(happy-dom@20.11.1)(vite@6.4.3(@types/node@26.1.2)(sass@1.77.4)(tsx@4.23.1)(yaml@2.9.0))
+
+  packages/content-store: {}
+
+  packages/content-store-payload:
+    dependencies:
+      '@carinyaparc/content-store':
+        specifier: workspace:*
+        version: link:../content-store
 
 packages:
 

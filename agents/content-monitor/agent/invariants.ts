@@ -2,14 +2,14 @@
  * The invariants. Pure functions over plain inputs: the runner assembles the
  * corpus, these decide. No model calls.
  */
-import { collectClaims, collectLinks, type LexicalDocument } from '../../../packages/content-pipeline/src/lexical/claim';
+import { collectClaims, collectLinks, type Document } from '../../../packages/content-pipeline/src/lexical/claim';
 import { internalSlug, resolveExternalLink } from '../../../packages/content-pipeline/src/gates/links';
 import type { BriefArtifact, ClaimPolicy, PackArtifact, SurfaceSpec } from '../../../packages/content-pipeline/src/gates/types';
 
 export interface CorpusDoc {
   slug: string;
   surface: string;
-  content: LexicalDocument;
+  content: Document;
   publishedAt?: string;
   lastReviewedAt?: string;
   positioningHash?: string;

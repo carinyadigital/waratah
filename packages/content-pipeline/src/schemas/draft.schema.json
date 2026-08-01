@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://carinyaparc.com.au/schemas/draft.schema.json",
   "title": "Staged draft artifact",
-  "description": "The structure gate's contract for a staged document: the Payload document shape the studio stages and the gates walk. In the hand-driven phase drafts live at .agency/content/drafts/<slug>.json; once staged over REST the same shape is fetched from Payload.",
+  "description": "The structure gate's contract for a staged document: provider-neutral content the studio stages and the gates walk. Drafts live at the team's artifact drafts directory; once staged over the content-store port the same shape is fetched from the CMS.",
   "type": "object",
   "additionalProperties": false,
   "required": ["slug", "title", "surface", "content"],
@@ -10,8 +10,6 @@
     "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "title": { "type": "string", "minLength": 3 },
     "surface": { "enum": ["blog", "recipes", "landing", "newsletter"] },
-    "collection": { "enum": ["posts", "recipes"] },
-    "payloadId": { "type": ["string", "integer"], "description": "Set once staged over REST." },
     "content": {
       "type": "object",
       "required": ["root"],

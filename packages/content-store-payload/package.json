@@ -1,0 +1,13 @@
+{
+  "name": "@carinyaparc/content-store-payload",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Payload REST adapter for @carinyaparc/content-store. The only package that names Payload as a CMS provider.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@carinyaparc/content-store": "workspace:*"
+  }
+}

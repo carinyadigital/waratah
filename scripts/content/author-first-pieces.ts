@@ -26,7 +26,6 @@ const baseline: DraftArtifact = {
   slug: 'measuring-soil-carbon-baseline',
   title: 'The baseline comes first: measuring before claiming',
   surface: 'blog',
-  collection: 'posts',
   content: doc(
     heading('h2', 'Why we measured before we claimed'),
     paragraph(
@@ -103,7 +102,6 @@ const roast: DraftArtifact = {
   slug: 'slow-roasted-highland-beef',
   title: 'Slow-roasted Highland beef',
   surface: 'recipes',
-  collection: 'recipes',
   content: doc(
     heading('h2', 'Why this cut, why this method'),
     paragraph(

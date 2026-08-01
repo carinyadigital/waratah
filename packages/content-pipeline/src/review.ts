@@ -7,7 +7,7 @@
  * survives / argument reordered → brief problem; gate attempts high / edit
  * distance low → the gates are wrong, not the writer.
  */
-import { textOf, walk, type LexicalDocument, type SerializedLexicalNode } from './lexical/claim';
+import { textOf, walk, type Document, type DocNode } from './lexical/claim';
 
 export interface Section {
   name: string;
@@ -17,7 +17,7 @@ export interface Section {
 const words = (s: string): string[] => s.toLowerCase().split(/\s+/).filter(Boolean);
 
 /** Split a document into sections at h2/h3 headings. Content before any heading is "lead". */
-export const sections = (doc: LexicalDocument): Section[] => {
+export const sections = (doc: Document): Section[] => {
   const out: Section[] = [];
   let current: Section = { name: 'lead', words: [] };
   for (const child of doc.root.children ?? []) {
@@ -55,8 +55,8 @@ export interface EditReport {
 }
 
 export const computeEdit = (
-  staged: LexicalDocument,
-  published: LexicalDocument,
+  staged: Document,
+  published: Document,
   locusThreshold = 0.7,
 ): EditReport => {
   const stagedWords = words(textOf(staged.root));
@@ -82,8 +82,8 @@ export const computeEdit = (
 };
 
 /** Count claim annotations that survived — a silent deletion during editing is what the monitor's re-check catches later, but the review record notices first. */
-export const claimSurvival = (staged: LexicalDocument, published: LexicalDocument): { staged: number; published: number } => {
-  const count = (doc: LexicalDocument) => {
+export const claimSurvival = (staged: Document, published: Document): { staged: number; published: number } => {
+  const count = (doc: Document) => {
     let n = 0;
     for (const { node } of walkDoc(doc.root)) if (node.type === 'claim') n += 1;
     return n;
@@ -91,6 +91,6 @@ export const claimSurvival = (staged: LexicalDocument, published: LexicalDocumen
   return { staged: count(staged), published: count(published) };
 };
 
-function* walkDoc(node: SerializedLexicalNode): Generator<{ node: SerializedLexicalNode }> {
+function* walkDoc(node: DocNode): Generator<{ node: DocNode }> {
   for (const item of walk(node)) yield item;
 }

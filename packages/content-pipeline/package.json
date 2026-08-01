@@ -12,6 +12,7 @@
     "gates": "tsx src/cli.ts"
   },
   "dependencies": {
+    "@carinyaparc/content-store": "workspace:*",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "yaml": "^2.9.0"

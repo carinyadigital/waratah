@@ -211,7 +211,7 @@ export const r11: Rule = ({ manifests, connections }) => {
  * to one agent — the ladder is a property of the practice.
  */
 export const r12: Rule = ({ root }) => {
-  const classesFile = path.join(root, '.agency', 'calibration', 'decision-classes.yaml');
+  const classesFile = path.join(root, 'governance', 'calibration', 'decision-classes.yaml');
   if (!existsSync(classesFile)) return [];
   const violations: Violation[] = [];
   for (const cls of loadClasses(root)) {

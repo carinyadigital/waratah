@@ -14,6 +14,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse as parseYaml, stringify as toYaml } from 'yaml';
+import { repoPaths } from '@carinyaparc/workflow/paths';
 
 export interface DecisionClass {
   id: string;
@@ -46,7 +47,7 @@ export interface LevelChange {
   at: string;
 }
 
-const calibrationDir = (root: string) => path.join(root, '.agency', 'calibration');
+const calibrationDir = (root: string) => repoPaths(root).calibration;
 const classesFile = (root: string) => path.join(calibrationDir(root), 'decision-classes.yaml');
 const shadowFile = (root: string, classId: string, item: string) =>
   path.join(calibrationDir(root), 'shadow', classId, `${item}.yaml`);
@@ -143,7 +144,7 @@ export const recordHumanDecision = (
   saveLedger(root, classId, ledger);
 
   // Pair into the review record when one exists for this item.
-  const reviewFile = path.join(root, '.agency', 'content', 'reviews', `${item}.yaml`);
+  const reviewFile = path.join(repoPaths(root).content, 'reviews', `${item}.yaml`);
   if (existsSync(reviewFile)) {
     const review = parseYaml(readFileSync(reviewFile, 'utf8')) as Record<string, unknown>;
     const shadowBlock = (review.shadow as { verdicts: unknown[] } | undefined) ?? { verdicts: [] };

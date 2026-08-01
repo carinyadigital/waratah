@@ -99,14 +99,14 @@ const main = async () => {
     const { tmpdir } = await import('node:os');
     const brand = loadBrand(repoPaths(root));
     const b = new OpportunitiesBuilder('2026-08', brand.positioning.hash, brand.claimPolicy, {
-      reads: ['.agency/content/reads/2026-W31.yaml'],
+      reads: ['agents/content/artifacts/reads/2026-W31.yaml'],
     });
     const verdict = b.propose({
       title: 'How to read a soil test without a consultant',
       targetQuery: 'how to read a soil test',
       surface: 'blog',
       bet: 'Practitioner-cluster demand is unserved; this converts practitioners at above-cluster rate within 90 days.',
-      evidence: [{ artifact: '.agency/content/reads/2026-W31.yaml', ref: 'finding-0' }],
+      evidence: [{ artifact: 'agents/content/artifacts/reads/2026-W31.yaml', ref: 'finding-0' }],
     });
     const contentDir = path.join(mkdtempSync(path.join(tmpdir(), 'planner-smoke-')), 'content');
     const file = b.writeTo(contentDir);

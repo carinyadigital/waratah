@@ -17,12 +17,12 @@ import {
 } from '../src/calibration';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const seedFile = path.resolve(here, '../../../.agency/calibration/decision-classes.yaml');
+const seedFile = path.resolve(here, '../../../governance/calibration/decision-classes.yaml');
 
 const scaffold = (): string => {
   const root = mkdtempSync(path.join(tmpdir(), 'calibration-'));
-  mkdirSync(path.join(root, '.agency/calibration'), { recursive: true });
-  cpSync(seedFile, path.join(root, '.agency/calibration/decision-classes.yaml'));
+  mkdirSync(path.join(root, 'governance', 'calibration'), { recursive: true });
+  cpSync(seedFile, path.join(root, 'governance', 'calibration', 'decision-classes.yaml'));
   return root;
 };
 
@@ -75,7 +75,7 @@ describe('the shadow protocol', () => {
 
   it('pairs verdicts into the review record when the item is a published slug', () => {
     const root = scaffold();
-    const reviewsDir = path.join(root, '.agency/content/reviews');
+    const reviewsDir = path.join(root, 'agents', 'content', 'artifacts', 'reviews');
     mkdirSync(reviewsDir, { recursive: true });
     writeFileSync(path.join(reviewsDir, 'some-piece.yaml'), toYaml({ slug: 'some-piece', humanScore: 4 }));
 
@@ -119,7 +119,7 @@ describe('levels move on evidence, automatically', () => {
     recordHumanDecision(root, 'figure-rederivation', 'the-bad-one', 'fabricated-figure', { severeMiss: true });
     expect(queryClass(root, 'figure-rederivation').level).toBe(0);
 
-    const log = parseYaml(readFileSync(path.join(root, '.agency/calibration/log.yaml'), 'utf8'));
+    const log = parseYaml(readFileSync(path.join(root, 'governance', 'calibration', 'log.yaml'), 'utf8'));
     const kinds = log.changes.map((c: { kind: string }) => c.kind);
     expect(kinds).toContain('promotion');
     expect(kinds).toContain('demotion');
@@ -130,7 +130,7 @@ describe('levels move on evidence, automatically', () => {
     const classes = loadClasses(root);
     const cls = classes.find((c) => c.id === 'figure-rederivation')!;
     cls.level = 4;
-    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+    writeFileSync(path.join(root, 'governance', 'calibration', 'decision-classes.yaml'), toYaml({ classes }));
 
     recordShadowVerdict(root, 'figure-rederivation', 'the-bad-one', 'reproduces');
     recordHumanDecision(root, 'figure-rederivation', 'the-bad-one', 'fabricated-figure', { severeMiss: true });
@@ -159,7 +159,7 @@ describe('R12 — the rule the ledger makes checkable', () => {
     const classes = loadClasses(root);
     const cls = classes.find((c) => c.id === 'figure-rederivation')!;
     cls.level = 3;
-    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+    writeFileSync(path.join(root, 'governance', 'calibration', 'decision-classes.yaml'), toYaml({ classes }));
 
     expect(qualifiesForLevel(root, cls).ok).toBe(false);
 
@@ -180,7 +180,7 @@ describe('R12 — the rule the ledger makes checkable', () => {
     const classes = loadClasses(root);
     const cls = classes.find((c) => c.id === 'figure-rederivation')!;
     cls.window = 0;
-    writeFileSync(path.join(root, '.agency/calibration/decision-classes.yaml'), toYaml({ classes }));
+    writeFileSync(path.join(root, 'governance', 'calibration', 'decision-classes.yaml'), toYaml({ classes }));
 
     fillLedger(root, 'figure-rederivation', 5);
     const report = agreementRate(root, 'figure-rederivation');

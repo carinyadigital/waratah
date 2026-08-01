@@ -40,14 +40,14 @@ export const checkBriefAndPack = (
         invariant: 'published-has-brief',
         page: doc.slug,
         title: `published page "${doc.slug}" has no brief`,
-        evidence: `no .agency/content/briefs/${doc.slug}.yaml`,
+        evidence: `no agents/content/artifacts/briefs/${doc.slug}.yaml`,
       });
     if (!packs.has(doc.slug))
       violations.push({
         invariant: 'published-has-pack',
         page: doc.slug,
         title: `published page "${doc.slug}" has no pack`,
-        evidence: `no .agency/content/packs/${doc.slug}.yaml`,
+        evidence: `no agents/content/artifacts/packs/${doc.slug}.yaml`,
       });
   }
 
@@ -73,7 +73,7 @@ export const checkPublishedHasReview = (published: CorpusDoc[], reviewSlugs: str
       invariant: 'published-has-review',
       page: doc.slug,
       title: `published page "${doc.slug}" has no review record`,
-      evidence: `no .agency/content/reviews/${doc.slug}.yaml — the calibration/shadow pipeline treats review records as its sole input`,
+      evidence: `no agents/content/artifacts/reviews/${doc.slug}.yaml — the calibration/shadow pipeline treats review records as its sole input`,
     }));
 };
 

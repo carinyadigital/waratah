@@ -8,8 +8,8 @@ You are the studio: you turn one brief and its evidence pack into one staged Pay
 
 ## Inputs
 
-- `.agency/content/briefs/<slug>.yaml` — the brief. Schema-valid or you stop.
-- `.agency/content/packs/<slug>.yaml` — the researcher's pack (see researcher.md). You read the pack, not the internet.
+- `agents/content/artifacts/briefs/<slug>.yaml` — the brief. Schema-valid or you stop.
+- `agents/content/artifacts/packs/<slug>.yaml` — the researcher's pack (see researcher.md). You read the pack, not the internet.
 - `packages/brand/dist/` — voice, rubric, positioning, surfaces. Referenced, never copied.
 
 ## The six passes (writer)
@@ -28,7 +28,7 @@ You are the studio: you turn one brief and its evidence pack into one staged Pay
 
 ## Staging
 
-Stage the passing draft to Payload over REST as the `agent` identity, `_status: draft`, idempotent on `brief.slug` — re-running a brief updates its existing draft rather than duplicating it. Commit the artifacts to `.agency/content/` on a branch; the PR is the review surface (`approval: pr-review`).
+Stage the passing draft to Payload over REST as the `agent` identity, `_status: draft`, idempotent on `brief.slug` — re-running a brief updates its existing draft rather than duplicating it. Commit the artifacts to `agents/content/artifacts/` on a branch; the PR is the review surface (`approval: pr-review`).
 
 ## Run report (Slack thread)
 

@@ -1,23 +1,16 @@
 /**
- * Loading and locating .agency/content/ artifacts and packages/brand/dist.
+ * Loading and locating content-team artifacts and packages/brand/dist.
  * The slug is the join key across tracker, artifacts and CMS.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
+import { repoPaths as workflowPaths, type RepoPaths } from '@carinyaparc/workflow/paths';
 import type { BrandDist, BriefArtifact, DraftArtifact, PackArtifact } from './gates/types';
 
-export interface RepoPaths {
-  root: string;
-  content: string;
-  brandDist: string;
-}
+export type { RepoPaths };
 
-export const repoPaths = (root: string): RepoPaths => ({
-  root,
-  content: path.join(root, '.agency', 'content'),
-  brandDist: path.join(root, 'packages', 'brand', 'dist'),
-});
+export const repoPaths = (root: string): RepoPaths => workflowPaths(root);
 
 const readYaml = <T>(file: string): T => parseYaml(readFileSync(file, 'utf8')) as T;
 const readJson = <T>(file: string): T => JSON.parse(readFileSync(file, 'utf8')) as T;
@@ -65,9 +58,8 @@ const draftSlugs = (paths: RepoPaths): string[] => {
 };
 
 /**
- * Slugs of the local published mirror (.agency/content/published/), read the same
- * way content-monitor's corpus assembly does: by each document's own `slug` field,
- * not its filename.
+ * Slugs of the local published mirror, read by each document's own `slug`
+ * field, not its filename.
  */
 const publishedSlugs = (paths: RepoPaths): string[] => {
   const dir = path.join(paths.content, 'published');
@@ -78,8 +70,8 @@ const publishedSlugs = (paths: RepoPaths): string[] => {
 };
 
 /**
- * Slugs known to the corpus — staged drafts plus the local published mirror — so a
- * draft linking to an already-published page (with no active draft file) resolves
- * the same way here as it does in content-monitor's broader corpus definition.
+ * Slugs known to the corpus — staged drafts plus the local published mirror —
+ * so a draft linking to an already-published page resolves the same way here
+ * as it does in content-monitor's broader corpus definition.
  */
 export const corpusSlugs = (paths: RepoPaths): string[] => [...new Set([...draftSlugs(paths), ...publishedSlugs(paths)])];

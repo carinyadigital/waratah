@@ -93,7 +93,9 @@ export const loadManifests = (root: string): LoadedManifest[] => {
     .filter((d) => d.isDirectory())
     .flatMap((d) => {
       const file = path.join(agentsDir, d.name, 'agent.yaml');
-      if (!existsSync(file)) return [{ dir: d.name, file, manifest: null as never }];
+      // A directory is an agent iff it holds an agent.yaml. Team-shared
+      // directories (artifacts, ops, …) sit alongside without a manifest.
+      if (!existsSync(file)) return [];
       return [{ dir: d.name, file, manifest: parseYaml(readFileSync(file, 'utf8')) as Manifest }];
     });
 };

@@ -71,7 +71,7 @@ export interface CommissionResult {
 }
 
 export const commission = (root: string, input: CommissionInput, now = new Date()): CommissionResult => {
-  const contentDir = path.join(root, '.agency', 'content');
+  const contentDir = path.join(root, 'agents', 'content', 'artifacts');
   const slug = slugify(input.opportunity.title);
 
   // Refuse a targetQuery collision at write — one query maps to one page.
@@ -113,7 +113,7 @@ export const commission = (root: string, input: CommissionInput, now = new Date(
     kind: 'proposed-brief',
     title: `proposed brief: ${input.opportunity.title}`,
     evidence: `bet: ${input.opportunity.bet} — evidence: ${input.opportunity.evidence.map((e) => `${e.artifact}#${e.ref}`).join(', ')}`,
-    raw: `opportunity ${input.opportunity.id}; brief at .agency/content/briefs/${slug}.yaml`,
+    raw: `opportunity ${input.opportunity.id}; brief at agents/content/artifacts/briefs/${slug}.yaml`,
   });
 
   return { slug, briefFile, filedTo: 'triage', queueHadRoom: queueHasRoom(contentDir), trackerRef };

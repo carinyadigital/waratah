@@ -154,7 +154,7 @@ describe('the newsletter path and send attribution', () => {
     const { espDraftId } = await createNewsletterDraft(root, a, esp);
 
     const draft = parseYaml(
-      readFileSync(path.join(root, '.agency/distribution/esp-drafts', `${espDraftId}.yaml`), 'utf8'),
+      readFileSync(path.join(root, 'agents/content/artifacts/distribution/esp-drafts', `${espDraftId}.yaml`), 'utf8'),
     );
     expect(draft.status).toBe('draft-unsent');
     expect('send' in esp).toBe(false);

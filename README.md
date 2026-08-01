@@ -13,7 +13,8 @@ The agent workforce for Carinya Parc — a regenerative farm at The Branch, Uppe
 | `packages/agent-manifest/` | `agent.schema.json` and manifest types |
 | `agents/` | The register — one directory per agent, `agent.yaml` is the source of truth |
 | `scripts/agents/` | The register CLI: `pnpm agents list \| check \| matrix \| deploy` (rules R1–R12) |
-| `.agency/` | Artifacts: briefs, packs, drafts, reviews, reads, predictions, triage, calibration ledger, ready queue |
+| `agents/content/artifacts/` | Content-team artifacts: briefs, packs, drafts, reviews, reads, predictions, triage, distribution, ready queue |
+| `governance/` | Calibration ledger, code-review records, delivery workpapers |
 | `.github/workflows/` | `content-qa` (gates on PR + merge commit), `content-monitor` (weekly invariants), `content-capture`, `agents-deploy` |
 
 ## Working locally
@@ -22,7 +23,7 @@ The agent workforce for Carinya Parc — a regenerative farm at The Branch, Uppe
 pnpm install
 pnpm build:brand          # emit packages/brand/dist (positioning hash etc.)
 pnpm test                 # full suite — gates, agents, calibration
-pnpm gates                # run the gate suite over .agency/content
+pnpm gates                # run the gate suite over agents/content/artifacts
 pnpm agents check         # register rules R1–R12
 pnpm monitor --external-links skip   # corpus invariants, offline
 ```

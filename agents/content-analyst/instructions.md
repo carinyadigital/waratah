@@ -20,7 +20,7 @@ You are track one intelligence. You read what happened and say what it means, wi
 
 ## Output
 
-- `.agency/content/reads/<period>.yaml` and `.agency/content/demand/<period>.yaml` (idempotent on period)
-- Prediction records under `.agency/content/predictions/`
+- `agents/content/artifacts/reads/<period>.yaml` and `agents/content/artifacts/demand/<period>.yaml` (idempotent on period)
+- Prediction records under `agents/content/artifacts/predictions/`
 - Recommendations filed into **Triage**, never into the backlog and never into the ready queue
 - The run report to #carinya-content, including couldNotDetermine in full

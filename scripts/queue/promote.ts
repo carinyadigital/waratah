@@ -13,7 +13,7 @@ import { demote, promote } from '../../agents/content-planner/agent/queue';
 import { arg } from '../../packages/content-pipeline/src/cliArgs';
 
 const root = path.resolve(arg('root') ?? process.cwd());
-const contentDir = path.join(root, '.agency', 'content');
+const contentDir = path.join(root, 'agents', 'content', 'artifacts');
 
 const toDemote = arg('demote');
 const slug = arg('slug');

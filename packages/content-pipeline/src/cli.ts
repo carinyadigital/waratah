@@ -34,7 +34,7 @@ const main = async () => {
 
   const slugs = only ? [only] : listBriefSlugs(paths);
   if (!slugs.length) {
-    console.log('no briefs found under .agency/content/briefs');
+    console.log('no briefs found under agents/content/artifacts/briefs');
     return;
   }
 

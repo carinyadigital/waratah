@@ -112,7 +112,7 @@ describe('the n-threshold gate', () => {
 describe('reads, predictions and the run report', () => {
   const scaffold = () => {
     const root = mkdtempSync(path.join(tmpdir(), 'analyst-'));
-    const contentDir = path.join(root, '.agency', 'content');
+    const contentDir = path.join(root, 'agents', 'content', 'artifacts');
     mkdirSync(contentDir, { recursive: true });
     return contentDir;
   };

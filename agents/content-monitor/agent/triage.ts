@@ -6,8 +6,8 @@
  * duplicates an unresolved violation; a violation resolved and later
  * re-detected files fresh.
  *
- * Locally (and in CI without credentials) Triage is `.agency/triage/` —
- * one YAML per item, mirroring the tracker the way `.agency/content/`
+ * Locally (and in CI without credentials) Triage is `agents/content/artifacts/triage/` —
+ * one YAML per item, mirroring the tracker the way `agents/content/artifacts/`
  * mirrors the CMS. When a LINEAR_API_KEY is present the same items are
  * pushed to the Linear Triage queue and the file records `linearRef`.
  */
@@ -43,7 +43,7 @@ export class Triage {
   readonly dir: string;
 
   constructor(root: string) {
-    this.dir = path.join(root, '.agency', 'triage');
+    this.dir = path.join(root, 'agents', 'content', 'artifacts', 'triage');
     mkdirSync(this.dir, { recursive: true });
   }
 

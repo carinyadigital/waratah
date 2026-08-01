@@ -157,11 +157,11 @@ CI-enforced by `pnpm agents check`. A rule that cannot be checked is documentati
 
 **R3 and R4 are the two that matter.** Everything else is hygiene around them.
 
-**R9 is the only rule that closes the assertion gap.** Everywhere else, `writes: [x]` is a claim provider configuration has to honour and CI cannot verify. Because Payload access control is TypeScript in the repo, `writes: [cms-draft]` corresponds to a named role whose rules CI can assert still exist. See `decisions/ADR-0001-content-storage.md`.
+**R9 closes the assertion gap via a cross-repo pin.** The cms connection declares `assertion.{repo,testPath,commitSha}` pointing at the publish-denial test in the site repository. See `decisions/ADR-0005-r9-cross-repo-assertion.md`.
 
-**R10 exists because it is the rule most likely to be broken by someone being helpful during a debugging session.** Every guarantee in the Payload access layer becomes decorative the moment an agent holds a direct Postgres credential.
+**R10 exists because it is the rule most likely to be broken by someone being helpful during a debugging session.** Every guarantee in the CMS access layer becomes decorative the moment an agent holds a direct Postgres credential.
 
-**R11 and R12 are enforced** by `agent.schema.json`, `read.schema.json`, `scripts/agents/rules-extra.ts`, and the calibration ledger under `.agency/calibration/`.
+**R11 and R12 are enforced** by `agent.schema.json`, `read.schema.json`, `scripts/agents/rules-extra.ts`, and the calibration ledger under `governance/calibration/`.
 
 ## 7. The CLI
 
@@ -176,24 +176,34 @@ pnpm agents deploy --only name
 
 ## 8. Artifacts
 
-Content-practice artifacts live in `.agency/content/`:
+Content-team artifacts live in `agents/content/artifacts/`. Governance ledgers live under `governance/`. Paths resolve through `@carinyaparc/workflow` `repoPaths()`.
 
 ```
-.agency/content/
+agents/content/artifacts/
 ├── briefs/<slug>.yaml
 ├── packs/<slug>.yaml
+├── drafts/<slug>.json
 ├── reads/<period>.yaml
 ├── reviews/<slug>.yaml
-└── predictions/<id>.yaml
+├── predictions/<id>.yaml
+├── published/                 # local CMS mirror
+├── triage/                    # work-queue mirror
+├── distribution/              # ESP drafts + send approvals
+└── queue.yaml
+
+governance/
+├── calibration/               # decision classes, shadow, log
+├── reviews/                   # code-review ledger
+└── delivery/                  # delivery workpapers
 ```
 
-Schema-validated on write. The slug is the join key across the tracker, the artifacts, and the CMS document. See `content/design.md` §4.
+Schema-validated on write. The slug is the join key across the tracker, the artifacts, and the CMS document.
 
 ## 9. What CI can and cannot check
 
 Being clear-eyed about this is the difference between a security model and a comfortable feeling.
 
-**Can check:** manifest validity, rule conformance, connection registration, schema conformance of artifacts, the existence of the Payload access rules (R9), gate outcomes.
+**Can check:** manifest validity, rule conformance, connection registration, schema conformance of artifacts, the existence of the CMS access-assertion pin (R9), gate outcomes.
 
 **Cannot check:**
 

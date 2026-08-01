@@ -13,7 +13,7 @@ import { parse as parseYaml, stringify as toYaml } from 'yaml';
 import { looksLikeAgent } from '../../../packages/content-pipeline/src/humanApproval';
 import { adaptationHash, type Adaptation } from './adapt';
 
-const distDir = (root: string) => path.join(root, '.agency', 'distribution');
+const distDir = (root: string) => path.join(root, 'agents', 'content', 'artifacts', 'distribution');
 
 export class SendNotApprovedError extends Error {}
 
@@ -72,7 +72,7 @@ export interface EspClient {
   createDraft(draft: { subject: string; body: string; canonicalUrl: string }): Promise<{ espDraftId: string }> | { espDraftId: string };
 }
 
-/** Local adapter: the draft lands in .agency/distribution/esp-drafts/, mirroring the ESP the way .agency/content mirrors the CMS. */
+/** Local adapter: the draft lands in agents/content/artifacts/distribution/esp-drafts/, mirroring the ESP the way agents/content/artifacts mirrors the CMS. */
 export class FileEspAdapter implements EspClient {
   constructor(private readonly root: string) {}
 

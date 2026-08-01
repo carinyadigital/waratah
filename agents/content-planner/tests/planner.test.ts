@@ -16,14 +16,14 @@ const policy: ClaimPolicy = {
 };
 
 const builder = () =>
-  new OpportunitiesBuilder('2026-08', HASH, policy, { reads: ['.agency/content/reads/2026-W31.yaml'] });
+  new OpportunitiesBuilder('2026-08', HASH, policy, { reads: ['agents/content/artifacts/reads/2026-W31.yaml'] });
 
 const candidate = (over: Partial<Parameters<OpportunitiesBuilder['propose']>[0]> = {}) => ({
   title: 'How to read a soil test without a consultant',
   targetQuery: 'how to read a soil test',
   surface: 'blog' as const,
   bet: 'Practitioner-cluster demand is unserved; this converts practitioners at above-cluster rate within 90 days.',
-  evidence: [{ artifact: '.agency/content/reads/2026-W31.yaml', ref: 'finding-0' }],
+  evidence: [{ artifact: 'agents/content/artifacts/reads/2026-W31.yaml', ref: 'finding-0' }],
   ...over,
 });
 
@@ -60,7 +60,7 @@ describe('synthesis', () => {
 
 const scaffoldRepo = () => {
   const root = mkdtempSync(path.join(tmpdir(), 'commission-'));
-  mkdirSync(path.join(root, '.agency/content/briefs'), { recursive: true });
+  mkdirSync(path.join(root, 'agents/content/artifacts/briefs'), { recursive: true });
   return root;
 };
 
@@ -96,7 +96,7 @@ describe('commissioning', () => {
   it('a targetQuery collision with an existing brief is refused at write', () => {
     const root = scaffoldRepo();
     writeFileSync(
-      path.join(root, '.agency/content/briefs/existing-piece.yaml'),
+      path.join(root, 'agents/content/artifacts/briefs/existing-piece.yaml'),
       toYaml({ slug: 'existing-piece', targetQuery: 'How to Read a Soil Test' }),
     );
     expect(() => commission(root, withId(commissionInput()))).toThrow(TargetQueryCollisionError);
@@ -106,17 +106,17 @@ describe('commissioning', () => {
 describe('the capped, human-promoted queue', () => {
   it('the commissioner files to Triage and never writes the queue', () => {
     const root = scaffoldRepo();
-    writeFileSync(path.join(root, '.agency/content/queue.yaml'), toYaml({ cap: 1, ready: [] }));
+    writeFileSync(path.join(root, 'agents/content/artifacts/queue.yaml'), toYaml({ cap: 1, ready: [] }));
     const result = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     expect(result.filedTo).toBe('triage');
     expect(new Triage(root).get(`brief-${result.slug}`)!.kind).toBe('proposed-brief');
     // queue untouched by commissioning
-    expect(loadQueue(path.join(root, '.agency/content')).ready).toEqual([]);
+    expect(loadQueue(path.join(root, 'agents/content/artifacts')).ready).toEqual([]);
   });
 
   it('promotion requires a named human; agent-shaped names are refused', () => {
     const root = scaffoldRepo();
-    const contentDir = path.join(root, '.agency/content');
+    const contentDir = path.join(root, 'agents/content/artifacts');
     const { slug } = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 2, ready: [] }));
 
@@ -127,7 +127,7 @@ describe('the capped, human-promoted queue', () => {
 
   it('promotion past the cap is refused, even for a human', () => {
     const root = scaffoldRepo();
-    const contentDir = path.join(root, '.agency/content');
+    const contentDir = path.join(root, 'agents/content/artifacts');
     const a = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     const b = commission(
       root,
@@ -145,7 +145,7 @@ describe('the capped, human-promoted queue', () => {
 
   it('demotion requires a named human; agent-shaped names are refused', () => {
     const root = scaffoldRepo();
-    const contentDir = path.join(root, '.agency/content');
+    const contentDir = path.join(root, 'agents/content/artifacts');
     const { slug } = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 2, ready: [] }));
     promote(contentDir, slug, 'Jonno');
@@ -156,7 +156,7 @@ describe('the capped, human-promoted queue', () => {
 
   it('the expiry sweep may prune a stale slug without a human name', () => {
     const root = scaffoldRepo();
-    const contentDir = path.join(root, '.agency/content');
+    const contentDir = path.join(root, 'agents/content/artifacts');
     const { slug } = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ cap: 2, ready: [] }));
     promote(contentDir, slug, 'Jonno');
@@ -166,7 +166,7 @@ describe('the capped, human-promoted queue', () => {
 
   it('a missing or invalid cap defaults to 3 rather than disabling the gate', () => {
     const root = scaffoldRepo();
-    const contentDir = path.join(root, '.agency/content');
+    const contentDir = path.join(root, 'agents/content/artifacts');
     const a = commission(root, withId(commissionInput()), new Date('2026-08-01'));
     writeFileSync(path.join(contentDir, 'queue.yaml'), toYaml({ ready: [a.slug, 'x', 'y'] }));
     expect(loadQueue(contentDir).cap).toBe(3);

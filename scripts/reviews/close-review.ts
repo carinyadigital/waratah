@@ -36,14 +36,14 @@ const humanScore = Number(humanScoreRaw);
 if (!Number.isInteger(humanScore) || humanScore < 1 || humanScore > 5) fail('--human-score must be an integer 1–5');
 if (!whatWasWrong.trim()) fail('--what-was-wrong may not be blank');
 
-const draftPath = path.join(root, '.agency/content/drafts', `${slug}.json`);
+const draftPath = path.join(root, 'agents/content/artifacts/drafts', `${slug}.json`);
 if (!existsSync(draftPath)) fail(`no staged draft at ${draftPath}`);
 const staged = JSON.parse(readFileSync(draftPath, 'utf8')) as DraftArtifact;
 
 const published = JSON.parse(readFileSync(path.resolve(publishedFile), 'utf8')) as DraftArtifact;
 
 const brief = parseYaml(
-  readFileSync(path.join(root, '.agency/content/briefs', `${slug}.yaml`), 'utf8'),
+  readFileSync(path.join(root, 'agents/content/artifacts/briefs', `${slug}.yaml`), 'utf8'),
 ) as { positioningHash: string };
 
 const edit = computeEdit(staged.content, published.content);
@@ -61,7 +61,7 @@ const record = {
 
 assertValid('review', record, `review ${slug}`);
 
-const dir = path.join(root, '.agency/content/reviews');
+const dir = path.join(root, 'agents/content/artifacts/reviews');
 mkdirSync(dir, { recursive: true });
 const file = path.join(dir, `${slug}.yaml`);
 writeFileSync(file, toYaml(record));

@@ -15,7 +15,7 @@ name: content-qa
 on:
   pull_request:
     paths:
-      - '.agency/content/**'
+      - 'agents/content/artifacts/**'
       - 'packages/brand/**'
       - 'packages/content-pipeline/**'
       - 'packages/content-store/**'

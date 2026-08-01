@@ -15,7 +15,7 @@ import { calibrationSummary, markDue, scorePrediction } from '../../agents/conte
 import { arg } from '../../packages/content-pipeline/src/cliArgs';
 
 const root = path.resolve(arg('root') ?? process.cwd());
-const contentDir = path.join(root, '.agency', 'content');
+const contentDir = path.join(root, 'agents', 'content', 'artifacts');
 
 const id = arg('id');
 if (id) {

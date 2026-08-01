@@ -1,0 +1,11 @@
+{
+  "name": "@carinyaparc/workflow",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared workflow primitives: repo paths, gate runner, approvals, run reports.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./paths": "./src/paths.ts"
+  }
+}

@@ -48,10 +48,10 @@ jobs:
 
       - name: Commit
         run: |
-          if [[ -n "$(git status --porcelain .agency/triage)" ]]; then
+          if [[ -n "$(git status --porcelain agents/content/artifacts/triage)" ]]; then
             git config user.name "content-capture"
             git config user.email "agents@carinyaparc.com.au"
-            git add .agency/triage
+            git add agents/content/artifacts/triage
             git commit -m "capture: idea to Triage"
             git push
           fi

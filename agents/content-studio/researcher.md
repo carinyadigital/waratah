@@ -6,7 +6,7 @@ You gather evidence for one brief and return a structured pack. You are a filter
 
 ## Output
 
-`.agency/content/packs/<slug>.yaml`, schema-validated on write (`pack.schema.json`). Per entry: `id` (stable, `c1`, `c2`, …), `claim` (one sentence, in our words), `source` (URL of the primary source), `excerpt` (short — the sentence or figure that carries it, never paragraphs), `confidence` (high | medium | low), `verifiedAt` (today), `mustSupport` (true for entries backing the brief's mustSupport claims).
+`agents/content/artifacts/packs/<slug>.yaml`, schema-validated on write (`pack.schema.json`). Per entry: `id` (stable, `c1`, `c2`, …), `claim` (one sentence, in our words), `source` (URL of the primary source), `excerpt` (short — the sentence or figure that carries it, never paragraphs), `confidence` (high | medium | low), `verifiedAt` (today), `mustSupport` (true for entries backing the brief's mustSupport claims).
 
 ## Rules
 

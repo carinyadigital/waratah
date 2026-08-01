@@ -3,7 +3,7 @@
  *
  * The prose is authored here with the same claim-annotation contract the
  * writer subagent will use (Lexical claim nodes bound to pack entry ids),
- * validated on write, and emitted to .agency/content/drafts/. Running the
+ * validated on write, and emitted to agents/content/artifacts/drafts/. Running the
  * gate suite over these two pieces is the acceptance test for the gate suite.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -158,7 +158,7 @@ const roast: DraftArtifact = {
   ),
 };
 
-const outDir = path.resolve(process.cwd(), '.agency/content/drafts');
+const outDir = path.resolve(process.cwd(), 'agents/content/artifacts/drafts');
 mkdirSync(outDir, { recursive: true });
 
 for (const draft of [baseline, roast]) {

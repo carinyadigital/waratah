@@ -42,11 +42,11 @@ describe('capture — an idea reaches Triage in one step', () => {
 describe('expiry sweep — stale briefs expire, reported not silent', () => {
   const scaffold = () => {
     const root = mkdtempSync(path.join(tmpdir(), 'sweep-'));
-    mkdirSync(path.join(root, '.agency/content/briefs'), { recursive: true });
-    mkdirSync(path.join(root, '.agency/content/drafts'), { recursive: true });
+    mkdirSync(path.join(root, 'agents/content/artifacts/briefs'), { recursive: true });
+    mkdirSync(path.join(root, 'agents/content/artifacts/drafts'), { recursive: true });
     const brief = (slug: string, expiresAt: string, trackerRef = `triage/${slug}`) =>
       writeFileSync(
-        path.join(root, '.agency/content/briefs', `${slug}.yaml`),
+        path.join(root, 'agents/content/artifacts/briefs', `${slug}.yaml`),
         toYaml({ slug, expiresAt, trackerRef }),
       );
     return { root, brief };
@@ -63,15 +63,15 @@ describe('expiry sweep — stale briefs expire, reported not silent', () => {
 
     expect(report.expired.map((e) => e.slug)).toEqual(['stale-idea']);
     expect(report.kept).toEqual(['current-idea']);
-    expect(existsSync(path.join(root, '.agency/content/briefs/stale-idea.yaml'))).toBe(false);
-    expect(existsSync(path.join(root, '.agency/content/briefs/expired/stale-idea.yaml'))).toBe(true);
+    expect(existsSync(path.join(root, 'agents/content/artifacts/briefs/stale-idea.yaml'))).toBe(false);
+    expect(existsSync(path.join(root, 'agents/content/artifacts/briefs/expired/stale-idea.yaml'))).toBe(true);
     expect(triage.get('stale-idea')!.status).toBe('resolved');
   });
 
   it('a started brief never expires, however old', () => {
     const { root, brief } = scaffold();
     brief('in-progress', '2026-01-01');
-    writeFileSync(path.join(root, '.agency/content/drafts/in-progress.json'), '{}');
+    writeFileSync(path.join(root, 'agents/content/artifacts/drafts/in-progress.json'), '{}');
     const report = sweepExpiredBriefs(root, new Date('2026-07-31'));
     expect(report.expired).toHaveLength(0);
     expect(report.kept).toContain('in-progress');
@@ -80,11 +80,11 @@ describe('expiry sweep — stale briefs expire, reported not silent', () => {
   it('an expired brief is dropped from the ready queue, not left occupying a slot forever', () => {
     const { root, brief } = scaffold();
     brief('promoted-then-stale', '2026-01-01');
-    promote(path.join(root, '.agency/content'), 'promoted-then-stale', 'Jonno');
-    expect(loadQueue(path.join(root, '.agency/content')).ready).toContain('promoted-then-stale');
+    promote(path.join(root, 'agents/content/artifacts'), 'promoted-then-stale', 'Jonno');
+    expect(loadQueue(path.join(root, 'agents/content/artifacts')).ready).toContain('promoted-then-stale');
 
     sweepExpiredBriefs(root, new Date('2026-07-31'));
 
-    expect(loadQueue(path.join(root, '.agency/content')).ready).not.toContain('promoted-then-stale');
+    expect(loadQueue(path.join(root, 'agents/content/artifacts')).ready).not.toContain('promoted-then-stale');
   });
 });

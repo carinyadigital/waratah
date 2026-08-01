@@ -13,7 +13,7 @@ deploy:
 triggers:
   - type: repo-event
     event: pull_request
-    paths: ['.agency/content/**', 'packages/brand/**', 'packages/content-pipeline/**', 'packages/content-store/**']
+    paths: ['agents/content/artifacts/**', 'packages/brand/**', 'packages/content-pipeline/**', 'packages/content-store/**']
   - type: repo-event
     event: push
 

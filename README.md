@@ -1,58 +1,52 @@
-# Carinya Agents
+# agent by carinya digital
 
-One portable agent definition, built to whatever provider it is deployed to.
+`agent` is a portable agent definition, built to any provider.
 
-An agent is a directory. `agent.yaml` carries identity, model tier, permissions and per-provider overlay. `instructions.md` is the system prompt. Everything else is discovered from conventional subdirectories, the way a skill or a plugin works: adding a connector is adding a file, never editing a list in two places.
+## The agent directory is authoritive
+
+Define an agent once — identity, instructions, connectors, and schedules — then render it into provider-specific artifacts. Conventional subdirectories are discovered automatically.
 
 ```
-agents/content-analyst/
-  agent.yaml          identity, model, permissions, providers
+agents/<my-agent>/
+  agent.yaml          identity, model tier, permissions, providers
   instructions.md     the system prompt
-  questions.yaml      pre-registered questions, changed by reviewed diff
-  connectors/         one MCP server per file
-  schedules/          one run per file
-  dist/               built output, committed so every deploy is a diff
-packages/agent/       schema, providers, build
-brand/                positioning.md, voice.md
+  questions.yaml      optional pre-registered questions
+  tools/              Optional: typed tools the agent use
+  connectors/         Optional: mcp servers and adapters
+  schedules/          Optional: task schedules
+  dist/               built output (committed so every deploy is a diff)
 ```
 
-Nothing in `agent.yaml` names a vendor. Vendors appear in `connectors/` and the provider overlay, and nowhere else.
+Read the [docs](docs/) for the full project layout and guides.
 
-## Commands
+## Deploying your agent
 
 ```bash
-pnpm install
-pnpm validate        # definitions parse and conform
-pnpm build           # render into agents/<name>/dist/<provider>/
-pnpm build:check     # fail if dist/ is stale
-pnpm test
-pnpm typecheck
 pnpm deploy --provider claude --dry-run
 ```
 
-## Providers
+`--dry-run` renders and reports without publishing. Deploy refuses stale `dist/`.
+
+## Agent runtime providers
 
 | Provider | Emits | Status |
 |---|---|---|
 | `claude` | `agent.json` plus one `deployments/<schedule>.json` per schedule | Deploy target |
-| `cursor` | `agent.json` | Rendered and tested, not deployed |
+| `cursor` | `agent.json` | Rendered and tested; not deployed |
 
-Claude Managed Agents has two concepts, so the build emits two artifacts: an agent (model, system prompt, tools, MCP servers) created once and referenced by id, and a scheduled deployment carrying POSIX cron plus an IANA timezone.
+`model` is a tier (`strong`, …), not a vendor id — each provider resolves it and records what shipped. Secrets stay literal in `dist/` (e.g. `${ANALYTICS_MCP_URL}`) and resolve at deploy time.
 
-Cursor exists because a compiler with one target proves nothing about portability. The second renderer is what tells you whether the definition is portable or merely Claude-shaped.
+## Contributing
 
-## Rules the build enforces
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) to get the repo
+running locally and land a change, and use
+[issues](https://github.com/carinyaparc/carinyaparc/issues) to collaborate. By
+participating, you agree to our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-**It fails when a provider cannot express something.** Not a warning, not a silent drop. Silent degradation is how provider agnosticism becomes a claim nobody can check. A stdio connector on Claude fails with a pointer to MCP tunnels; per-connector `ask` on Cursor fails because Cursor allows or disables a tool outright.
+## Licence
 
-**`model` is a tier**, not an id. Each provider resolves `strong` to a real model and writes the tier into the artifact's metadata, so a tier never hides what shipped.
+`agent` is licensed under the [Apache License 2.0](LICENSE). By contributing,
+you agree that your contributions will be licensed under that same license.
 
-**Secrets stay literal in `dist/`.** `${ANALYTICS_MCP_URL}` is resolved at deploy, never at build, so built output is deterministic, reviewable, and free of endpoints and tokens. An unset variable fails the deploy rather than shipping an empty string.
 
-**`deploy` refuses stale output.** What ships is what was reviewed.
-
-## Before the first deploy
-
-`connectors/analytics.yaml` points at `${ANALYTICS_MCP_URL}`. The official Google Analytics MCP server ships as a local stdio process, so it has to be hosted before a managed agent can reach it: deploy it to Cloudflare Workers and set that endpoint as a repository secret alongside `ANTHROPIC_API_KEY`.
-
-The `deploy` command renders and verifies but has no publisher wired yet. `--dry-run` reports what would ship.
+(c) Copyright 2026 Carinya Digital Services.

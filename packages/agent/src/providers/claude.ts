@@ -39,6 +39,7 @@ export const claude: Provider = {
     stdioConnectors: false,
     perConnectorPermissions: true,
     skills: true,
+    multiagent: true,
   },
 
   render(agent: AgentDefinition): RenderedFile[] {
@@ -67,6 +68,23 @@ export const claude: Provider = {
           },
         })),
       ],
+      // Directory names only. The skill's own content lives in the plugin
+      // that ships it; this just tells the managed agent which ones to
+      // mount. Never rendered before this fix — an agent with skills built
+      // clean and deployed silently without them.
+      ...(agent.skills.length ? { skills: agent.skills.map((name) => ({ name })) } : {}),
+      // Names and version pins only. Account-specific agent ids do not exist
+      // at build time — deploy resolves each name to an id, the same way
+      // resolveSecrets resolves a ${VAR} at deploy and never at build, so
+      // dist/ stays deterministic and reviewable.
+      ...(agent.multiagent
+        ? {
+            multiagent: {
+              type: agent.multiagent.type,
+              agents: agent.multiagent.agents.map((a) => ({ name: a.name, version: a.version })),
+            },
+          }
+        : {}),
       metadata: {
         source: `agents/${agent.name}/agent.yaml`,
         model_tier: agent.model,
@@ -84,7 +102,10 @@ export const claude: Provider = {
           description: schedule.description,
           schedule: { expression: schedule.cron, timezone: schedule.timezone },
           ...(overlay.environment ? { environment_id: overlay.environment } : {}),
-          ...(schedule.prompt ? { prompt: schedule.prompt } : {}),
+          // Required by the deploy API, not optional decoration: a scheduled
+          // run has no human to type the opening message, so the definition
+          // has to carry it.
+          initial_events: [{ type: 'user', message: schedule.prompt }],
         },
       });
     }

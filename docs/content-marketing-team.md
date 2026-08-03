@@ -1,7 +1,9 @@
 # `content-marketer` — team design for review
 
-**Status:** draft, for JD review. Nothing built.
-**Date:** 02/08/2026
+**Status:** phase 1 built — `content-marketer` (lead), `content-analyst` and
+`market-researcher`, Loop A (discovery) only. See §6 and §8 for what shipped
+and what's still open.
+**Date:** 02/08/2026, updated 03/08/2026.
 **Supersedes:** the pipeline design of the same name.
 
 One deployable team. `content-marketer` is the lead and the only agent with schedules.
@@ -200,48 +202,50 @@ only.
 
 ## 6. What the build needs
 
-Five gaps between this design and `packages/agent` today.
+Five gaps between this design and `packages/agent`. **a–d are done.** e is still open —
+`deploy` remains a stub ("no publisher wired") regardless of this team, so ordering is
+recorded here for whoever wires it.
 
-**a. Skills are discovered, then silently dropped.** `load.ts` walks `agents/<name>/skills/`
-and populates `agent.skills`; `assertSupported` checks `supports.skills`; `claude.render()`
-never emits them. An agent with skills builds clean, passes `build:check`, and deploys
-without them. The only test coverage asserts that *cursor* rejects skills — nothing asserts
-claude renders them. This is the silent degradation the README says the build refuses to
-allow, and it blocks all plugin-skill reuse.
+**a. Skills, discovered then silently dropped — fixed.** `claude.render()` now emits a
+`skills` array (directory names only) when `agent.skills.length`. Covered by a test that
+asserts claude renders them, not just that cursor refuses them.
 
-**b. `subagents/` discovery.** `loadAll` treats every directory under `agents/` as a
-top-level agent. It needs to recurse one level into `subagents/` and attach them to the
-lead, with validation that a subagent declares no schedules and no roster of its own —
-the platform ignores delegation past depth one, so a nested roster should fail the build
-rather than deploy silently ignored.
+**b. `subagents/` discovery — fixed.** `loadAgent` recurses one level into `subagents/`
+and attaches the result to `AgentDefinition.subagents`. A subagent that declares its own
+`schedules/` or `subagents/` fails the build with a named error rather than deploying with
+the nested roster silently dropped — the platform ignores delegation past depth one.
+`loadAll` itself is unchanged: it only reads `agents/*/agent.yaml`, so subagents nested
+under `agents/content-marketer/subagents/*/agent.yaml` were never at risk of also loading
+as top-level agents.
 
-**c. `multiagent` in schema and render.**
+**c. `multiagent` in schema and render — fixed.** `agent.yaml` carries the roster's names
+and version pins (not derivable from the filesystem); `loadAgent` cross-checks that set
+against the directories actually found in `subagents/` in both directions — an entry with
+no matching directory, or a directory with no matching entry, fails the build. `claude.ts`
+renders `multiagent: { type, agents: [{ name, version }] }` by name only; resolving each
+name to an account-specific id is deploy's job (**e**), the same way `${VAR}` connector
+secrets stay literal until `resolveSecrets` runs at deploy, never at build.
 
-```yaml
-multiagent:
-  type: coordinator
-  agents:
-    - name: content-analyst
-      version: 3
-```
+**d. Deployments' opening message — fixed.** `prompt` is now required in
+`schedule.schema.json` (`minLength: 1`) and renders as `initial_events: [{ type: 'user',
+message: schedule.prompt }]`. There is no longer a code path that emits a deployment
+without one.
 
-Render by name; resolve to agent id at deploy. Ids are account-specific and must not be
-committed. The version pin must be, because the roster pin is what stops a subagent bump
-silently changing what the lead calls.
+**e. Deploy ordering — still open.** Subagents must be created first to obtain ids, then
+the coordinator with the resolved roster, then the deployments. A partial failure halfway
+leaves a coordinator pointing at nothing, so the publisher needs to be idempotent and
+re-runnable. Blocked on `deploy` having a publisher at all, which predates this team.
 
-**d. Deployments are missing their opening message.** The API requires `initial_events`
-with a `user.message`. The current render emits `name`, `description`, `schedule` and an
-optional `prompt`. `prompt` becomes that message and should be required here — the two
-loops are the same agent differing only in how the run opens.
-
-**e. Deploy ordering.** Subagents must be created first to obtain ids, then the coordinator
-with the resolved roster, then the deployments. A partial failure halfway leaves a
-coordinator pointing at nothing, so the publisher needs to be idempotent and re-runnable.
-
-*Also worth knowing:* cursor cannot express a coordinator roster, so `assertSupported` will
-fail the cursor build for this team. That is the portability check working as designed, not
-a defect — but it does mean `content-marketer` is claude-only, and the build should say so
-rather than emit a degraded cursor artifact.
+**Cursor and the coordinator roster.** `assertSupported` now has a `multiagent` capability
+flag (`claude: true`, `cursor: false`) as the loud backstop the portability check was
+always meant to be. In practice `content-marketer/agent.yaml` never declares a `cursor:`
+key under `providers:` at all, and the build now treats an agent's `providers:` block as
+which providers it targets, not only per-provider settings — so `pnpm build` skips cursor
+for this coordinator cleanly rather than calling `render()` and hitting the backstop. The
+backstop still fires if a future edit adds `providers.cursor` to a coordinator by mistake.
+`content-marketer` is claude-only, and the build says so instead of emitting a degraded
+cursor artifact — the outcome §6 originally asked for, reached by not attempting the
+combination rather than by attempting and catching it.
 
 ---
 
@@ -260,13 +264,25 @@ implementation is not. `post-writer`, `reviewer` and `asset-manager` all depend 
 
 ## 8. Suggested order
 
-1. Fix the skills render gap (**6a**). Nothing else matters until a skill reaches a deployed agent.
-2. Port the three missing brand files, settle the naming.
-3. Build and deploy `content-analyst` standalone against the real GA4 connector. Prove one worker works unattended before building six more.
-4. Add `subagents/` discovery, `multiagent`, and the deployment message (**6b–d**).
-5. Stand up the lead with a two-subagent roster — `content-analyst` and `market-researcher` — and Loop A only, writing opportunities to the backlog. No briefs, no production.
-6. Add `content-planner` and the brief schema. Loop A complete.
-7. Add `post-writer`, `reviewer`, `asset-manager`. Loop B.
+1. ~~Fix the skills render gap (**6a**).~~ Done.
+2. Port the three missing brand files, settle the naming. **Still open** — not blocking
+   `content-analyst` or `market-researcher`, which only read `positioning.md`; blocks
+   `post-writer`, `reviewer`, `asset-manager` in step 7.
+3. ~~Build and deploy `content-analyst` standalone against the real GA4 connector.~~ Done
+   prior to this phase; `content-analyst` has since moved to roster-only (§4) and lost its
+   standalone schedule as part of step 5.
+4. ~~Add `subagents/` discovery, `multiagent`, and the deployment message (**6b–d**).~~ Done.
+5. **Done — this phase.** Lead stood up with a two-subagent roster — `content-analyst`
+   and `market-researcher` — and Loop A only, writing opportunities (not full briefs) to
+   the backlog. Backlog is Linear (`connectors/backlog.yaml`, `https://mcp.linear.app/mcp`);
+   authorise the connection before the first real run — `pnpm validate`/`build`/`test` do
+   not need it, only an actual deploy does. Schedule is monthly (`0 7 1 * *
+   Australia/Sydney`), matching the cadence decision in §9. `audience-researcher` is
+   deferred per §9 — Loop A currently runs on two research legs, not three.
+6. Add `content-planner` and the full brief schema (title/cluster/claim/baseline/horizon/
+   confidence/falsifier/evidence/status). Until then the lead itself writes a reduced
+   opportunity shape directly (see its `instructions.md`) — no `status: ready`, no brief.
+7. Add `post-writer`, `reviewer`, `asset-manager`. Loop B. Needs step 2 first.
 
 Step 3 remains the real test. `draft-post` says *"Pass the post slug after the skill name"* —
 phrasing for a human at a keyboard, with no equivalent for a scheduled run. If every skill
@@ -277,8 +293,8 @@ sync question answers itself.
 
 ## 9. Decisions needed
 
-1. **Backlog system** — Linear recommended, needs authorising. Notion and Sheets both work; the brief schema matters more than the tool.
-2. **Loop cadences** — proposed fortnightly discovery, weekly production. Discovery is the expensive one.
-3. **`content-analyst` roster-only, or keep a standalone schedule too?** Recommending roster-only (§4).
-4. **Does the lead hold `web_search`?** Recommending no — a lead that can research is a lead that will start doing the work instead of judging it.
-5. **What does `audience-researcher` actually read?** Support, comments, replies and on-site search all imply sources that may not exist yet for Carinya Parc. This may be the subagent to defer.
+1. **Backlog system** — Linear.
+2. **Loop cadences** — Monthly discovery, weekly production.
+3. **`content-analyst` roster-only, or keep a standalone schedule too?** Roster-only.
+4. **Does the lead hold `web_search`?** No.
+5. **What does `audience-researcher` actually read?** Defer sub-agent for now.

@@ -41,7 +41,13 @@ export interface Schedule {
   description: string;
   cron: string;
   timezone: string;
-  prompt?: string;
+  /** Required — becomes the deploy API's initial_events user.message. A scheduled run has no human to type it. */
+  prompt: string;
+}
+
+export interface MultiagentRoster {
+  type: 'coordinator';
+  agents: { name: string; version: number }[];
 }
 
 export interface AgentDefinition {
@@ -58,6 +64,15 @@ export interface AgentDefinition {
   connectors: Connector[];
   schedules: Schedule[];
   skills: string[];
+  /** Set only on a coordinator. The version pin lives in agent.yaml; the roster is discovered from subagents/. */
+  multiagent?: MultiagentRoster;
+  /**
+   * Depth one only — the platform ignores delegation past a subagent's own
+   * subagents/, so loadAgent fails the build rather than silently truncating
+   * a nested roster. A subagent never carries schedules: it has no clock of
+   * its own, it is spawned at runtime by its coordinator.
+   */
+  subagents: AgentDefinition[];
 }
 
 export class DefinitionError extends Error {}
@@ -142,6 +157,49 @@ export const loadAgent = (dir: string): AgentDefinition => {
     ? readdirSync(skillsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort()
     : [];
 
+  // Subagents are discovered one level down, never recursively — the platform
+  // ignores delegation past depth one, so a nested roster fails the build
+  // rather than deploying silently truncated.
+  const subagentsDir = path.join(dir, 'subagents');
+  const subagents = existsSync(subagentsDir)
+    ? readdirSync(subagentsDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && existsSync(path.join(subagentsDir, d.name, 'agent.yaml')))
+        .map((d) => {
+          const subDir = path.join(subagentsDir, d.name);
+          const sub = loadAgent(subDir);
+          if (sub.schedules.length) {
+            throw new DefinitionError(
+              `${path.join(subDir, 'agent.yaml')}: a subagent may not declare schedules/ (${sub.schedules.map((s) => s.name).join(', ')}). It has no clock of its own — its coordinator spawns it at runtime.`,
+            );
+          }
+          if (sub.subagents.length) {
+            throw new DefinitionError(
+              `${path.join(subDir, 'agent.yaml')}: a subagent may not declare its own subagents/. The platform ignores delegation past depth one, so this would deploy with the nested roster silently dropped.`,
+            );
+          }
+          return sub;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  const multiagent = manifest.multiagent as MultiagentRoster | undefined;
+  if (multiagent) {
+    const declared = new Set(multiagent.agents.map((a) => a.name));
+    const discovered = new Set(subagents.map((a) => a.name));
+    for (const name of declared) {
+      if (!discovered.has(name)) {
+        throw new DefinitionError(`${manifestFile}: multiagent names "${name}", which has no directory in subagents/`);
+      }
+    }
+    for (const name of discovered) {
+      if (!declared.has(name)) {
+        throw new DefinitionError(`${manifestFile}: subagents/${name} exists but is not listed in multiagent.agents — an undeclared roster member has no version pin`);
+      }
+    }
+  } else if (subagents.length) {
+    throw new DefinitionError(`${manifestFile}: subagents/ has ${subagents.length} director${subagents.length === 1 ? 'y' : 'ies'} but no multiagent block declares them`);
+  }
+
   return {
     dir,
     name: String(manifest.name),
@@ -153,6 +211,8 @@ export const loadAgent = (dir: string): AgentDefinition => {
     connectors,
     schedules: readDir<Schedule>(path.join(dir, 'schedules'), 'schedule'),
     skills,
+    multiagent,
+    subagents,
   };
 };
 

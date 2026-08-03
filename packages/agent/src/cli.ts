@@ -22,36 +22,58 @@ const distDir = (agent: AgentDefinition, providerId: string) => path.join(agent.
 
 const serialise = (content: unknown) => `${JSON.stringify(content, null, 2)}\n`;
 
+// Subagents render into their own dist/<provider>/ alongside their
+// coordinator's, one call per node — depth is capped at one by loadAgent, so
+// this never recurses more than twice.
+const buildAgent = (agent: AgentDefinition, write: boolean, changed: string[]): number => {
+  let count = 0;
+
+  for (const providerId of selected()) {
+    // An agent's providers: block is also which providers it targets, not
+    // only per-provider settings. A coordinator that never lists cursor is
+    // making a deliberate exclusion (cursor cannot express a roster) — skip
+    // cleanly rather than call render() and fail loudly for a combination
+    // nobody asked for. A provider that IS declared still goes through
+    // assertSupported and fails loudly on a genuine mismatch.
+    if (agent.providers && !(providerId in agent.providers)) continue;
+
+    const provider = getProvider(providerId);
+    const files = provider.render(agent);
+    const dir = distDir(agent, providerId);
+
+    if (write) {
+      rmSync(dir, { recursive: true, force: true });
+      mkdirSync(dir, { recursive: true });
+    }
+
+    for (const { file, content } of files) {
+      const target = path.join(dir, file);
+      const next = serialise(content);
+      const previous = existsSync(target) ? readFileSync(target, 'utf8') : null;
+      if (previous !== next) changed.push(path.relative(root, target));
+      if (write) {
+        mkdirSync(path.dirname(target), { recursive: true });
+        writeFileSync(target, next);
+      }
+      count += 1;
+    }
+    if (write) {
+      console.log(`  ${agent.name} -> ${providerId} (${provider.models[agent.model]}) ${files.length} file(s)`);
+    }
+  }
+
+  for (const sub of agent.subagents) {
+    count += buildAgent(sub, write, changed);
+  }
+
+  return count;
+};
+
 const build = (write: boolean): { changed: string[]; count: number } => {
   const changed: string[] = [];
   let count = 0;
-
   for (const agent of loadAll(root)) {
-    for (const providerId of selected()) {
-      const provider = getProvider(providerId);
-      const files = provider.render(agent);
-      const dir = distDir(agent, providerId);
-
-      if (write) {
-        rmSync(dir, { recursive: true, force: true });
-        mkdirSync(dir, { recursive: true });
-      }
-
-      for (const { file, content } of files) {
-        const target = path.join(dir, file);
-        const next = serialise(content);
-        const previous = existsSync(target) ? readFileSync(target, 'utf8') : null;
-        if (previous !== next) changed.push(path.relative(root, target));
-        if (write) {
-          mkdirSync(path.dirname(target), { recursive: true });
-          writeFileSync(target, next);
-        }
-        count += 1;
-      }
-      if (write) {
-        console.log(`  ${agent.name} -> ${providerId} (${provider.models[agent.model]}) ${files.length} file(s)`);
-      }
-    }
+    count += buildAgent(agent, write, changed);
   }
   return { changed, count };
 };
@@ -63,12 +85,19 @@ const commands: Record<string, () => number> = {
       console.error('no agents found under agents/');
       return 1;
     }
-    for (const a of agents) {
+
+    let total = 0;
+    const print = (a: AgentDefinition, indent: string) => {
+      total += 1;
+      const roster = a.multiagent ? ` roster=${a.multiagent.agents.map((r) => r.name).join(',')}` : '';
       console.log(
-        `  ${a.name.padEnd(18)} model=${a.model.padEnd(8)} connectors=${a.connectors.length} schedules=${a.schedules.length}`,
+        `${indent}${a.name.padEnd(18 - indent.length)} model=${a.model.padEnd(8)} connectors=${a.connectors.length} schedules=${a.schedules.length}${roster}`,
       );
-    }
-    console.log(`validate: ${agents.length} agent(s) conform`);
+      for (const sub of a.subagents) print(sub, `${indent}  └─ `);
+    };
+    for (const a of agents) print(a, '  ');
+
+    console.log(`validate: ${total} agent(s) conform`);
     return 0;
   },
 

@@ -1,14 +1,7 @@
 {
   "name": "content-analyst",
   "description": "Answers pre-registered performance questions from analytics and emits one read with the arithmetic showing. Reads only: it holds no write credential to anything it reports on.",
-  "triggers": [
-    {
-      "cron": {
-        "expression": "0 7 * * MON",
-        "timezone": "Australia/Sydney"
-      }
-    }
-  ],
+  "triggers": [],
   "actions": [
     {
       "mcp": {

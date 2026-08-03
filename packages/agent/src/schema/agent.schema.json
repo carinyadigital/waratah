@@ -15,6 +15,28 @@
       "enum": ["strong", "standard", "fast"],
       "description": "A tier. Each provider resolves it to a real id and records the resolution in the built output."
     },
+    "multiagent": {
+      "type": "object",
+      "description": "Declares this agent as a coordinator over agents/<name>/subagents/*. The version pin isn't derivable from the filesystem, so it lives here, not in discovery. Every subagents/ directory must appear here, and every entry here must have a matching directory — the loader checks both directions.",
+      "additionalProperties": false,
+      "required": ["type", "agents"],
+      "properties": {
+        "type": { "const": "coordinator" },
+        "agents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+              "version": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
     "permissions": {
       "type": "object",
       "additionalProperties": false,

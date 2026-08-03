@@ -1,0 +1,26 @@
+# Identity, model tier, permissions. Discovered by loadAgent() as a subagent
+# of content-marketer — no schedules/ (a subagent has no clock of its own)
+# and no subagents/ (delegation stops at depth one).
+
+schema: v1
+name: market-researcher
+description: >-
+  Reads competitor sites, category news and regulation, and reports moves,
+  gaps and what changed since the last run. Read-only: it forms no claims
+  and ships nothing — the lead judges what any of it means for us.
+
+instructions: ./instructions.md
+
+model: standard
+
+permissions:
+  default: ask
+  connectors:
+    web-research: allow
+
+providers:
+  claude:
+    mode: managed
+  cursor:
+    scope: private
+    memory: false

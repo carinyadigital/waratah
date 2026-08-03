@@ -27,6 +27,9 @@ export const cursor: Provider = {
     stdioConnectors: true,
     perConnectorPermissions: false,
     skills: false,
+    // Cursor has no coordinator-over-subagents concept, so a roster cannot be
+    // expressed at all — not degraded, not flattened, refused outright.
+    multiagent: false,
   },
 
   render(agent: AgentDefinition): RenderedFile[] {

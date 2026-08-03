@@ -5,7 +5,7 @@
   "description": "One recurring run. POSIX cron plus an IANA timezone.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "description", "cron", "timezone"],
+  "required": ["name", "description", "cron", "timezone", "prompt"],
   "properties": {
     "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "description": { "type": "string", "minLength": 10 },
@@ -21,7 +21,8 @@
     },
     "prompt": {
       "type": "string",
-      "description": "The user turn that opens the run. Omit to use the agent's default."
+      "minLength": 1,
+      "description": "The user turn that opens the run. Required: the deploy API's initial_events needs a user.message, and a scheduled run has no human at a keyboard to supply one."
     }
   }
 }

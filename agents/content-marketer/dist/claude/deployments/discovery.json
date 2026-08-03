@@ -1,0 +1,14 @@
+{
+  "name": "content-marketer-discovery",
+  "description": "Loop A only. Fans out to content-analyst and market-researcher, synthesises opportunities against their findings, and writes them to the backlog. No briefs, no production — those arrive with content-planner, post-writer, reviewer and asset-manager, not yet built.",
+  "schedule": {
+    "expression": "0 7 1 * *",
+    "timezone": "Australia/Sydney"
+  },
+  "initial_events": [
+    {
+      "type": "user",
+      "message": "Run this month's discovery cycle. Dispatch content-analyst and market-researcher, read both reports in full against brand/positioning.md, and write any opportunities their findings support to the backlog as proposed items with a falsifier each. If neither report supports a new opportunity, say so and stop rather than manufacturing one."
+    }
+  ]
+}

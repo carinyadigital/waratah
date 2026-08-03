@@ -32,6 +32,7 @@ export interface Provider {
     stdioConnectors: boolean;
     perConnectorPermissions: boolean;
     skills: boolean;
+    multiagent: boolean;
   };
   render(agent: AgentDefinition): RenderedFile[];
 }
@@ -57,6 +58,13 @@ export const assertSupported = (provider: Provider, agent: AgentDefinition): voi
   }
   if (agent.skills.length && !supports.skills) {
     throw new UnsupportedFeatureError(id, `skills (${agent.skills.join(', ')})`, 'Inline the skill into instructions.md, or drop this provider.');
+  }
+  if (agent.multiagent && !supports.multiagent) {
+    throw new UnsupportedFeatureError(
+      id,
+      `a multiagent roster (${agent.multiagent.agents.map((a) => a.name).join(', ')})`,
+      'This provider cannot express a coordinator roster. Do not declare it in providers: for this agent, or drop this provider for this team.',
+    );
   }
   for (const connector of agent.connectors) {
     if (connector.transport.type === 'url' && !supports.urlConnectors) {

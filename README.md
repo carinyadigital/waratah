@@ -56,5 +56,4 @@ participating, you agree to our [Code of Conduct](CODE_OF_CONDUCT.md).
 `agent` is licensed under the [Apache License 2.0](LICENSE). By contributing,
 you agree that your contributions will be licensed under that same license.
 
-
 (c) Copyright 2026 Carinya Digital Services.

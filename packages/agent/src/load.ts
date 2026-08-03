@@ -24,6 +24,7 @@ const validators = {
   agent: compile('agent'),
   connector: compile('connector'),
   schedule: compile('schedule'),
+  skill: compile('skill'),
 };
 
 export type Permission = 'ask' | 'allow' | 'deny';
@@ -45,6 +46,13 @@ export interface Schedule {
   prompt: string;
 }
 
+export interface Skill {
+  name: string;
+  type: 'anthropic' | 'custom';
+  skill_id: string;
+  version?: string;
+}
+
 export interface MultiagentRoster {
   type: 'coordinator';
   agents: { name: string; version: number }[];
@@ -52,18 +60,20 @@ export interface MultiagentRoster {
 
 export interface AgentDefinition {
   dir: string;
+  /** Repo-relative path to agent.yaml. Recorded in the built artifact, so it has to be the real path, including for a subagent nested under a coordinator. */
+  source: string;
   name: string;
   description: string;
   instructions: string;
   model: 'strong' | 'standard' | 'fast';
   permissions: { default: Permission; connectors?: Record<string, Permission> };
   providers?: {
-    claude?: { mode?: 'managed'; environment?: string };
+    claude?: { mode?: 'managed'; environment?: string; vaults?: string[] };
     cursor?: { scope?: 'private' | 'team'; memory?: boolean };
   };
   connectors: Connector[];
   schedules: Schedule[];
-  skills: string[];
+  skills: Skill[];
   /** Set only on a coordinator. The version pin lives in agent.yaml; the roster is discovered from subagents/. */
   multiagent?: MultiagentRoster;
   /**
@@ -124,7 +134,7 @@ const readDir = <T>(dir: string, kind: keyof typeof validators): T[] => {
     });
 };
 
-export const loadAgent = (dir: string): AgentDefinition => {
+export const loadAgent = (dir: string, root = process.cwd()): AgentDefinition => {
   const manifestFile = path.join(dir, 'agent.yaml');
   if (!existsSync(manifestFile)) throw new DefinitionError(`${dir} has no agent.yaml`);
 
@@ -152,10 +162,10 @@ export const loadAgent = (dir: string): AgentDefinition => {
     }
   }
 
-  const skillsDir = path.join(dir, 'skills');
-  const skills = existsSync(skillsDir)
-    ? readdirSync(skillsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort()
-    : [];
+  // One file per skill, like connectors. A skill is declared, not vendored:
+  // the file names an id the workspace already has, it does not carry the
+  // skill's content.
+  const skills = readDir<Skill>(path.join(dir, 'skills'), 'skill');
 
   // Subagents are discovered one level down, never recursively — the platform
   // ignores delegation past depth one, so a nested roster fails the build
@@ -166,7 +176,7 @@ export const loadAgent = (dir: string): AgentDefinition => {
         .filter((d) => d.isDirectory() && existsSync(path.join(subagentsDir, d.name, 'agent.yaml')))
         .map((d) => {
           const subDir = path.join(subagentsDir, d.name);
-          const sub = loadAgent(subDir);
+          const sub = loadAgent(subDir, root);
           if (sub.schedules.length) {
             throw new DefinitionError(
               `${path.join(subDir, 'agent.yaml')}: a subagent may not declare schedules/ (${sub.schedules.map((s) => s.name).join(', ')}). It has no clock of its own — its coordinator spawns it at runtime.`,
@@ -202,6 +212,7 @@ export const loadAgent = (dir: string): AgentDefinition => {
 
   return {
     dir,
+    source: path.relative(root, manifestFile),
     name: String(manifest.name),
     description: String(manifest.description),
     instructions: readFileSync(instructionsFile, 'utf8').trim(),
@@ -221,5 +232,14 @@ export const loadAll = (root: string): AgentDefinition[] => {
   if (!existsSync(agentsDir)) return [];
   return readdirSync(agentsDir, { withFileTypes: true })
     .filter((d) => d.isDirectory() && existsSync(path.join(agentsDir, d.name, 'agent.yaml')))
-    .map((d) => loadAgent(path.join(agentsDir, d.name)));
+    .map((d) => loadAgent(path.join(agentsDir, d.name), root));
 };
+
+/**
+ * Every agent in the tree, subagents before the coordinator that names them.
+ *
+ * Deploy order, not display order: a coordinator's roster is resolved to
+ * account-specific ids, so the agents it delegates to have to exist first.
+ */
+export const flatten = (agents: AgentDefinition[]): AgentDefinition[] =>
+  agents.flatMap((agent) => [...agent.subagents, agent]);

@@ -202,13 +202,18 @@ only.
 
 ## 6. What the build needs
 
-Five gaps between this design and `packages/agent`. **a–d are done.** e is still open —
-`deploy` remains a stub ("no publisher wired") regardless of this team, so ordering is
-recorded here for whoever wires it.
+All five gaps are closed. A review against the published API contract on 03/08/2026 then
+found the first pass had rendered several payloads in shapes the API does not accept; those
+are corrected and noted below.
 
-**a. Skills, discovered then silently dropped — fixed.** `claude.render()` now emits a
-`skills` array (directory names only) when `agent.skills.length`. Covered by a test that
-asserts claude renders them, not just that cursor refuses them.
+**a. Skills, discovered then silently dropped — fixed.** `claude.render()` emits a `skills`
+array when the agent declares any.
+
+*Correction:* the first fix emitted `[{name}]` from directory names. The API takes
+`[{type: "anthropic"|"custom", skill_id, version?}]` — a directory name is not a skill id,
+and Anthropic's pre-built skills have no directory at all. Skills are now declared one file
+per skill under `skills/`, the same convention as connectors, and the test asserts the API
+shape rather than the shape the code happened to produce.
 
 **b. `subagents/` discovery — fixed.** `loadAgent` recurses one level into `subagents/`
 and attaches the result to `AgentDefinition.subagents`. A subagent that declares its own
@@ -221,20 +226,36 @@ as top-level agents.
 **c. `multiagent` in schema and render — fixed.** `agent.yaml` carries the roster's names
 and version pins (not derivable from the filesystem); `loadAgent` cross-checks that set
 against the directories actually found in `subagents/` in both directions — an entry with
-no matching directory, or a directory with no matching entry, fails the build. `claude.ts`
-renders `multiagent: { type, agents: [{ name, version }] }` by name only; resolving each
-name to an account-specific id is deploy's job (**e**), the same way `${VAR}` connector
-secrets stay literal until `resolveSecrets` runs at deploy, never at build.
+no matching directory, or a directory with no matching entry, fails the build.
 
-**d. Deployments' opening message — fixed.** `prompt` is now required in
-`schedule.schema.json` (`minLength: 1`) and renders as `initial_events: [{ type: 'user',
-message: schedule.prompt }]`. There is no longer a code path that emits a deployment
-without one.
+*Correction:* the first fix rendered `agents: [{ name, version }]`. The API has no
+name-based reference at all; entries are `{type: "agent", id, version?}`. The renderer now
+emits that shape with the id as a `${agent:<name>}` placeholder, which deploy substitutes
+once that agent exists — the same discipline `${VAR}` already followed, extended to the one
+other thing that cannot be known at build time.
 
-**e. Deploy ordering — still open.** Subagents must be created first to obtain ids, then
-the coordinator with the resolved roster, then the deployments. A partial failure halfway
-leaves a coordinator pointing at nothing, so the publisher needs to be idempotent and
-re-runnable. Blocked on `deploy` having a publisher at all, which predates this team.
+**d. Deployments' opening message — fixed.** `prompt` is required in `schedule.schema.json`
+(`minLength: 1`); no code path emits a deployment without one.
+
+*Correction:* the first fix emitted `initial_events: [{type: 'user', message}]` and little
+else. Checked against the Create Deployment contract, the payload was missing `agent`,
+missing `environment_id` (required, with no account default to fall back on), used `user`
+instead of `user.message`, passed the text as a string instead of a content-block array,
+omitted the `schedule.type: "cron"` discriminator, and sent a `description` that is not a
+deployment field. All corrected, and the deployment test now asserts each required field
+rather than just the two that were there.
+
+**e. Deploy ordering — fixed.** `packages/agent/src/publish/claude.ts` publishes subagents
+first, then the coordinator with its roster resolved to real ids, then deployments. It is
+idempotent by name: a re-run after a partial failure updates what exists rather than
+creating a second copy, which is what makes the partial failure recoverable instead of
+merely detectable. Existing deployments are skipped rather than rewritten — the API exposes
+pause, unpause, archive and run but no documented update, and guessing a verb against a
+live schedule is not worth the convenience.
+
+Two things the publisher deliberately refuses to be clever about: a roster pin that no
+longer matches the version just published is reported rather than silently re-pinned, and
+any unresolved `${VAR}` stops the run before the first write rather than part-way through.
 
 **Cursor and the coordinator roster.** `assertSupported` now has a `multiagent` capability
 flag (`claude: true`, `cursor: false`) as the loud backstop the portability check was
@@ -274,11 +295,22 @@ implementation is not. `post-writer`, `reviewer` and `asset-manager` all depend 
 4. ~~Add `subagents/` discovery, `multiagent`, and the deployment message (**6b–d**).~~ Done.
 5. **Done — this phase.** Lead stood up with a two-subagent roster — `content-analyst`
    and `market-researcher` — and Loop A only, writing opportunities (not full briefs) to
-   the backlog. Backlog is Linear (`connectors/backlog.yaml`, `https://mcp.linear.app/mcp`);
-   authorise the connection before the first real run — `pnpm validate`/`build`/`test` do
-   not need it, only an actual deploy does. Schedule is monthly (`0 7 1 * *
-   Australia/Sydney`), matching the cadence decision in §9. `audience-researcher` is
-   deferred per §9 — Loop A currently runs on two research legs, not three.
+   the backlog. Backlog is Linear (`connectors/backlog.yaml`, `https://mcp.linear.app/mcp`).
+   Schedule is monthly (`0 7 1 * * Australia/Sydney`), matching the cadence decision in §9.
+   `audience-researcher` is deferred per §9 — Loop A runs on two research legs, not three.
+
+   **Still needed before the first real run**, none of which are code:
+
+   - a cloud **environment**, for `CLAUDE_ENVIRONMENT_ID`
+   - a **vault** holding an `mcp_oauth` credential for `https://mcp.linear.app/mcp`, for
+     `VAULT_ID_CONTENT_MARKETING`. Credentials are matched on exact server URL, and a
+     missing one does not fail loudly: the session starts, emits a `session.error`, and
+     the run looks like it happened
+   - a hosted GA4 MCP endpoint for `ANALYTICS_MCP_URL`, which does not exist yet
+   - `ANTHROPIC_API_KEY`
+
+   `pnpm run deploy -- --provider claude --dry-run` lists whichever of these are still
+   unset without touching the account, so it is the cheapest way to check.
 6. Add `content-planner` and the full brief schema (title/cluster/claim/baseline/horizon/
    confidence/falsifier/evidence/status). Until then the lead itself writes a reduced
    opportunity shape directly (see its `instructions.md`) — no `status: ready`, no brief.

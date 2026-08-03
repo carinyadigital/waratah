@@ -57,7 +57,11 @@ export const assertSupported = (provider: Provider, agent: AgentDefinition): voi
     throw new UnsupportedFeatureError(id, `schedules (${agent.schedules.length} declared)`, 'Remove them, or deploy this agent to a provider that runs on a clock.');
   }
   if (agent.skills.length && !supports.skills) {
-    throw new UnsupportedFeatureError(id, `skills (${agent.skills.join(', ')})`, 'Inline the skill into instructions.md, or drop this provider.');
+    throw new UnsupportedFeatureError(
+      id,
+      `skills (${agent.skills.map((s) => s.name).join(', ')})`,
+      'Inline the skill into instructions.md, or drop this provider.',
+    );
   }
   if (agent.multiagent && !supports.multiagent) {
     throw new UnsupportedFeatureError(

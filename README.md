@@ -14,7 +14,7 @@ agents/<my-agent>/
   questions.yaml      optional: pre-registered questions, read at runtime
   connectors/         optional: one MCP server per file
   schedules/          optional: one recurring run per file
-  skills/             optional: one directory per skill, mounted by name
+  skills/             optional: one skill declaration per file
   subagents/<name>/   optional, one level only: a full agent directory per
                        subagent — same shape as above, minus schedules/ and
                        subagents/ of its own
@@ -28,17 +28,28 @@ Read the [docs](docs/) for the full project layout and guides.
 ## Deploying your agent
 
 ```bash
-pnpm deploy --provider claude --dry-run
+pnpm run deploy -- --provider claude --dry-run
 ```
 
-`--dry-run` renders and reports without publishing. Deploy refuses stale `dist/`. Every schedule's `prompt` is required — it becomes the deploy API's `initial_events` user message, since a scheduled run has no one at a keyboard to open it.
+Built artifacts are the API request body, field for field, with one exception: anything account-specific stays a placeholder, because it cannot be known at build time and would make `dist/` unreviewable if it were.
+
+| Placeholder | Resolved at deploy from |
+|---|---|
+| `${SOME_VAR}` | the environment (endpoints, environment id, vault ids) |
+| `${agent:<name>}` | the id of that agent, created earlier in the same run |
+
+`--dry-run` touches nothing, needs no credential, and reports which variables are still unset rather than failing on the first one. A real deploy resolves everything up front, so a missing variable stops the run before anything reaches your account.
+
+Publishing is ordered — subagents, then the coordinator with its roster resolved, then deployments — and idempotent by name: re-running after a partial failure updates what exists instead of creating a second copy. An existing deployment is left alone rather than silently rewritten; archive it and re-run to change a live schedule.
+
+Deploy refuses stale `dist/`, so what ships is always what was reviewed. Every schedule's `prompt` is required — it becomes `initial_events`, since a scheduled run has no one at a keyboard to open it.
 
 ## Agent runtime providers
 
 | Provider | Emits | Status |
 |---|---|---|
 | `claude` | `agent.json` (plus `skills` and `multiagent` where declared) and one `deployments/<schedule>.json` per schedule | Deploy target |
-| `cursor` | `agent.json` | Rendered and tested; not deployed |
+| `cursor` | `agent.json` | Rendered and tested; no publisher, `deploy` refuses it |
 
 `model` is a tier (`strong`, …), not a vendor id — each provider resolves it and records what shipped. Secrets stay literal in `dist/` (e.g. `${ANALYTICS_MCP_URL}`) and resolve at deploy time.
 

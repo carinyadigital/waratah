@@ -7,8 +7,9 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { DefinitionError, loadAll, type AgentDefinition } from './load';
+import { DefinitionError, flatten, loadAll, type AgentDefinition } from './load';
 import { getProvider, providerIds, UnsupportedFeatureError } from './providers/index';
+import { publish, PublishError, requireApiKey } from './publish/claude';
 
 const arg = (name: string): string | undefined => {
   const i = process.argv.indexOf(`--${name}`);
@@ -78,7 +79,7 @@ const build = (write: boolean): { changed: string[]; count: number } => {
   return { changed, count };
 };
 
-const commands: Record<string, () => number> = {
+const commands: Record<string, () => number | Promise<number>> = {
   validate: () => {
     const agents = loadAll(root);
     if (!agents.length) {
@@ -123,21 +124,49 @@ const commands: Record<string, () => number> = {
       console.error(`deploy requires --provider <${providerIds.join('|')}>`);
       return 2;
     }
+    if (providerId !== 'claude') {
+      console.error(`deploy: no publisher wired for "${providerId}". Only claude is a deploy target.`);
+      return 1;
+    }
+
     const stale = build(false).changed;
     if (stale.length) {
       console.error('deploy: dist/ is stale, refusing. Run `pnpm build` and commit first.');
+      for (const f of stale) console.error(`  ${f}`);
       return 1;
     }
-    for (const agent of loadAll(root)) {
-      const dir = path.relative(root, distDir(agent, providerId));
-      if (flag('dry-run')) {
-        console.log(`  would deploy ${agent.name} from ${dir}`);
-        continue;
-      }
-      console.error(`deploy: no publisher wired for "${providerId}" yet. Built artifact is at ${dir}.`);
+
+    const dryRun = flag('dry-run');
+
+    // Subagents first, then the coordinator that names them. Reads the
+    // committed artifact rather than re-rendering, so what ships is byte for
+    // byte what was reviewed.
+    const ordered = flatten(loadAll(root))
+      .filter((agent) => !agent.providers || providerId in agent.providers)
+      .map((agent) => {
+        const dir = distDir(agent, providerId);
+        const read = (file: string) => JSON.parse(readFileSync(path.join(dir, file), 'utf8')) as unknown;
+        return {
+          agent,
+          definition: read('agent.json'),
+          deployments: agent.schedules.map((s) => ({
+            name: s.name,
+            content: read(path.join('deployments', `${s.name}.json`)),
+          })),
+        };
+      });
+
+    if (!ordered.length) {
+      console.error(`deploy: nothing targets "${providerId}".`);
       return 1;
     }
-    return 0;
+
+    const apiKey = dryRun ? 'dry-run' : requireApiKey();
+
+    return publish(ordered, { apiKey, dryRun }).then(() => {
+      console.log(dryRun ? 'deploy --dry-run: nothing was changed' : 'deploy: done');
+      return 0;
+    });
   },
 };
 
@@ -149,9 +178,14 @@ if (!run) {
 }
 
 try {
-  process.exit(run());
+  // deploy is async; the rest are not. Awaiting both keeps one exit path.
+  process.exit(await run());
 } catch (error) {
-  if (error instanceof DefinitionError || error instanceof UnsupportedFeatureError) {
+  if (
+    error instanceof DefinitionError ||
+    error instanceof UnsupportedFeatureError ||
+    error instanceof PublishError
+  ) {
     console.error(`\n${error.message}\n`);
     process.exit(1);
   }

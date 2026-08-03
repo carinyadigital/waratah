@@ -34,6 +34,11 @@ multiagent:
 providers:
   claude:
     mode: managed
+    # MCP credentials are session-scoped and supplied by vault. Linear
+    # authenticates per session over OAuth, so without this the backlog
+    # connection is attempted unauthenticated and fails at runtime — after
+    # the session has already started.
+    vaults: [content-marketing]
   # No cursor block: cursor cannot express a coordinator roster
   # (assertSupported refuses it). Declaring nothing here means the build
   # skips cursor for this agent entirely rather than emitting a roster-less,

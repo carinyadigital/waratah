@@ -59,7 +59,15 @@
           "additionalProperties": false,
           "properties": {
             "mode": { "enum": ["managed"] },
-            "environment": { "type": "string", "description": "Environment id sessions run in. Omit for the account default." }
+            "environment": {
+              "type": "string",
+              "description": "Environment id sessions run in. The API requires one on every deployment, so when this is omitted the build emits a ${CLAUDE_ENVIRONMENT_ID} placeholder for deploy to resolve rather than shipping a payload with the field missing."
+            },
+            "vaults": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+              "description": "Vault names supplying MCP credentials for this agent's connectors. Each renders as a ${VAULT_ID_<NAME>} placeholder — vault ids are account-specific and the credentials themselves never enter this repo."
+            }
           }
         },
         "cursor": {

@@ -1,6 +1,6 @@
-# agent by carinya digital
+# agents by carinya digital
 
-`agent` is a portable agent definition, built to any provider.
+`agents` is a portable agent definition, built to any provider.
 
 ## The agent directory is authoritive
 

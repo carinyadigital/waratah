@@ -9,6 +9,7 @@ node_modules/
 /node_modules
 /.pnp
 .pnp.js
+.pnpm-store/
 
 # testing
 /coverage
@@ -46,4 +47,4 @@ next-env.d.ts
 *.db-journal
 
 # generated brand artifacts
-packages/brand/dist/
+packages/brand/dist/v

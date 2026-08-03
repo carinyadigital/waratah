@@ -20,17 +20,23 @@ Node `>=24` (`.nvmrc`: 24). Package manager: `pnpm@11.18.0`.
 
 ```
 agents/<name>/          portable definition + committed dist/
-  agent.yaml            identity, model tier, permissions, provider overlay
+  agent.yaml            identity, model tier, permissions, provider overlay,
+                         and — for a coordinator — multiagent: roster name/version pins
   instructions.md       system prompt
   questions.yaml        pre-registered questions (runtime; not compiled)
   connectors/           one MCP server per file
-  schedules/            one run per file
+  schedules/            one run per file (prompt is required — becomes initial_events)
+  skills/               one directory per skill, mounted by name (claude only)
+  subagents/<name>/     one level only: a full agent dir per subagent —
+                         no schedules/, no nested subagents/ of its own
   dist/<provider>/      built artifacts — commit after every definition change
 packages/agent/         schema, loaders, providers, CLI
 brand/                  positioning.md, voice.md (not copied into dist)
 ```
 
 Nothing in `agent.yaml` names a vendor. Vendors live in `connectors/` and the provider overlay only.
+
+`agents/content-marketer/` is the first coordinator: a lead with a `multiagent` roster over `subagents/content-analyst` and `subagents/market-researcher`. Design in `docs/content-marketing-team.md`.
 
 ## Workflow
 
@@ -42,9 +48,12 @@ Nothing in `agent.yaml` names a vendor. Vendors live in `connectors/` and the pr
 ## Gotchas
 
 - After editing definitions, run `pnpm build` and commit `dist/` — CI and deploy refuse stale output.
-- Secrets stay literal in `dist/` (`${ANALYTICS_MCP_URL}`); resolve at deploy, never at build.
-- `agent.yaml` `name` must equal the directory basename.
-- Build fails hard on unsupported provider features (no silent drop) — e.g. Claude rejects stdio connectors; Cursor rejects per-connector non-`allow` and `skills/`.
+- Secrets stay literal in `dist/` (`${ANALYTICS_MCP_URL}`); resolve at deploy, never at build. Same rule for `multiagent`: rendered by name, never an account-specific id, until deploy resolves it.
+- `agent.yaml` `name` must equal the directory basename — including for subagents, against their own directory under `subagents/`.
+- A subagent that declares `schedules/` or its own `subagents/` fails the build by name — no clock of its own, and delegation stops at one level.
+- `multiagent.agents` in `agent.yaml` and the directories under `subagents/` are cross-checked in both directions — an orphan on either side fails the build.
+- Build fails hard on unsupported provider features (no silent drop) — e.g. Claude rejects stdio connectors; Cursor rejects per-connector non-`allow`, `skills/`, and any `multiagent` roster.
+- A coordinator should simply not declare a `cursor:` key under `providers:` — the build then skips that combination instead of hitting the (still-enforced) failure above.
 - `questions.yaml` and `brand/` are not part of the compiler.
 - Without `--dry-run`, `deploy` exits with “no publisher wired”.
 

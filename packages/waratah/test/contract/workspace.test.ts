@@ -38,9 +38,13 @@ describe('workspace coexistence', () => {
     expect(pkg.dependencies['@langchain/langgraph-checkpoint-sqlite']).toBeDefined();
   });
 
-  it('exports nothing from the public barrel', async () => {
+  it('exports public error codes from the public barrel', async () => {
     const barrel = await import('../../src/index');
 
-    expect(Object.keys(barrel)).toEqual([]);
+    expect(Object.keys(barrel).sort()).toEqual([
+      'PHASE_1_LIMITS',
+      'WaratahError',
+      'isWaratahError',
+    ]);
   });
 });

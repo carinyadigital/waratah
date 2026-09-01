@@ -1,2 +1,2 @@
-// Keep the public surface empty until authoring constructors are implemented.
-export {};
+export type { WaratahErrorCode, HarnessLimits } from './shared/errors.js';
+export { WaratahError, PHASE_1_LIMITS, isWaratahError } from './shared/errors.js';

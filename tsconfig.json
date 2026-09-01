@@ -1,17 +1,11 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": ["ES2022"],
-    "strict": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "types": ["node"]
-  },
-  "include": ["packages/agent/src/**/*.ts", "packages/agent/tests/**/*.ts"],
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "packages/agent/src/**/*.ts",
+    "packages/agent/tests/**/*.ts",
+    "packages/waratah/src/**/*.ts",
+    "packages/waratah/test/**/*.ts",
+    "examples/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

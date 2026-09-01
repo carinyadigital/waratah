@@ -1,6 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# working files
+# Waratah / Local working files
+.waratah/
 *.local.md
 .local
 

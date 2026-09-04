@@ -6,9 +6,10 @@
 
 waratah is a filesystem-first TypeScript harness for durable AI agents. An
 agent is a directory on disk — instructions, skills, tools, connections,
-channels, hooks, sandbox, and nested subagents are files — and waratah
-compiles that directory to a LangGraph `CompiledStateGraph` and runs it.
-Authors call `createAgent`; they never import `@langchain/langgraph`.
+channels, schedules, hooks, sandbox, and nested subagents are files — and
+waratah compiles that directory to a LangGraph `CompiledStateGraph` and
+runs it. Authors call `createAgent`; they never import
+`@langchain/langgraph`.
 
 ---
 
@@ -22,9 +23,9 @@ Authors call `createAgent`; they never import `@langchain/langgraph`.
 └─────────────────────────────┬───────────────────────────────────┘
                               │
                     ┌─────────▼─────────┐
-                    │     Channel       │  normalizes trigger →
-                    │  (lead only)      │  session + message;
-                    │                   │  owns delivery idempotency
+                    │ Channel / schedule│  normalizes trigger →
+                    │ adapter (lead     │  session + message;
+                    │ only)             │  owns delivery idempotency
                     └─────────┬─────────┘
                               │ graph.invoke({ thread_id })
                     ┌─────────▼─────────┐
@@ -40,7 +41,8 @@ Authors call `createAgent`; they never import `@langchain/langgraph`.
                        │            │
                        │     ┌──────▼──────────┐
                        │     │  Subagent graph │  isolated messages
-                       │     │  (no channels)  │  shared files channel
+                       │     │  (no channels,  │  shared files channel
+                       │     │   no schedules) │
                        │     └──────┬──────────┘
                        │            │ write
                        └────────────▼──────────┐
@@ -60,7 +62,9 @@ Authors call `createAgent`; they never import `@langchain/langgraph`.
 ```
 
 A channel is not a graph. It accepts a trigger, derives `thread_id` from
-the delivery id, and invokes the compiled lead. The lead may call `task`,
+the delivery id, and invokes the compiled lead. A schedule fire uses the
+same session path through the framework-owned schedule adapter; cron is
+only the cadence expression. The lead may call `task`,
 which runs a subagent as an isolated subgraph against the same `files`
 channel. The subagent's job ends when it writes condensed findings; the
 lead never sees the raw payload. Write-capable tools pass through the
@@ -70,7 +74,7 @@ Product automations live in product repos and depend on the `waratah`
 package root. Credentials and channel IDs are deployment config, not
 framework code. Schedule cadences are authored next to the agent.
 
-waratah owns `createAgent` / `defineTool`, authored-directory discovery,
+waratah owns `createAgent` / `defineTool` / `defineSchedule`, authored-directory discovery,
 compile to `CompiledStateGraph`, the harness loop, built-in fs / `task` /
 `execute` tools, channel normalization, HTTP and ACP, session durability,
 and session bootstrap (`AGENTS.md`, `MEMORY.md`). It does not own product
@@ -403,7 +407,7 @@ sandbox.
 
 ```
 Trigger (webhook / schedule / operator)
-    ↔ Channel (idempotency, no graph)
+    ↔ Channel or schedule adapter (idempotency, no graph)
         ↔ Harness (model sees instructions, AGENTS.md, MEMORY.md, skill metadata, findings)
             ↔ Tool executor (approval seam, path confinement, bound work)
                 ↔ Authored adapter (secrets in closure, scoped service identity)
@@ -471,18 +475,10 @@ Trace events: start / complete / error per **session**, **turn**,
 **model**, **tool**, and **subagent**. JSONL allowlist sink: no
 credentials, prompts, raw diffs, or Slack bodies.
 
-Eval and production share that event schema:
+Eval and production share that event schema when an eval harness lands.
+There is no `src/evals/` module yet.
 
-- False positives / negatives
-- MR acceptance (merged as-is / after edits / wrong target / duplicated)
-- Terminal outcome vs silent or interrupted end
-- Billed tokens per useful output
-- Tool-call volume, failure count, latency
-- Agent stack traces (which workers actually ran)
-- LLM latency and error rate per model
-
-**Source files**: `packages/waratah/src/observability/`,
-`packages/waratah/src/evals/`
+**Source files**: `packages/waratah/src/observability/`
 
 ---
 
@@ -492,14 +488,13 @@ Pick the tightest tier that can express the assertion.
 
 | Tier | Where | What |
 |------|-------|------|
-| **Unit** | `packages/waratah/src/**/*.test.ts` | Pure logic, colocated. No filesystem writes, subprocesses, or network. |
-| **Integration** | `src/**/*.integration.test.ts` | Multiple modules in memory. Fake `ModelAdapter` and fake domain adapters. |
-| **Scenario** | `src/**/*.scenario.test.ts`, `test/scenarios/` | Real subprocess, HTTP port, or bundler. |
-| **E2E** | `e2e/fixtures/*/evals/` | Fixture-owned `waratah eval` suites, CI only. |
+| **Unit** | `packages/waratah/src/**/*.test.ts`, `test/unit/`, `test/contract/` | Pure logic, colocated. No subprocesses or network. |
+| **Integration** | `src/**/*.integration.test.ts`, `examples/daily-changes/test/e2e.test.ts` | Multiple modules in memory. Fake `ModelAdapter` and fake domain adapters. |
+| **Scenario** | `packages/waratah/test/scenarios/` | Real subprocess (CLI, published `dist`). |
 
 CI never calls a live model, GitHub, or Slack.
 
-**Source files**: `packages/waratah/test/`, `e2e/`
+**Source files**: `packages/waratah/test/`, `packages/waratah/src/**/*.test.ts`, `examples/daily-changes/test/`
 
 ---
 
@@ -535,37 +530,30 @@ opens a Version packages PR; merging that PR publishes to npm.
 ├── packages/
 │   └── waratah/                    LangGraph harness
 │       ├── src/
-│       │   ├── agent/              createAgent
+│       │   ├── agent/              createAgent, defineTool
 │       │   ├── discover/           authored-shape discovery + diagnostics
 │       │   ├── compiler/           graph + manifest
 │       │   ├── harness/            StateGraph compile, invoke, limits
-│       │   ├── middleware/         filesystem, summarization, permissions,
-│       │   │                       auto-memory, HITL, caching
 │       │   ├── context/            files ReducedValue channel; findings
 │       │   ├── subagents/          task tool, subgraph run, findings write-back
 │       │   ├── tools/              built-in fs, task, execute
 │       │   ├── channel/            inbound trigger → session + message;
 │       │   │                       schedule adapter for cadence fires
-│       │   ├── protocol/           production HTTP
-│       │   ├── acp/                Agent Client Protocol (editor / local)
-│       │   ├── client/             thin SDK for the HTTP protocol
+│       │   ├── protocol/           production HTTP (`POST /session`)
 │       │   ├── session/            thread_id from deliveryId; filesystem store; checkpointer
-│       │   ├── memory/             AGENTS.md + MEMORY.md load / write / compact
-│       │   ├── approval/           guardrail / human-gate before write tools
-│       │   ├── sandbox/            per-agent sandbox backends
-│       │   ├── connections/        MCP / OpenAPI adapter runtime
-│       │   ├── evals/              eval harness
+│       │   ├── memory/             AGENTS.md + MEMORY.md load
+│       │   ├── approval/           allow-only policy seam
 │       │   ├── observability/      JSONL traces / logs
 │       │   └── shared/             contracts, errors, ids
-│       ├── bin/                    waratah CLI
+│       ├── bin/                    waratah CLI (build, info, serve)
 │       └── test/
 │
 ├── examples/                       worked authored agents, not product homes
 ├── docs/                           published user docs
-├── apps/docs/                      docs site
-├── e2e/                            fixture-owned waratah eval suites
-├── research/                       public-API research docs
-└── skills/waratah/                 editor skill pointing at packaged docs
+└── skills/waratah/                 editor skill pointing at repository docs
+
+Not yet in source: `acp/`, `client/`, `connections/`, `sandbox/`, `evals/`,
+`middleware/`, `apps/docs/`. Those remain architecture notes until they ship.
 ```
 
 **Source files**: `pnpm-workspace.yaml`, `packages/waratah/package.json`

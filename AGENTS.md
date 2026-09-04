@@ -87,9 +87,8 @@ every required check must pass before merge.
 
 2. **The core is lean and powerful**. The framework core should be simple yet highly
    expressible i.e., `waratah` can be built with `waratah`. This means that changes in
-   `execution/` and `harness/` should be only done when strictly necessary. The
-   core should expose hooks and internal APIs so that broad functionality is built
-   on top of it.
+   `harness/` should be only done when strictly necessary. The core should expose
+   hooks and internal APIs so that broad functionality is built on top of it.
 
 3. **KISS**. Keep things simple. If there are 5 ways to do something, the simplest
    and more obvious one should be the preferred option. Code should be legible and
@@ -101,12 +100,8 @@ every required check must pass before merge.
 
 5. **Wrap third-party dependencies.** Do not expose third-party APIs as waratah
    public APIs. Wrap them in waratah-owned surfaces so internals can change freely.
-   Add runtime `dependencies` only as a last resort: prefer vendoring code or
-   generated artifacts into the repository and listing the source package under
-   `devDependencies`. The `waratah` package should aim to keep `nitro` as its only
-   runtime dependency. This keeps waratah installs as small as possible and avoids
-   exposure to hijacked nested dependencies that are not pinned directly in the
-   main lockfile.
+   Authors import `waratah`, never `@langchain/langgraph`. Add runtime
+   `dependencies` only as a last resort.
 
 6. **Pre-1.0: prefer breaking changes.** Favor correctness and simplicity over
    backwards compatibility. No legacy fallback logic.
@@ -127,79 +122,51 @@ every required check must pass before merge.
     why, an invariant, a surprising edge case. Public API docs (principle 1) are
     the exception.
 
-Machine-checkable invariants are enforced by `pnpm guard:invariants`, which
-runs in the CI lint job. If the guard fails, fix the violation rather than
-editing the baseline — baselines may only shrink.
-
 ## Research plans
 
-Research documents live in the top-level `research/` directory and require
-`issue`, `status`, and `last_updated` frontmatter. Keep plans concise and focus
-primarily on the proposed authoring API and externally observable semantics.
-Include only the architecture needed to explain boundaries, data flow, and
-invariants; avoid speculative implementation detail, repeated rationale, and
-exhaustive task inventories. Use a compact diagram when it makes a lifecycle
-or ownership relationship materially clearer.
+Research documents live in `.waratah/research/` and require `status` and
+`last_updated` frontmatter. Keep plans concise and focus primarily on the
+proposed authoring API and externally observable semantics. Include only the
+architecture needed to explain boundaries, data flow, and invariants; avoid
+speculative implementation detail, repeated rationale, and exhaustive task
+inventories. Use a compact diagram when it makes a lifecycle or ownership
+relationship materially clearer.
 
 ## Testing
 
-Tests belong in one of four tiers. Pick the tightest tier that can express the
+Tests belong in one of three tiers. Pick the tightest tier that can express the
 assertion:
 
-- **Unit** (`src/**/*.test.ts`): pure logic, colocated. No filesystem writes,
-  subprocesses, or real network calls.
-- **Integration** (`src/**/*.integration.test.ts`): multiple modules in memory.
-- **Scenario** (`src/**/*.scenario.test.ts`, `test/scenarios/`): real
-  subprocess, HTTP port, or bundler.
-- **E2E** (`e2e/fixtures/*/evals/`): fixture-owned `waratah eval` suites that run
-  only in CI. The model suite (`e2e-local`) runs real matrix models against
-  the local world; the world suites (`e2e-vercel`, …) run deterministic mock
-  models (`waratah_E2E_MODEL=mock`) and exclude `real-model`-tagged evals. See
-  [`e2e/README.md`](./e2e/README.md).
+- **Unit** (`src/**/*.test.ts`, `test/unit/`, `test/contract/`): pure logic,
+  colocated. No subprocesses or real network calls.
+- **Integration** (`src/**/*.integration.test.ts`,
+  `examples/daily-changes/test/e2e.test.ts`): multiple modules in memory, or
+  the fixture path with a fake model.
+- **Scenario** (`test/scenarios/`): real subprocess (CLI, published `dist`).
 
-**Running a single file or filtered test: always pass the tier config.** Only
-the `vitest.<tier>.config.ts` files alias `#*` imports to `./src`; a bare
-`vitest run <path>` resolves them to compiled `./dist` output, so you end up
-testing stale builds. Use:
+Run `pnpm typecheck` and `pnpm test:unit` frequently. Integration and scenario
+tests are slower; run the narrowest relevant command when a change needs
+behavioral validation. Copy edits and similar non-behavioral changes can skip
+them locally. CI is the official line of defense.
 
 ```sh
-pnpm --filter waratah exec vitest run --config vitest.unit.config.ts <path-or-pattern>
-# or vitest.integration.config.ts / vitest.scenario.config.ts for those tiers
+pnpm test:unit
+pnpm test:integration
+pnpm test:scenario
+pnpm --filter waratah exec vitest run src/channel/schedule.test.ts
 ```
 
-Add `-t "<name>"` to filter by test name. If you touched anything under
-`#compiled/*`, run `pnpm --filter waratah build:compiled` first — the tier configs
-do not rebuild it.
+Do not commit fixture trees under `packages/waratah/test/fixtures/` — scenario
+app content is defined inline as `ScenarioAppDescriptor` objects.
 
-Do not commit fixture trees under `packages/waratah/test/fixtures/` — scenario app
-content is defined inline as `ScenarioAppDescriptor` objects (CI enforces this).
-
-## End-to-end tests
-
-Automated tests cover module-level behavior, but they don't prove a fixture
-agent boots, accepts a request, and streams a response over HTTP. E2E suites
-cannot run locally and must run in CI. When a change needs e2e coverage, add or
-update the relevant fixture eval, then proceed to commit and push. Optionally
-watch CI for the results and iterate on any failures.
-
-Pick the fixture that exercises the surface you changed; if none does, add a
-new eval under the matching fixture's `evals/` directory. E2E evals must be
-deterministic and self-contained. Keep e2e free of external service startup
-and injected env requirements (beyond model-provider credentials).
-
-Do not set `VERCEL_TEAM_ID` at build: sandbox template keys must derive
-identically at build and runtime, and Vercel has no team variable at runtime.
-
-The shared Vercel project's Preview env must provide the model-provider
-credentials the fixtures need. TUI smoke tests
-live under `packages/waratah/test/tui-client` and run with `pnpm test:tui`. See
-[`e2e/README.md`](./e2e/README.md).
+There is no `waratah eval` suite, TUI smoke test, or live-model CI job. The
+daily-changes fixture uses a fake `ModelAdapter` and does not call GitHub or
+Slack.
 
 ## Documentation
 
 - `docs/**` is the published documentation. If your change alters
-  public behavior, update the relevant doc in the same PR and run
-  `pnpm docs:check`.
+  public behavior, update the relevant doc in the same PR.
 - When moving a published route, update authored links to the new URL and add a
   permanent redirect from every old HTML and supported Markdown URL.
 - Sidebar order lives in `docs/meta.json`.

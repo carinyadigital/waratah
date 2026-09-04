@@ -18,12 +18,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Definitions conform
-        run: pnpm validate
-
-      - name: Built output is current
-        run: pnpm build:check
-
       - name: Typecheck
         run: pnpm typecheck
 

@@ -1,8 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
-    "packages/agent/src/**/*.ts",
-    "packages/agent/tests/**/*.ts",
     "packages/waratah/src/**/*.ts",
     "packages/waratah/test/**/*.ts",
     "packages/waratah/bin/**/*.ts",

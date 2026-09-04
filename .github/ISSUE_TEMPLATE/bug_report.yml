@@ -1,0 +1,124 @@
+name: Bug report
+description: Report a reproducible bug in waratah.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Before opening a new issue:
+
+        - [Search existing issues](https://github.com/carinyadigital/waratah/issues) and upvote instead of duplicating — it gets bugs fixed faster.
+        - Verify the bug still reproduces on the **latest** waratah from `main`; it may already be fixed.
+        - This tracker is for reproducible bugs and accepted feature work, not general usage questions.
+  - type: input
+    id: reproduction
+    attributes:
+      label: Link to a minimal reproduction
+      description: |
+        A link to a **public** GitHub repository that reproduces the issue. Start from the documented agent directory layout (or strip [`examples/daily-changes`](https://github.com/carinyadigital/waratah/tree/main/examples/daily-changes)) and include **only** the changes that contribute to the bug — no unrelated tools, connections, or app code.
+
+        A minimal reproduction is the single most useful thing you can give us. **Issues without a valid reproduction link may be closed as not actionable.**
+      placeholder: "https://github.com/user/my-waratah-bug-reproduction"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: A step-by-step description of how to trigger the bug using the linked reproduction.
+      placeholder: |
+        1. `pnpm install && pnpm waratah build .`
+        2. `pnpm waratah serve .`
+        3. Send a request via `curl ...`
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Current vs. expected behavior
+      description: What happens today (including exact error output), and what you expected to happen instead.
+      placeholder: "Following the steps above, I expected A, but observed B instead."
+    validations:
+      required: true
+  - type: input
+    id: waratah-version
+    attributes:
+      label: waratah version
+      description: The exact version from your lockfile (`npm ls waratah`), not a semver range. If you are working from this repo, the commit SHA is also very helpful. If the bug is a regression, the last known-good version or SHA is useful too.
+      placeholder: "waratah@0.1.0 (worked at abc1234)"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Your OS, Node.js version (`node --version`), and package manager. If the project compiles, also paste the output of `waratah info` from the app root.
+      render: shell
+      placeholder: |
+        OS: macOS 15.5 (arm64)
+        Node: v24.1.0
+        Package manager: pnpm@11.x
+
+        $ pnpm waratah info .
+        ...
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where does the bug occur?
+      multiple: true
+      options:
+        - Local serve (`waratah serve`)
+        - Build (`waratah build`)
+        - Info (`waratah info`)
+        - Production / deployed
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: deployment
+    attributes:
+      label: Deployment
+      description: If the bug occurs in a deployed agent, link the deployment (URL or ID). This lets us correlate with platform-side logs.
+      placeholder: "https://my-agent.example.com"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Build and runtime logs
+      description: |
+        Paste the relevant build output and runtime logs. Include the full output around the failure rather than a single line.
+      render: shell
+      placeholder: |
+        $ pnpm waratah build .
+        ...
+        $ pnpm waratah serve .
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: implementation-prompt
+    attributes:
+      label: Suggested implementation prompt
+      description: Optionally provide a prompt a maintainer or coding agent could use to fix this bug after it is accepted. Include the expected behavior, constraints, and acceptance criteria rather than prescribing unnecessary implementation details.
+      placeholder: |
+        Fix ...
+
+        Requirements:
+        - ...
+
+        Acceptance criteria:
+        - ...
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that might help — whether it reproduces locally vs. deployed only, the first version or commit where you noticed the regression, etc.
+    validations:
+      required: false

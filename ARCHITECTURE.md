@@ -10,10 +10,6 @@ channels, hooks, sandbox, and nested subagents are files — and waratah
 compiles that directory to a LangGraph `CompiledStateGraph` and runs it.
 Authors call `createAgent`; they never import `@langchain/langgraph`.
 
-This repository also ships `packages/agent`, a YAML compiler that renders
-`agents/` to Claude and Cursor. The two authoring paths do not mix in one
-directory.
-
 ---
 
 ## 1. System Overview
@@ -78,11 +74,10 @@ waratah owns `createAgent` / `defineTool`, authored-directory discovery,
 compile to `CompiledStateGraph`, the harness loop, built-in fs / `task` /
 `execute` tools, channel normalization, HTTP and ACP, session durability,
 and session bootstrap (`AGENTS.md`, `MEMORY.md`). It does not own product
-leads or domain-tool content; Claude/Cursor payload shape (`packages/agent`
-keeps that); LangGraph Platform hosting; Temporal or a second workflow
-engine; or the `deepagents` npm package — filesystem tools, the `files`
-channel, and isolated `task` subgraphs are reimplemented here. Chat models
-enter through `ModelAdapter`; tests use a fake.
+leads or domain-tool content; LangGraph Platform hosting; Temporal or a
+second workflow engine; or the `deepagents` npm package — filesystem
+tools, the `files` channel, and isolated `task` subgraphs are reimplemented
+here. Chat models enter through `ModelAdapter`; tests use a fake.
 
 **Source files**: `packages/waratah/src/shared/contracts.ts`,
 `packages/waratah/src/shared/errors.ts`, `packages/waratah/package.json`
@@ -98,7 +93,6 @@ enter through `ModelAdapter`; tests use a fake.
 | Checkpointer (prod) | `PostgresSaver` | Crash-resume across hosts |
 | Checkpointer (local) | `SqliteSaver` | Single-host durability |
 | Checkpointer (CI) | `MemorySaver` | In-process tests, fake `ModelAdapter` |
-| YAML compile + publish | GitHub Actions `deploy.yml` | `packages/agent` → Claude (Cursor renders; no publisher) |
 | Documentation | `apps/docs` over `docs/` | Published framework docs |
 
 `thread_id` is a function of the trigger `deliveryId`. A seen delivery
@@ -106,7 +100,7 @@ whose thread is `running` or `succeeded` returns duplicate and does not
 invoke again.
 
 **Source files**: `packages/waratah/src/session/`,
-`packages/waratah/src/protocol/`, `.github/workflows/deploy.yml`
+`packages/waratah/src/protocol/`
 
 ---
 
@@ -175,10 +169,6 @@ Connection names, tool names, and similar identifiers come from the
 filesystem path (`agent/connections/linear.ts` → `"linear"`). Definition
 helpers are named for the protocol they target
 (`defineMcpClientConnection`, not `defineConnection`).
-
-A directory is either a YAML portable def (`agent.yaml`, compiled by
-`packages/agent`) or a waratah agent (`agent.ts`, compiled by
-`packages/waratah`). Never both.
 
 **Source files**: `packages/waratah/src/agent/`,
 `packages/waratah/src/discover/`
@@ -495,11 +485,9 @@ Pick the tightest tier that can express the assertion.
 | **Scenario** | `src/**/*.scenario.test.ts`, `test/scenarios/` | Real subprocess, HTTP port, or bundler. |
 | **E2E** | `e2e/fixtures/*/evals/` | Fixture-owned `waratah eval` suites, CI only. |
 
-CI never calls a live model, GitHub, or Slack. YAML gates stay in the same
-pipeline: `pnpm validate` and `pnpm build:check` for
-`agents/content-marketer`.
+CI never calls a live model, GitHub, or Slack.
 
-**Source files**: `packages/waratah/test/`, `packages/agent/tests/`, `e2e/`
+**Source files**: `packages/waratah/test/`, `e2e/`
 
 ---
 
@@ -507,14 +495,13 @@ pipeline: `pnpm validate` and `pnpm build:check` for
 
 | Workflow | Trigger | Checks |
 |----------|---------|--------|
-| `ci.yml` | PR, push to `main` | `pnpm validate` → `pnpm build:check` → `pnpm typecheck` → `pnpm test` |
-| `deploy.yml` | Manual | `build:check`, then `pnpm run deploy` to Claude (`--dry-run` by default) |
+| `ci.yml` | PR, push to `main` | `pnpm typecheck` → `pnpm test` |
 
 Commits are DCO-signed (`git commit -s`). PRs that touch the published
 `waratah` package include a changeset. Pre-1.0, use `patch` unless a
 public API breaks (`minor`).
 
-**Source files**: `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`,
+**Source files**: `.github/workflows/ci.yml`,
 `CONTRIBUTING.md`
 
 ---
@@ -528,11 +515,7 @@ public API breaks (`minor`).
 ├── package.json                    pnpm workspace root
 ├── pnpm-workspace.yaml             packages/* and examples/*
 │
-├── agents/                         portable YAML defs (Claude/Cursor)
-│   └── content-marketer/
-│
 ├── packages/
-│   ├── agent/                      schema, loaders, Claude/Cursor providers
 │   └── waratah/                    LangGraph harness
 │       ├── src/
 │       │   ├── agent/              createAgent

@@ -1,4 +1,4 @@
-# Contributing to agent
+# Contributing to waratah
 
 Thanks for your interest in contributing! This guide covers everything you need to get the repo running locally and land a change.
 
@@ -13,8 +13,6 @@ Thanks for your interest in contributing! This guide covers everything you need 
 git clone https://github.com/carinyadigital/waratah.git
 cd waratah
 pnpm install
-pnpm validate
-pnpm build
 pnpm typecheck
 pnpm test
 ```
@@ -22,16 +20,11 @@ pnpm test
 The repo is a pnpm workspace:
 
 - [`packages/waratah`](./packages/waratah) — LangGraph harness and the `waratah` CLI
-- [`packages/agent`](./packages/agent) — schema, providers, and the `agent` CLI
 - [`examples/daily-changes`](./examples/daily-changes) — Phase 1 waratah fixture
-- [`agents/`](./agents) — portable YAML agent definitions
 
 ## Development
 
 ```bash
-pnpm validate        # YAML definitions parse and conform
-pnpm build           # render YAML agents into agents/<name>/dist/<provider>/
-pnpm build:check     # fail if dist/ is stale
 pnpm waratah build examples/daily-changes
 pnpm typecheck       # TypeScript across the workspace
 pnpm test            # unit, integration, and scenario tests (no live credentials)
@@ -41,8 +34,6 @@ pnpm test:scenario
 ```
 
 CI runs the same checks on pull requests and `main`. Running them locally before pushing saves a round trip.
-
-When you change an agent definition or the build, regenerate and commit `dist/` so `pnpm build:check` stays green — deploy refuses stale output.
 
 ## Before opening a pull request
 
@@ -58,9 +49,9 @@ To keep reviews manageable:
 
 1. Fork the repo and create a branch from `main`.
 2. Link any related issue.
-3. Make your change, including tests where relevant. If agent definitions or the build change, update committed `dist/` artifacts.
+3. Make your change, including tests where relevant.
 4. Sign off every commit with `git commit -s`.
-5. Make sure `pnpm validate`, `pnpm build:check`, `pnpm typecheck`, and `pnpm test` pass.
+5. Make sure `pnpm typecheck` and `pnpm test` pass.
 6. Open the PR with a clear description of the problem and solution.
 
 ## Developer Certificate of Origin (DCO)
@@ -105,6 +96,6 @@ This project follows the [Code of Conduct](./CODE_OF_CONDUCT.md). By participati
 
 ## License
 
-`agent` is licensed under the [Apache License 2.0](./LICENSE). By contributing,
+`waratah` is licensed under the [Apache License 2.0](./LICENSE). By contributing,
 you agree that your contributions will be licensed under that same license
 (inbound = outbound).

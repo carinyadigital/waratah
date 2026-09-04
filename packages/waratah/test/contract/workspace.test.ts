@@ -7,18 +7,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 
 const read = (relative: string) => readFileSync(path.join(repoRoot, relative), 'utf8');
 
-describe('workspace coexistence', () => {
-  it('keeps YAML agent gates as root scripts', () => {
-    const root = JSON.parse(read('package.json')) as {
-      scripts: Record<string, string>;
-    };
-
-    expect(root.scripts.validate).toBe('tsx packages/agent/src/cli.ts validate');
-    expect(root.scripts.build).toBe('tsx packages/agent/src/cli.ts build');
-    expect(root.scripts['build:check']).toBe('tsx packages/agent/src/cli.ts build --check');
-    expect(root.scripts.deploy).toBe('tsx packages/agent/src/cli.ts deploy');
-  });
-
+describe('workspace layout', () => {
   it('lists packages/* and examples/* as workspace members', () => {
     const workspace = read('pnpm-workspace.yaml');
 

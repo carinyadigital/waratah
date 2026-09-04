@@ -5,14 +5,7 @@ Guidance for coding agents (and humans) working in this repository. For setup, P
 ## About waratah
 
 waratah is a filesystem-first harness for durable AI agents. You author an agent as a directory on disk — instructions, skills, tools, connections, channels, subagents, and schedules are all files — and waratah compiles and runs it.
-See the [README](./README.md) for the full overview and [`docs/`](./docs) for user-facing documentation.
-
-This repository currently hosts two authoring paths:
-
-- **YAML portable defs** under `agents/` — compiled by `packages/agent` (`pnpm validate`, `pnpm build`).
-- **waratah agents** under `examples/` — `createAgent()` in `agent.ts`, compiled by `packages/waratah` (`pnpm waratah build`).
-
-A directory is either YAML or waratah, never both.
+See the [README](./README.md) for the full overview and [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the runtime model.
 
 Always style the framework name as `waratah`, lowercase, in user-facing copy,
 docs, prompts, comments, and headings.
@@ -21,9 +14,7 @@ docs, prompts, comments, and headings.
 
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — architecture authority
 - `packages/waratah` — the framework and `waratah` CLI
-- `packages/agent` — YAML portable-def compiler and `agent` CLI
 - `examples/daily-changes` — Phase 1 LangGraph fixture
-- `agents/` — YAML agent definitions
 - `docs` — published documentation content
 
 ## Git workflow
@@ -45,9 +36,6 @@ drafting or updating one.
 
 ```sh
 pnpm install # install workspace dependencies
-pnpm validate # YAML agent definitions conform
-pnpm build # render YAML agents into dist/
-pnpm build:check # fail if YAML dist/ is stale
 pnpm waratah # LangGraph CLI (build, info, serve)
 pnpm typecheck # TypeScript across the workspace
 pnpm test # unit + integration + scenario

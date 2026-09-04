@@ -7,16 +7,24 @@ Guidance for coding agents (and humans) working in this repository. For setup, P
 waratah is a filesystem-first harness for durable AI agents. You author an agent as a directory on disk — instructions, skills, tools, connections, channels, subagents, and schedules are all files — and waratah compiles and runs it.
 See the [README](./README.md) for the full overview and [`docs/`](./docs) for user-facing documentation.
 
+This repository currently hosts two authoring paths:
+
+- **YAML portable defs** under `agents/` — compiled by `packages/agent` (`pnpm validate`, `pnpm build`).
+- **waratah agents** under `examples/` — `createAgent()` in `agent.ts`, compiled by `packages/waratah` (`pnpm waratah build`).
+
+A directory is either YAML or waratah, never both.
+
 Always style the framework name as `waratah`, lowercase, in user-facing copy,
 docs, prompts, comments, and headings.
 
 ## Repository layout
 
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — system architecture
-- `packages/waratah` — the framework and `waratah` CLI (the main package)
-- `apps/docs` — docs site
+- `packages/waratah` — the framework and `waratah` CLI
+- `packages/agent` — YAML portable-def compiler and `agent` CLI
+- `examples/daily-changes` — Phase 1 LangGraph fixture
+- `agents/` — YAML agent definitions
 - `docs` — published documentation content
-- `e2e/` — fixture-owned `waratah eval` end-to-end tests
 
 ## Git workflow
 
@@ -36,32 +44,25 @@ drafting or updating one.
 ## Commands
 
 ```sh
-pnpm install            # install workspace dependencies
-pnpm build              # build all packages
-pnpm dev                # watch-mode build + weather fixture on an available local port
-
-pnpm typecheck          # TypeScript across the workspace
-pnpm lint               # oxlint (auto-fixes)
-pnpm fmt                # oxfmt
-pnpm guard:invariants   # mechanical code-invariant checks (runs in CI)
-pnpm docs:check         # docs frontmatter and nav validation
-
-pnpm test               # unit + integration
-pnpm test:unit          # unit tests (<3s)
-pnpm test:integration   # integration tests (<10s)
-pnpm test:scenario      # scenario tests (2–5 min; requires pnpm build first)
-pnpm test:e2e           # fixture-owned waratah eval suites (CI only)
-pnpm test:tui           # TUI smoke scripts (not e2e)
+pnpm install # install workspace dependencies
+pnpm validate # YAML agent definitions conform
+pnpm build # render YAML agents into dist/
+pnpm build:check # fail if YAML dist/ is stale
+pnpm waratah # LangGraph CLI (build, info, serve)
+pnpm typecheck # TypeScript across the workspace
+pnpm test # unit + integration + scenario
+pnpm test:unit # colocated unit and contract tests
+pnpm test:integration # harness integration and fixture e2e
+pnpm test:scenario # CLI scenario tests
 ```
 
-We value fast local iteration whenever possible. Run `pnpm fmt`, `pnpm lint`,
-and `pnpm typecheck` frequently to catch inexpensive failures early, and run
-unit tests after material behavioral changes. Integration and scenario tests
-are comparatively slow, so do not run them after every change; run the
-narrowest relevant test when a change needs behavioral validation. Copy edits,
-typo fixes, small code reorganizations, and similar non-behavioral changes can
-proceed without local integration or scenario runs. CI is always the official
-line of defense, and every required check must pass before merge.
+We value fast local iteration whenever possible. Run `pnpm typecheck` and
+`pnpm test:unit` frequently. Integration and scenario tests are comparatively
+slow, so do not run them after every change; run the narrowest relevant test
+when a change needs behavioral validation. Copy edits, typo fixes, small code
+reorganizations, and similar non-behavioral changes can proceed without local
+integration or scenario runs. CI is always the official line of defense, and
+every required check must pass before merge.
 
 ## Agent-ready product principles
 

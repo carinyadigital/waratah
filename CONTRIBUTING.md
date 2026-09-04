@@ -10,26 +10,34 @@ Thanks for your interest in contributing! This guide covers everything you need 
 ## Getting started
 
 ```bash
-git clone https://github.com/carinyaparc/carinyaparc.git
-cd carinyaparc
+git clone https://github.com/carinyadigital/waratah.git
+cd waratah
 pnpm install
 pnpm validate
 pnpm build
+pnpm typecheck
+pnpm test
 ```
 
 The repo is a pnpm workspace:
 
+- [`packages/waratah`](./packages/waratah) — LangGraph harness and the `waratah` CLI
 - [`packages/agent`](./packages/agent) — schema, providers, and the `agent` CLI
-- [`agents/`](./agents) — portable agent definitions (one directory per top-level agent; a coordinator's `subagents/` nest one level inside its own directory)
+- [`examples/daily-changes`](./examples/daily-changes) — Phase 1 waratah fixture
+- [`agents/`](./agents) — portable YAML agent definitions
 
 ## Development
 
 ```bash
-pnpm validate        # definitions parse and conform
-pnpm build           # render into agents/<name>/dist/<provider>/
+pnpm validate        # YAML definitions parse and conform
+pnpm build           # render YAML agents into agents/<name>/dist/<provider>/
 pnpm build:check     # fail if dist/ is stale
+pnpm waratah build examples/daily-changes
 pnpm typecheck       # TypeScript across the workspace
-pnpm test            # Vitest
+pnpm test            # unit, integration, and scenario tests (no live credentials)
+pnpm test:unit
+pnpm test:integration
+pnpm test:scenario
 ```
 
 CI runs the same checks on pull requests and `main`. Running them locally before pushing saves a round trip.

@@ -2,6 +2,24 @@
 
 `agents` is a portable agent definition, built to any provider.
 
+This repository also hosts **waratah**, Carinya Digital's filesystem-first harness for durable agents. YAML agents under `agents/` compile with the `agent` CLI. LangGraph agents under `examples/` (and later, product repos) compile with the `waratah` CLI. A directory is one or the other — never both.
+
+## Two CLIs
+
+| CLI | Authoring | Runtime |
+| --- | --- | --- |
+| `pnpm agent` / `pnpm validate` / `pnpm build` | `agents/<name>/agent.yaml` | Provider artifacts in `dist/` (Claude, Cursor) |
+| `pnpm waratah` | `agent/agent.ts` via `createAgent()` | LangGraph graph, `.waratah/manifest.json`, `waratah serve` |
+
+```bash
+pnpm validate              # YAML definitions conform
+pnpm build                 # render YAML agents into dist/
+pnpm waratah build examples/daily-changes
+pnpm waratah info examples/daily-changes
+```
+
+The daily-changes fixture at [`examples/daily-changes/`](examples/daily-changes/) is the Phase 1 waratah path: a PM lead, one systems-analyst subagent, cron, and `POST /session`. It does not call live models, GitHub, or Slack.
+
 ## The agent directory is authoritive
 
 Define an agent once — identity, instructions, connectors, and schedules — then render it into provider-specific artifacts. Conventional subdirectories are discovered automatically.

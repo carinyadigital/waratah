@@ -13,7 +13,10 @@
     "build": "tsx packages/agent/src/cli.ts build",
     "build:check": "tsx packages/agent/src/cli.ts build --check",
     "deploy": "tsx packages/agent/src/cli.ts deploy",
-    "test": "vitest run",
+    "test": "pnpm test:unit && pnpm test:integration && pnpm test:scenario",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts' --exclude '**/*.scenario.test.ts' --exclude '**/e2e.test.ts'",
+    "test:integration": "vitest run packages/waratah/src/**/*.integration.test.ts examples/daily-changes/test/e2e.test.ts",
+    "test:scenario": "vitest run packages/waratah/test/scenarios",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

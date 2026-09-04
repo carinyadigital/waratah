@@ -6,6 +6,7 @@
     "agent-config",
     "instructions",
     "skills",
-    "memory"
+    "memory",
+    "tools"
   ]
 }

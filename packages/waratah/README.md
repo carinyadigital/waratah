@@ -1,9 +1,9 @@
 # waratah
 
 Filesystem-first TypeScript harness for durable AI agents. An agent is a
-directory on disk — instructions, skills, tools, connections, channels, hooks,
-sandbox, and nested subagents are files — and waratah compiles that directory
-to a LangGraph `CompiledStateGraph` and runs it.
+directory on disk — instructions, skills, tools, connections, channels,
+schedules, hooks, sandbox, and nested subagents are files — and waratah
+compiles that directory to a LangGraph `CompiledStateGraph` and runs it.
 
 Requires Node.js 24+.
 
@@ -23,6 +23,8 @@ export default createAgent({
   subagents: [],
 });
 ```
+
+Authoring docs: [docs/](../../docs/README.md).
 
 Source, architecture, and contributing guide:
 [github.com/carinyadigital/waratah](https://github.com/carinyadigital/waratah).

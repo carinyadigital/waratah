@@ -10,9 +10,10 @@
 
 waratah is a filesystem-first TypeScript harness for durable AI agents. An
 agent is a directory on disk — instructions, skills, tools, connections,
-channels, hooks, sandbox, and nested subagents are files — and waratah
-compiles that directory to a LangGraph `CompiledStateGraph` and runs it.
-Authors call `createAgent`; they never import `@langchain/langgraph`.
+channels, schedules, hooks, sandbox, and nested subagents are files — and
+waratah compiles that directory to a LangGraph `CompiledStateGraph` and
+runs it. Authors call `createAgent`; they never import
+`@langchain/langgraph`.
 
 Requires Node.js 24+. Install with `npm install waratah`.
 
@@ -65,6 +66,8 @@ export default createAgent({
 ```
 
 Read [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full layout and runtime model.
+
+Published authoring docs — getting started, tools, subagents, sessions, CLI — live in [`docs/`](docs/README.md).
 
 ## Contributing
 

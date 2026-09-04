@@ -86,3 +86,4 @@ If the port is in use, it tells you to choose another `--port`. `SIGINT` and `SI
 
 - [Getting Started](../getting-started.md): layout and first compile
 - [Sessions](../concepts/sessions.md): `POST /session` contract
+- [TypeScript API](./typescript-api.md): `createAgent`, `defineTool`, `defineSchedule`

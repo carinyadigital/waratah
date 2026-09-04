@@ -1,5 +1,6 @@
 import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
 
+import { mergeFiles } from '../context/files-channel.js';
 import type { AgentDefinition, WaratahCompiledGraph } from '../shared/contracts.js';
 
 const AgentState = Annotation.Root({
@@ -8,7 +9,7 @@ const AgentState = Annotation.Root({
     default: () => [],
   }),
   files: Annotation<Record<string, string>>({
-    reducer: (left, right) => ({ ...left, ...right }),
+    reducer: (left, right) => mergeFiles(left, right),
     default: () => ({}),
   }),
 });

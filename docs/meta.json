@@ -8,6 +8,7 @@
     "skills",
     "memory",
     "tools",
-    "subagents"
+    "subagents",
+    "schedules"
   ]
 }

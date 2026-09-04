@@ -4,8 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createAgent } from '../agent/create-agent.js';
-import { compileGraph } from '../harness/compile-graph.js';
+import { compileAcceptGraph } from '../harness/compile-graph.js';
 import {
   createMemoryCheckpointer,
   createSqliteCheckpointer,
@@ -24,18 +23,6 @@ afterEach(async () => {
       .map((directory) => rm(directory, { recursive: true, force: true })),
   );
 });
-
-const definition = () =>
-  createAgent({
-    name: 'lead',
-    model: 'test-model',
-    instructions: ['./instructions.md'],
-    skills: [],
-    memory: [],
-    tools: [],
-    subagents: [],
-    channels: [],
-  });
 
 describe('CreateSessionService', () => {
   it.each([
@@ -87,7 +74,7 @@ describe('CreateSessionService', () => {
 
   it('returns duplicate when the thread already exists', async () => {
     const checkpointer = createMemoryCheckpointer();
-    const graph = compileGraph(definition(), { checkpointer });
+    const graph = compileAcceptGraph(checkpointer);
     await graph.invoke({}, { configurable: { thread_id: 'delivery-one' } });
     const service = new CreateSessionService(checkpointer);
 
@@ -129,7 +116,7 @@ describe('sqlite checkpointer', () => {
     const projectRoot = await mkdtemp(join(tmpdir(), 'waratah-checkpointer-'));
     temporaryDirectories.push(projectRoot);
     const checkpointer = createSqliteCheckpointer(projectRoot);
-    const graph = compileGraph(definition(), { checkpointer });
+    const graph = compileAcceptGraph(checkpointer);
     await graph.invoke({}, { configurable: { thread_id: 'local-delivery' } });
 
     expect(await getThread(checkpointer, 'local-delivery')).toBeDefined();

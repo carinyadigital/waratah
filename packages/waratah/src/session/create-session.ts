@@ -1,5 +1,4 @@
-import { compileGraph } from '../harness/compile-graph.js';
-import { createAgent } from '../agent/create-agent.js';
+import { compileAcceptGraph } from '../harness/compile-graph.js';
 import type { CreateSessionCommand, CreateSessionResult, WaratahCompiledGraph } from '../shared/contracts.js';
 import { PHASE_1_LIMITS } from '../harness/limits.js';
 import { WaratahError } from '../shared/errors.js';
@@ -33,19 +32,7 @@ export class CreateSessionService {
       options.limits?.maxSessionMessageBytes ?? PHASE_1_LIMITS.maxSessionMessageBytes,
       PHASE_1_LIMITS.maxSessionMessageBytes,
     );
-    this.#graph = compileGraph(
-      createAgent({
-        name: 'session',
-        model: 'none',
-        instructions: ['./instructions.md'],
-        skills: [],
-        memory: [],
-        tools: [],
-        subagents: [],
-        channels: [],
-      }),
-      { checkpointer },
-    );
+    this.#graph = compileAcceptGraph(checkpointer);
   }
 
   async create(command: unknown): Promise<CreateSessionResult> {

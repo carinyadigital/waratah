@@ -1,5 +1,7 @@
 import { loadSessionInstructions, loadSessionStartContent } from '../memory/load.js';
+import { createToolTraceHook, type JsonlSink } from '../observability/jsonl-sink.js';
 import type { AgentDefinition, ModelMessage, SessionFilesystem } from '../shared/contracts.js';
+import { isWaratahError } from '../shared/errors.js';
 import type { SessionId, TurnId } from '../shared/ids.js';
 import { createTaskTool } from '../subagents/task-tool.js';
 import type { ToolExecutorOptions } from '../tools/executor.js';
@@ -28,6 +30,7 @@ export interface RunAgentOptions {
   readonly findingPath?: string;
   readonly budget?: StepBudget;
   readonly toolExecutor?: ToolExecutorOptions;
+  readonly sink?: JsonlSink;
 }
 
 export interface RunAgentResult {
@@ -39,6 +42,7 @@ export interface RunAgentResult {
 export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult> {
   const limits = options.limits ?? PHASE_1_LIMITS;
   const budget = options.budget ?? { steps: 0 };
+  const toolExecutor = bindToolExecutor(options);
   const extraTools = [
     ...(options.extraTools ?? []),
     ...(options.agent.kind === 'lead'
@@ -50,7 +54,7 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
             modelAdapter: options.modelAdapter,
             budget,
             limits,
-            toolExecutor: options.toolExecutor,
+            toolExecutor,
           }),
         ]
       : []),
@@ -68,22 +72,81 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
     budget,
     signal: options.signal,
     limits,
-    toolExecutor: options.toolExecutor,
+    toolExecutor,
   };
-  const result = await graph.invoke(
-    { messages },
-    {
-      configurable: {
-        thread_id: options.sessionId,
-        ...runtime,
+  const startedAt = Date.now();
+  await emit(options.sink, {
+    timestamp: new Date().toISOString(),
+    name: 'session.start',
+    kind: 'session',
+    phase: 'start',
+    status: 'started',
+    sessionId: options.sessionId,
+    turnId: options.turnId,
+    agentName: options.agent.name,
+  });
+  try {
+    const result = await graph.invoke(
+      { messages },
+      {
+        configurable: {
+          thread_id: options.sessionId,
+          ...runtime,
+        },
       },
-    },
-  );
-  const state = result as { readonly content?: string };
+    );
+    await emit(options.sink, {
+      timestamp: new Date().toISOString(),
+      name: 'session.terminal',
+      kind: 'session',
+      phase: 'terminal',
+      status: 'succeeded',
+      durationMs: Date.now() - startedAt,
+      sessionId: options.sessionId,
+      turnId: options.turnId,
+      agentName: options.agent.name,
+    });
+    const state = result as { readonly content?: string };
+    return {
+      content: state.content ?? '',
+      steps: budget.steps,
+    };
+  } catch (error) {
+    await emit(options.sink, {
+      timestamp: new Date().toISOString(),
+      name: 'session.terminal',
+      kind: 'session',
+      phase: 'terminal',
+      status: 'failed',
+      durationMs: Date.now() - startedAt,
+      sessionId: options.sessionId,
+      turnId: options.turnId,
+      agentName: options.agent.name,
+      errorCode: isWaratahError(error) ? error.code : undefined,
+    });
+    throw error;
+  }
+}
+
+function bindToolExecutor(options: RunAgentOptions): ToolExecutorOptions | undefined {
+  if (options.toolExecutor?.trace !== undefined || options.sink === undefined) {
+    return options.toolExecutor;
+  }
   return {
-    content: state.content ?? '',
-    steps: budget.steps,
+    ...options.toolExecutor,
+    trace: createToolTraceHook(options.sink),
   };
+}
+
+async function emit(sink: JsonlSink | undefined, event: unknown): Promise<void> {
+  if (sink === undefined) {
+    return;
+  }
+  try {
+    await Promise.all([sink.writeTrace(event), sink.writeLog(event)]);
+  } catch {
+    // Inspection files must not change the session outcome.
+  }
 }
 
 export async function loadAgentMessages(options: {

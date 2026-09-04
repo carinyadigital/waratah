@@ -1,6 +1,8 @@
 {
   "pages": [
     "---Introduction---",
-    "getting-started"
+    "getting-started",
+    "---Build---",
+    "agent-config"
   ]
 }

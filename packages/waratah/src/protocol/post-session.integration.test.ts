@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PHASE_1_LIMITS } from '../harness/limits.js';
+import { DEFAULT_LIMITS } from '../harness/limits.js';
 import { createMemoryCheckpointer } from '../session/checkpointer.js';
 import { CreateSessionService } from '../session/create-session.js';
 import { postSession } from './post-session.js';
@@ -64,7 +64,7 @@ describe('POST /session', () => {
       {
         deliveryId: 'oversized',
         triggeredAt: validTimestamp,
-        message: 'x'.repeat(PHASE_1_LIMITS.maxSessionMessageBytes + 1),
+        message: 'x'.repeat(DEFAULT_LIMITS.maxSessionMessageBytes + 1),
       },
     );
 

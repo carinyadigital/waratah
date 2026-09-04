@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  PHASE_1_LIMITS,
+  DEFAULT_LIMITS,
   WaratahError,
   isWaratahError,
   type WaratahErrorCode,
@@ -24,8 +24,8 @@ const EXPECTED_ERROR_CODES: WaratahErrorCode[] = [
 ];
 
 describe('errors', () => {
-  it('defines Phase 1 harness limits', () => {
-    expect(PHASE_1_LIMITS).toEqual({
+  it('defines default harness limits', () => {
+    expect(DEFAULT_LIMITS).toEqual({
       maxSteps: 20,
       maxToolCallsPerStep: 4,
       maxToolResultBytes: 256_000,
@@ -49,7 +49,7 @@ describe('errors', () => {
     const barrel = await import('../../src/index.js');
 
     expect(barrel.WaratahError).toBeDefined();
-    expect(barrel.PHASE_1_LIMITS).toBeDefined();
+    expect(barrel.DEFAULT_LIMITS).toBeDefined();
 
     const error = new barrel.WaratahError(code, 'test');
     expect(error.code).toBe(code);

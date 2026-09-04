@@ -20,7 +20,7 @@ export interface HarnessLimits {
   readonly maxFindingBytes: number;
 }
 
-export const PHASE_1_LIMITS: HarnessLimits = {
+export const DEFAULT_LIMITS: HarnessLimits = {
   maxSteps: 20,
   maxToolCallsPerStep: 4,
   maxToolResultBytes: 256_000,

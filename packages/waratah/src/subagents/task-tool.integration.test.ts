@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createAgent, defineTool } from '../agent/create-agent.js';
 import { InMemorySessionBackend } from '../context/in-memory-backend.js';
 import { ConfinedSessionFilesystem } from '../context/session-filesystem.js';
-import { PHASE_1_LIMITS } from '../harness/limits.js';
+import { DEFAULT_LIMITS } from '../harness/limits.js';
 import type { ModelCompletionRequest } from '../harness/model-adapter.js';
 import { runAgent } from '../harness/run-agent.js';
 import type {
@@ -210,7 +210,7 @@ describe('task delegation', () => {
     await expect(
       runAgent({
         ...accepted.options,
-        limits: { ...PHASE_1_LIMITS, maxSteps: 6 },
+        limits: { ...DEFAULT_LIMITS, maxSteps: 6 },
       }),
     ).resolves.toMatchObject({ content: 'complete', steps: 6 });
 
@@ -218,19 +218,19 @@ describe('task delegation', () => {
     await expect(
       runAgent({
         ...rejected.options,
-        limits: { ...PHASE_1_LIMITS, maxSteps: 5 },
+        limits: { ...DEFAULT_LIMITS, maxSteps: 5 },
       }),
     ).rejects.toMatchObject({ code: 'STEP_LIMIT_EXCEEDED' });
   });
 
   it('accepts the finding byte limit and rejects one byte beyond it', async () => {
     const accepted = await createHarness(
-      delegationModel('a'.repeat(PHASE_1_LIMITS.maxFindingBytes)),
+      delegationModel('a'.repeat(DEFAULT_LIMITS.maxFindingBytes)),
     );
     await expect(runAgent(accepted.options)).resolves.toMatchObject({ content: 'complete' });
 
     const rejected = await createHarness(
-      delegationModel('a'.repeat(PHASE_1_LIMITS.maxFindingBytes + 1)),
+      delegationModel('a'.repeat(DEFAULT_LIMITS.maxFindingBytes + 1)),
     );
     await expect(runAgent(rejected.options)).rejects.toMatchObject({
       code: 'PAYLOAD_LIMIT_EXCEEDED',

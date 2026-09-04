@@ -15,7 +15,7 @@ import { WaratahError, isWaratahError, type WaratahErrorCode } from '../shared/e
 import { createStepId, type SessionId, type TurnId } from '../shared/ids.js';
 import { filesystemTools } from '../tools/filesystem.js';
 import { ToolExecutor, type ToolExecutorOptions } from '../tools/executor.js';
-import { PHASE_1_LIMITS, type HarnessLimits } from './limits.js';
+import { DEFAULT_LIMITS, type HarnessLimits } from './limits.js';
 import { completeModel, type ModelAdapter } from './model-adapter.js';
 
 export interface CompileGraphOptions {
@@ -106,7 +106,7 @@ export function compileGraph(
 
   const model = async (state: typeof AgentState.State, config: unknown) => {
     const runtime = requireRuntime(runtimeFromConfig(config));
-    const limits = runtime.limits ?? PHASE_1_LIMITS;
+    const limits = runtime.limits ?? DEFAULT_LIMITS;
     const steps = consumeStep(runtime, limits.maxSteps);
 
     const descriptors: ToolDescriptor[] = boundTools.map((tool) => ({
@@ -157,7 +157,7 @@ export function compileGraph(
 
   const tools = async (state: typeof AgentState.State, config: unknown) => {
     const runtime = requireRuntime(runtimeFromConfig(config));
-    const limits = runtime.limits ?? PHASE_1_LIMITS;
+    const limits = runtime.limits ?? DEFAULT_LIMITS;
     const executor = new ToolExecutor(
       { name: definition.name, tools: boundTools },
       runtime.toolExecutor,

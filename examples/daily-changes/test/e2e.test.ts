@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createAgent, PHASE_1_LIMITS, WaratahError } from 'waratah';
+import { createAgent, DEFAULT_LIMITS, WaratahError } from 'waratah';
 
 import { InMemorySessionBackend } from '../../../packages/waratah/src/context/in-memory-backend.js';
 import { ConfinedSessionFilesystem } from '../../../packages/waratah/src/context/session-filesystem.js';
@@ -131,7 +131,7 @@ describe('daily-changes fixture', () => {
     await expect(
       runAgent({
         ...harness.options,
-        limits: { ...PHASE_1_LIMITS, maxSteps: 2 },
+        limits: { ...DEFAULT_LIMITS, maxSteps: 2 },
       }),
     ).rejects.toMatchObject({ code: 'STEP_LIMIT_EXCEEDED' });
   });

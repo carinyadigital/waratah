@@ -31,7 +31,7 @@ describe('workspace layout', () => {
     const barrel = await import('../../src/index');
 
     expect(Object.keys(barrel).sort()).toEqual([
-      'PHASE_1_LIMITS',
+      'DEFAULT_LIMITS',
       'WaratahError',
       'compile',
       'createAgent',

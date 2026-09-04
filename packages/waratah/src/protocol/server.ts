@@ -5,7 +5,7 @@ import {
   type ServerResponse,
 } from 'node:http';
 
-import { PHASE_1_LIMITS } from '../harness/limits.js';
+import { DEFAULT_LIMITS } from '../harness/limits.js';
 import { WaratahError, isWaratahError, type WaratahErrorCode } from '../shared/errors.js';
 import { InvalidSessionRequest, type CreateSessionService } from '../session/create-session.js';
 import type { SessionId } from '../shared/ids.js';
@@ -17,14 +17,14 @@ import {
 } from './post-session.js';
 
 export const WARATAH_SERVER_LIMITS = Object.freeze({
-  maxRequestBodyBytes: PHASE_1_LIMITS.maxRequestBodyBytes,
+  maxRequestBodyBytes: DEFAULT_LIMITS.maxRequestBodyBytes,
   maxHeaderBytes: 16 * 1024,
   maxHeaderCount: 64,
   headersTimeoutMilliseconds: 10_000,
   requestTimeoutMilliseconds: 30_000,
-  keepAliveTimeoutMilliseconds: PHASE_1_LIMITS.serverKeepAliveTimeoutMilliseconds,
-  maxRequestsPerSocket: PHASE_1_LIMITS.serverMaxRequestsPerSocket,
-  shutdownGraceMilliseconds: PHASE_1_LIMITS.serverShutdownGraceMilliseconds,
+  keepAliveTimeoutMilliseconds: DEFAULT_LIMITS.serverKeepAliveTimeoutMilliseconds,
+  maxRequestsPerSocket: DEFAULT_LIMITS.serverMaxRequestsPerSocket,
+  shutdownGraceMilliseconds: DEFAULT_LIMITS.serverShutdownGraceMilliseconds,
 });
 
 const LOOPBACK_HOST = '127.0.0.1';

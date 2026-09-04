@@ -12,7 +12,7 @@ import {
   type HarnessRuntime,
   type StepBudget,
 } from './compile-graph.js';
-import { PHASE_1_LIMITS, type HarnessLimits } from './limits.js';
+import { DEFAULT_LIMITS, type HarnessLimits } from './limits.js';
 import type { ModelAdapter } from './model-adapter.js';
 
 export interface RunAgentOptions {
@@ -42,7 +42,7 @@ export interface RunAgentResult {
 
 /** Loads session context and invokes the compiled graph for one turn. */
 export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult> {
-  const limits = options.limits ?? PHASE_1_LIMITS;
+  const limits = options.limits ?? DEFAULT_LIMITS;
   const budget = options.budget ?? { steps: 0 };
   const toolExecutor = bindToolExecutor(options);
   const extraTools = [

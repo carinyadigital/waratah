@@ -1,7 +1,7 @@
 import { compileAcceptGraph } from '../harness/compile-graph.js';
 import { SESSION_ID_PATTERN } from '../context/paths.js';
 import type { CreateSessionCommand, CreateSessionResult, WaratahCompiledGraph } from '../shared/contracts.js';
-import { PHASE_1_LIMITS } from '../harness/limits.js';
+import { DEFAULT_LIMITS } from '../harness/limits.js';
 import { WaratahError } from '../shared/errors.js';
 import { asSessionId } from '../shared/ids.js';
 import { getThread, type Checkpointer } from './checkpointer.js';
@@ -34,8 +34,8 @@ export class CreateSessionService {
     this.#checkpointer = checkpointer;
     this.#metadataKeys = new Set(options.metadataKeys);
     this.#maxMessageBytes = Math.min(
-      options.limits?.maxSessionMessageBytes ?? PHASE_1_LIMITS.maxSessionMessageBytes,
-      PHASE_1_LIMITS.maxSessionMessageBytes,
+      options.limits?.maxSessionMessageBytes ?? DEFAULT_LIMITS.maxSessionMessageBytes,
+      DEFAULT_LIMITS.maxSessionMessageBytes,
     );
     this.#graph = compileAcceptGraph(checkpointer);
     this.#sessionStore =

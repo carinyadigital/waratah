@@ -44,6 +44,8 @@ describe('workspace coexistence', () => {
     expect(Object.keys(barrel).sort()).toEqual([
       'PHASE_1_LIMITS',
       'WaratahError',
+      'createAgent',
+      'defineTool',
       'isWaratahError',
     ]);
   });

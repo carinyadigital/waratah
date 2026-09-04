@@ -37,6 +37,8 @@ drafting or updating one.
 ```sh
 pnpm install # install workspace dependencies
 pnpm waratah # LangGraph CLI (build, info, serve)
+pnpm build # emit packages/waratah/dist for npm
+pnpm changeset # add a changeset for a waratah package change
 pnpm typecheck # TypeScript across the workspace
 pnpm test # unit + integration + scenario
 pnpm test:unit # colocated unit and contract tests
@@ -210,14 +212,16 @@ live under `packages/waratah/test/tui-client` and run with `pnpm test:tui`. See
 
 ## Changesets
 
-every PR that touches the published `waratah` package must include a
+Every PR that touches the published `waratah` package must include a
 changeset (`pnpm changeset`). Because waratah is pre-1.0, use `patch` in most
 cases, including bug fixes and new features. Use `minor` only when the change
 breaks a public API. Write the body for someone reading release notes — what
 changed and what they'll see differently, in 1–2 sentences.
 
 Docs-only, internal-tooling, and fixture changes do not need a changeset. When
-in doubt, add one.
+in doubt, add one. Merging to `main` with pending changesets opens a Version
+packages PR; merging that PR publishes `waratah` to npm. See
+[CONTRIBUTING.md](./CONTRIBUTING.md) for the release pipeline.
 
 ## Security
 

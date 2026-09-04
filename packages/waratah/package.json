@@ -1,17 +1,47 @@
 {
   "name": "waratah",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Filesystem-first harness that compiles authored agents to a LangGraph graph.",
-  "engines": { "node": ">=24" },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/carinyadigital/waratah",
+  "bugs": {
+    "url": "https://github.com/carinyadigital/waratah/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carinyadigital/waratah.git",
+    "directory": "packages/waratah"
+  },
+  "engines": {
+    "node": ">=24"
+  },
   "bin": {
     "waratah": "./bin/waratah.ts"
   },
   "exports": {
     ".": "./src/index.ts"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "bin": {
+      "waratah": "./dist/bin/waratah.js"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/src/index.d.ts",
+        "import": "./dist/src/index.js"
+      }
+    }
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

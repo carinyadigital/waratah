@@ -495,13 +495,17 @@ CI never calls a live model, GitHub, or Slack.
 
 | Workflow | Trigger | Checks |
 |----------|---------|--------|
-| `ci.yml` | PR, push to `main` | `pnpm typecheck` → `pnpm test` |
+| `ci.yml` | PR, push to `main` | changeset status (PRs) → `pnpm typecheck` → `pnpm --filter waratah build` → `pnpm test` |
+| `changeset-status.yml` | `pull_request_target` | comments whether the PR includes a changeset |
+| `release.yml` | push to `main` | version PR, or pack + publish `waratah` to npm via trusted publishing |
 
 Commits are DCO-signed (`git commit -s`). PRs that touch the published
 `waratah` package include a changeset. Pre-1.0, use `patch` unless a
-public API breaks (`minor`).
+public API breaks (`minor`). Merging to `main` with pending changesets
+opens a Version packages PR; merging that PR publishes to npm.
 
 **Source files**: `.github/workflows/ci.yml`,
+`.github/workflows/release.yml`, `.changeset/config.json`,
 `CONTRIBUTING.md`
 
 ---
@@ -514,6 +518,7 @@ public API breaks (`minor`).
 ├── AGENTS.md                       conventions for this repo
 ├── package.json                    pnpm workspace root
 ├── pnpm-workspace.yaml             packages/* and examples/*
+├── .changeset/                     pending release notes for npm
 │
 ├── packages/
 │   └── waratah/                    LangGraph harness

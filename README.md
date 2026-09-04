@@ -14,6 +14,8 @@ channels, hooks, sandbox, and nested subagents are files — and waratah
 compiles that directory to a LangGraph `CompiledStateGraph` and runs it.
 Authors call `createAgent`; they never import `@langchain/langgraph`.
 
+Requires Node.js 24+. Install with `npm install waratah`.
+
 ## CLI
 
 ```bash

@@ -52,7 +52,68 @@ To keep reviews manageable:
 3. Make your change, including tests where relevant.
 4. Sign off every commit with `git commit -s`.
 5. Make sure `pnpm typecheck` and `pnpm test` pass.
-6. Open the PR with a clear description of the problem and solution.
+6. If you changed `packages/waratah/src` or `packages/waratah/bin`, add a
+   changeset with `pnpm changeset` (see [Changesets](#changesets)).
+7. Open the PR with a clear description of the problem and solution.
+
+## Changesets
+
+PRs that change the published `waratah` package (`packages/waratah/src` or
+`packages/waratah/bin`) must include a changeset so the next npm release can
+version and changelog the change.
+
+```bash
+pnpm changeset
+```
+
+Pick the `waratah` package, then the bump type, then write 1–2 sentences for
+the changelog — what changed and what callers will see differently. Because
+waratah is pre-1.0:
+
+- **patch** — bug fixes and new features
+- **minor** — a public API break
+
+Docs, CI, examples, and other internal tooling do not need a changeset. If you
+touched the published sources but the change should not release (tests-only
+that also edited `src`, for example), create an empty one with
+`pnpm changeset --empty`.
+
+CI comments on each PR whether a changeset is present, and fails when
+published sources changed without one.
+
+## Releasing
+
+Releases are automated from `main` by [`.github/workflows/release.yml`](./.github/workflows/release.yml).
+
+1. Merge a PR that includes a changeset.
+2. The release workflow opens (or updates) a **Version packages** pull request
+   that bumps `packages/waratah` and writes `CHANGELOG.md`.
+3. Review that PR, then merge it.
+4. The workflow packs `dist/` and publishes `waratah` to npm with provenance,
+   then tags the release on GitHub.
+
+The first publish of `0.1.0` happens on the first `main` run that has no
+pending changesets, after the trusted publisher below is configured.
+
+### npm trusted publisher (maintainers)
+
+Do not add an `NPM_TOKEN` secret. Publish uses GitHub OIDC.
+
+On [npmjs.com](https://www.npmjs.com/), add a GitHub Actions trusted publisher
+for the `waratah` package (this can be done before the package exists):
+
+- **Provider:** GitHub Actions
+- **Organization or user:** `carinyadigital`
+- **Repository:** `waratah`
+- **Workflow filename:** `release.yml` (not a path)
+- **Environment:** leave empty
+
+In this GitHub repo, under **Settings → Actions → General**, enable
+**Allow GitHub Actions to create and approve pull requests** so the version
+PR can be opened.
+
+If you later add a GitHub Environment to the publish job, the npm trusted
+publisher must use that same environment name.
 
 ## Developer Certificate of Origin (DCO)
 

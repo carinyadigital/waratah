@@ -27,6 +27,29 @@ describe('workspace layout', () => {
     expect(pkg.dependencies['@langchain/langgraph-checkpoint-sqlite']).toBeDefined();
   });
 
+  it('publishes the waratah package to the public npm registry from dist', () => {
+    const pkg = JSON.parse(read('packages/waratah/package.json')) as {
+      private?: boolean;
+      license: string;
+      files: readonly string[];
+      publishConfig: {
+        access: string;
+        provenance: boolean;
+        bin: Record<string, string>;
+        exports: { '.': { types: string; import: string } };
+      };
+    };
+
+    expect(pkg.private).toBeUndefined();
+    expect(pkg.license).toBe('Apache-2.0');
+    expect(pkg.files).toEqual(['LICENSE', 'README.md', 'dist']);
+    expect(pkg.publishConfig.access).toBe('public');
+    expect(pkg.publishConfig.provenance).toBe(true);
+    expect(pkg.publishConfig.bin.waratah).toBe('./dist/bin/waratah.js');
+    expect(pkg.publishConfig.exports['.'].import).toBe('./dist/src/index.js');
+    expect(pkg.publishConfig.exports['.'].types).toBe('./dist/src/index.d.ts');
+  });
+
   it('exports public error codes from the public barrel', async () => {
     const barrel = await import('../../src/index');
 

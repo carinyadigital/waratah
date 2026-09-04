@@ -8,8 +8,6 @@ export default createAgent({
   name: 'daily-changes',
   model: 'fixture-model',
   instructions: ['./instructions.md'],
-  skills: [],
-  memory: [],
   tools: [slackPost],
   subagents: [systemsAnalyst],
   channels: [cron],

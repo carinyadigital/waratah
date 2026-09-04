@@ -7,8 +7,6 @@ export default createAgent({
   kind: 'subagent',
   model: 'fixture-model',
   instructions: ['./instructions.md'],
-  skills: [],
-  memory: [],
   tools: [gitReader],
   subagents: [],
   channels: [],

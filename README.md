@@ -2,7 +2,7 @@
   <a href="https://carinyadigital.com/waratah">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset=".github/assets/waratah.svg">
-      <img alt="waratah" src=".github/assets/waratah.svg" height="64">
+      <img alt="waratah" src=".github/assets/waratah.svg" width="128" height="128">
     </picture>
   </a>
   <h1>waratah</h1>

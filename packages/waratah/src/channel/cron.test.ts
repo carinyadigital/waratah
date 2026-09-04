@@ -51,8 +51,11 @@ describe('cron lookback normalization', () => {
     const second = await channel.dispatch(cronTick);
 
     expect(first.accepted).toBe(true);
-    expect(second.accepted).toBe(true);
-    expect(first.sessionId).toBe(cronTick.deliveryId);
+    expect(second).toEqual({
+      sessionId: first.sessionId,
+      accepted: false,
+      duplicateOf: first.sessionId,
+    });
     expect(defineCronChannel()).toEqual({
       name: 'cron',
       description: 'Daily schedule trigger for the lookback window.',

@@ -1,4 +1,6 @@
-import type { CreateSessionCommand, CreateSessionResult } from '../shared/contracts.js';
+import { compileGraph } from '../harness/compile-graph.js';
+import { createAgent } from '../agent/create-agent.js';
+import type { CreateSessionCommand, CreateSessionResult, WaratahCompiledGraph } from '../shared/contracts.js';
 import { PHASE_1_LIMITS } from '../harness/limits.js';
 import { WaratahError } from '../shared/errors.js';
 import { asSessionId } from '../shared/ids.js';
@@ -22,6 +24,7 @@ export class CreateSessionService {
   readonly #checkpointer: Checkpointer;
   readonly #metadataKeys: ReadonlySet<string>;
   readonly #maxMessageBytes: number;
+  readonly #graph: WaratahCompiledGraph;
 
   constructor(checkpointer: Checkpointer, options: CreateSessionServiceOptions = {}) {
     this.#checkpointer = checkpointer;
@@ -29,6 +32,19 @@ export class CreateSessionService {
     this.#maxMessageBytes = Math.min(
       options.limits?.maxSessionMessageBytes ?? PHASE_1_LIMITS.maxSessionMessageBytes,
       PHASE_1_LIMITS.maxSessionMessageBytes,
+    );
+    this.#graph = compileGraph(
+      createAgent({
+        name: 'session',
+        model: 'none',
+        instructions: ['./instructions.md'],
+        skills: [],
+        memory: [],
+        tools: [],
+        subagents: [],
+        channels: [],
+      }),
+      { checkpointer },
     );
   }
 
@@ -39,6 +55,14 @@ export class CreateSessionService {
     const sessionId = asSessionId(threadId);
     if (existing !== undefined) {
       return { sessionId, accepted: false, duplicateOf: sessionId };
+    }
+    try {
+      await this.#graph.invoke({}, { configurable: { thread_id: threadId } });
+    } catch {
+      throw new WaratahError(
+        'SESSION_STORE_ERROR',
+        'The session store is unavailable. Restore the store before accepting or resuming work.',
+      );
     }
     return { sessionId, accepted: true };
   }

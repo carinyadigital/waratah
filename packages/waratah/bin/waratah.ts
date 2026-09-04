@@ -11,13 +11,16 @@ import type { AgentDefinition, WaratahManifest } from '../src/shared/contracts.j
 const USAGE = `Usage:
   waratah build [directory]
   waratah info [directory]
+  waratah serve [directory] [--port <port>]
 
 Commands:
   build  Compile agent/agent.ts to .waratah/manifest.json
   info   Report the graph in an existing .waratah/manifest.json
+  serve  Accept POST /session on the local loopback interface
 
 Options:
-  -h, --help  Show this usage information
+  -h, --help         Show this usage information
+  -p, --port <port>  Listening port for serve (default: 3000; use 0 for any free port)
 `;
 
 await main().catch(fail);
@@ -40,9 +43,13 @@ async function main(): Promise<void> {
 
   const projectRoot = resolve(directory ?? process.cwd());
   if (command === 'build') {
+    rejectServeOptions(values.port);
     await build(projectRoot);
   } else if (command === 'info') {
+    rejectServeOptions(values.port);
     await info(projectRoot);
+  } else if (command === 'serve') {
+    await serve(projectRoot, parsePort(values.port));
   } else {
     failUsage(`Unknown command ${JSON.stringify(command)}.`);
   }
@@ -54,11 +61,75 @@ function parseCommandLine() {
       allowPositionals: true,
       options: {
         help: { type: 'boolean', short: 'h' },
+        port: { type: 'string', short: 'p' },
       },
     });
   } catch (error) {
     failUsage(error instanceof Error ? error.message : String(error));
   }
+}
+
+async function serve(projectRoot: string, port: number): Promise<void> {
+  const [{ createSqliteCheckpointer }, { CreateSessionService }, { createWaratahServer }] =
+    await Promise.all([
+      import('../src/session/checkpointer.js'),
+      import('../src/session/create-session.js'),
+      import('../src/protocol/server.js'),
+    ]);
+
+  let checkpointer;
+  try {
+    checkpointer = createSqliteCheckpointer(projectRoot);
+  } catch (error) {
+    fail(error);
+  }
+
+  const server = createWaratahServer({
+    sessions: new CreateSessionService(checkpointer),
+  });
+
+  try {
+    const address = await server.listen(port);
+    process.stdout.write(
+      `${JSON.stringify({ status: 'listening', host: address.host, port: address.port })}\n`,
+    );
+  } catch (error) {
+    if (isAddressInUse(error)) {
+      throw new Error(
+        `Port ${port} is already in use on 127.0.0.1. Choose another port with --port.`,
+      );
+    }
+    throw error;
+  }
+
+  await new Promise<void>((resolveShutdown, rejectShutdown) => {
+    let shuttingDown = false;
+    const shutdown = (signal: 'SIGINT' | 'SIGTERM'): void => {
+      if (shuttingDown) {
+        process.exit(signal === 'SIGINT' ? 130 : 143);
+        return;
+      }
+      shuttingDown = true;
+      void server
+        .close()
+        .then(() => {
+          removeSignalHandlers();
+          resolveShutdown();
+        })
+        .catch((error: unknown) => {
+          removeSignalHandlers();
+          rejectShutdown(error);
+        });
+    };
+    const onSigint = (): void => shutdown('SIGINT');
+    const onSigterm = (): void => shutdown('SIGTERM');
+    const removeSignalHandlers = (): void => {
+      process.off('SIGINT', onSigint);
+      process.off('SIGTERM', onSigterm);
+    };
+    process.on('SIGINT', onSigint);
+    process.on('SIGTERM', onSigterm);
+  });
 }
 
 async function build(projectRoot: string): Promise<void> {
@@ -149,5 +220,31 @@ function isMissingFile(error: unknown): boolean {
     error !== null &&
     'code' in error &&
     (error as { readonly code?: unknown }).code === 'ENOENT'
+  );
+}
+
+function parsePort(value: string | undefined): number {
+  if (value !== undefined && !/^\d+$/.test(value)) {
+    failUsage('--port must be a decimal integer from 0 to 65535.');
+  }
+  const port = value === undefined ? 3000 : Number(value);
+  if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+    failUsage('--port must be a decimal integer from 0 to 65535.');
+  }
+  return port;
+}
+
+function rejectServeOptions(port: string | undefined): void {
+  if (port !== undefined) {
+    failUsage('--port can only be used with waratah serve.');
+  }
+}
+
+function isAddressInUse(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { readonly code?: unknown }).code === 'EADDRINUSE'
   );
 }

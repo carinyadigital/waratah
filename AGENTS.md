@@ -12,6 +12,7 @@ docs, prompts, comments, and headings.
 
 ## Repository layout
 
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — system architecture
 - `packages/waratah` — the framework and `waratah` CLI (the main package)
 - `apps/docs` — docs site
 - `docs` — published documentation content

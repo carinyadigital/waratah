@@ -21,7 +21,6 @@ The repo is a pnpm workspace:
 
 - [`packages/agent`](./packages/agent) — schema, providers, and the `agent` CLI
 - [`agents/`](./agents) — portable agent definitions (one directory per top-level agent; a coordinator's `subagents/` nest one level inside its own directory)
-- [`brand/`](./brand) — brand/source material used by agents (when present)
 
 ## Development
 

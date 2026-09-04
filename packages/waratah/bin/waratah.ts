@@ -192,6 +192,7 @@ function printAgent(
   );
   process.stdout.write(`${indent}  Tools: ${formatNames(agent.tools)}\n`);
   process.stdout.write(`${indent}  Channels: ${formatNames(agent.channels)}\n`);
+  process.stdout.write(`${indent}  Schedules: ${formatNames(agent.schedules ?? [])}\n`);
   for (const subagent of agent.subagents) {
     printAgent(subagent, depth + 1);
   }

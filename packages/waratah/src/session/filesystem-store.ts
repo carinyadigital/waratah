@@ -167,7 +167,9 @@ function isSessionMeta(value: unknown): value is SessionMeta {
   return (
     typeof record.sessionId === 'string' &&
     typeof record.deliveryId === 'string' &&
-    (record.trigger === 'manual' || record.trigger === 'cron' || record.trigger === 'http') &&
+    (record.trigger === 'manual' ||
+      record.trigger === 'schedule' ||
+      record.trigger === 'http') &&
     typeof record.triggeredAt === 'string' &&
     typeof record.status === 'string' &&
     typeof record.createdAt === 'string' &&

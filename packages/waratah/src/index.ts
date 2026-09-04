@@ -3,13 +3,14 @@ export { WaratahError, DEFAULT_LIMITS, isWaratahError } from './shared/errors.js
 
 export { createAgent, defineTool } from './agent/create-agent.js';
 export { compileAgent as compile } from './compiler/compile-agent.js';
-export { defineCronChannel } from './channel/cron.js';
+export { defineSchedule } from './channel/schedule.js';
 
 export type {
   AgentDefinition,
   AgentKind,
   CompiledAgent,
   CreateAgentInput,
+  ScheduleDefinition,
   Schema,
   SessionEntry,
   SessionFilesystem,

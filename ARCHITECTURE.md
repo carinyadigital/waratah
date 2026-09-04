@@ -17,7 +17,7 @@ Authors call `createAgent`; they never import `@langchain/langgraph`.
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Trigger / operator                           │
-│   cron · GitHub webhook · Slack event · Sentry webhook · HTTP    │
+│   schedule · GitHub webhook · Slack event · Sentry webhook · HTTP    │
 │   ACP (editor / local dev) · manual "run now"                    │
 └─────────────────────────────┬───────────────────────────────────┘
                               │
@@ -67,8 +67,8 @@ lead never sees the raw payload. Write-capable tools pass through the
 approval layer. Crash or redeploy resumes from the checkpointer.
 
 Product automations live in product repos and depend on the `waratah`
-package root. Credentials, channel IDs, and schedules are deployment
-config, not framework code.
+package root. Credentials and channel IDs are deployment config, not
+framework code. Schedule cadences are authored next to the agent.
 
 waratah owns `createAgent` / `defineTool`, authored-directory discovery,
 compile to `CompiledStateGraph`, the harness loop, built-in fs / `task` /
@@ -108,8 +108,9 @@ invoke again.
 
 Markdown is the default. TypeScript is used where behaviour needs types or
 execution. `agent.ts` is the exception: identity (model, tools, channels,
-subagents, and any skill or memory path overrides) is stated explicitly
-rather than inferred from whatever files happen to sit in a directory.
+schedules, subagents, and any skill or memory path overrides) is stated
+explicitly rather than inferred from whatever files happen to sit in a
+directory.
 
 ```
 agent/
@@ -117,7 +118,8 @@ agent/
 ├── instructions.md          # system prompt
 ├── skills/<skill>/SKILL.md  # Agent Skills (agentskills.io)
 ├── tools/*.ts               # typed tools this agent calls directly
-├── channels/*.ts            # LEADS ONLY — trigger entry points
+├── channels/*.ts            # LEADS ONLY — inbound surfaces
+├── schedules/*.ts           # LEADS ONLY — cadence jobs; name from file path
 ├── connections/*.ts         # MCP / OpenAPI clients this agent talks to
 ├── hooks/*.ts               # lifecycle hooks (e.g. confidence-gate)
 ├── sandbox/sandbox.ts       # override — write-capable workers only
@@ -159,11 +161,20 @@ export default createAgent({
 });
 ```
 
-A **lead** authors `channels/`. A **subagent** is the same
+A **lead** authors `channels/` and `schedules/`. A **subagent** is the same
 `createAgent(...)` shape, nested or imported, and must not author
-`channels/` — compile fails with `INVALID_CHANNEL_SCOPE`. Sharing a
+`channels/` (`INVALID_CHANNEL_SCOPE`) or `schedules/`
+(`INVALID_SCHEDULE_SCOPE`). Sharing a
 subagent across leads in a product repo is ordinary module sharing;
 waratah does not host a worker catalog.
+
+`defineSchedule({ cron, markdown })` is the TypeScript form of a cadence
+job. Cron is the expression, not the adapter. Identity comes from the
+file path (`agent/schedules/daily-changes.ts` → `"daily-changes"`).
+Markdown schedules fire through the framework-owned schedule adapter;
+authored code never constructs that adapter, and a schedule is not a
+channel. List imported schedules on `createAgent`; omit the field when
+the lead has none.
 
 Connection names, tool names, and similar identifiers come from the
 filesystem path (`agent/connections/linear.ts` → `"linear"`). Definition
@@ -182,7 +193,7 @@ Channel, harness, and workflow stay separate.
 | Layer | waratah | LangGraph primitive |
 |-------|---------|---------------------|
 | **Channel** | Normalizes a trigger into a session + message. Owns trigger-side dedup. Not a graph. | Channel code calls `graph.invoke(input, { configurable: { thread_id } })`. |
-| **Harness** | The compiled lead graph: interpret the message, call `task`, read findings, stop or escalate. Identical for cron or webhook. | `CompiledStateGraph` from `createAgent` — model/tool loop plus the `files` state channel. |
+| **Harness** | The compiled lead graph: interpret the message, call `task`, read findings, stop or escalate. Identical for a schedule fire or webhook. | `CompiledStateGraph` from `createAgent` — model/tool loop plus the `files` state channel. |
 | **Workflow** | Session is a durable thread; turn is one `invoke`; model or tool call is a checkpointed step. A human-gate is `interrupt()`. | `BaseCheckpointSaver`. `thread_id` = session id. Inspectable store: `.waratah/session/<id>/`. |
 
 ### Subagents
@@ -222,11 +233,11 @@ authored agent/ tree
         │
         ▼
   discover/     walk agent.ts, instructions, skills, tools, channels,
-                connections, hooks, sandbox, nested subagents
+                schedules, connections, hooks, sandbox, nested subagents
         │
         ▼
-  compiler/     reject channels on subagents; bind tools per agent;
-                emit CompiledStateGraph + manifest.json
+  compiler/     reject channels and schedules on subagents; bind tools
+                per agent; emit CompiledStateGraph + manifest.json
         │
         ▼
   harness/      invoke loop, limits, files channel, approval seam
@@ -251,8 +262,8 @@ waratah-owned surfaces.
 
 | Term | Meaning |
 |------|---------|
-| Lead | Authored agent with `channels/`. Compiles to the root graph. |
-| Subagent | Authored agent without `channels/`. Compiles to a subgraph. Invoked only via `task`. |
+| Lead | Authored agent with `channels/` and/or `schedules/`. Compiles to the root graph. |
+| Subagent | Authored agent without `channels/` or `schedules/`. Compiles to a subgraph. Invoked only via `task`. |
 | Session | One LangGraph `thread_id`. Equals the accepted delivery's session id. Inspectable at `.waratah/session/<id>/`. |
 | Turn | One `graph.invoke` for that thread. |
 | Step | One checkpointed model, tool, or subagent node. |
@@ -348,8 +359,9 @@ Production HTTP:
 Session IDs are immutable. A reset retires the ID; it is never silently
 reassigned. Webhook retries land on the same session.
 
-`CreateSessionCommand.trigger` is `'manual' | 'cron' | 'http'`. Channel
-code maps a concrete trigger (GitHub, Slack, Sentry, cron tick) onto that.
+`CreateSessionCommand.trigger` is `'manual' | 'schedule' | 'http'`. Channel
+code maps a concrete inbound surface (GitHub, Slack, Sentry, HTTP) onto
+`http` or a named channel. A schedule tick maps onto `schedule`.
 
 **Source files**: `packages/waratah/src/protocol/`,
 `packages/waratah/src/acp/`, `packages/waratah/src/client/`
@@ -390,14 +402,14 @@ sandbox.
 ### Trust boundaries
 
 ```
-Trigger (webhook / cron / operator)
+Trigger (webhook / schedule / operator)
     ↔ Channel (idempotency, no graph)
         ↔ Harness (model sees instructions, AGENTS.md, MEMORY.md, skill metadata, findings)
             ↔ Tool executor (approval seam, path confinement, bound work)
                 ↔ Authored adapter (secrets in closure, scoped service identity)
                     ↔ Upstream (GitHub, Slack, Sentry, …)
 Subagent subgraph
-    ↔ shared files channel only; no channels; no lead-owned side effects
+    ↔ shared files channel only; no channels; no schedules; no lead-owned side effects
 ```
 
 The model is never trusted to enforce policy. Guardrails sit at the tool
@@ -532,7 +544,8 @@ opens a Version packages PR; merging that PR publishes to npm.
 │       │   ├── context/            files ReducedValue channel; findings
 │       │   ├── subagents/          task tool, subgraph run, findings write-back
 │       │   ├── tools/              built-in fs, task, execute
-│       │   ├── channel/            trigger → session + message
+│       │   ├── channel/            inbound trigger → session + message;
+│       │   │                       schedule adapter for cadence fires
 │       │   ├── protocol/           production HTTP
 │       │   ├── acp/                Agent Client Protocol (editor / local)
 │       │   ├── client/             thin SDK for the HTTP protocol

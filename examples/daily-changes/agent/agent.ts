@@ -1,7 +1,7 @@
 import { createAgent } from 'waratah';
 
 import slackPost from './tools/slack-post.js';
-import cron from './channels/cron.js';
+import dailyChanges from './schedules/daily-changes.js';
 import systemsAnalyst from './subagents/systems-analyst/agent.js';
 
 export default createAgent({
@@ -10,5 +10,6 @@ export default createAgent({
   instructions: ['./instructions.md'],
   tools: [slackPost],
   subagents: [systemsAnalyst],
-  channels: [cron],
+  channels: [],
+  schedules: [dailyChanges],
 });

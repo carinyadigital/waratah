@@ -58,7 +58,7 @@ describe('workspace layout', () => {
       'WaratahError',
       'compile',
       'createAgent',
-      'defineCronChannel',
+      'defineSchedule',
       'defineTool',
       'isWaratahError',
     ]);

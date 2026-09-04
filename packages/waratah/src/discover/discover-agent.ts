@@ -13,6 +13,7 @@ import type { CompilerDiagnostic } from './diagnostics.js';
 
 const DEFAULT_SKILLS_PATH = './skills/';
 const DEFAULT_MEMORY_PATH = '.waratah/memory/';
+const DEFAULT_SCHEDULES_PATH = './schedules/';
 
 export interface DiscoverAgentOptions {
   readonly definition: AgentDefinition;
@@ -31,6 +32,7 @@ export interface DiscoveredAgent {
   readonly instructions: readonly DiscoveredFile[];
   readonly skills: readonly DiscoveredFile[];
   readonly memory: readonly DiscoveredFile[];
+  readonly schedules: readonly DiscoveredFile[];
   readonly subagents: readonly DiscoveredAgent[];
 }
 
@@ -161,6 +163,34 @@ async function discoverDefinition(
     sourceFile,
     state,
   );
+  const schedules =
+    definition.kind === 'lead'
+      ? await discoverSources(
+          [
+            {
+              authoredPath: DEFAULT_SCHEDULES_PATH,
+              baseDirectory: agentDirectory,
+              confinementRoot: state.authoredRoot,
+              optionalWhenMissing: true,
+            },
+          ],
+          definition.name,
+          sourceFile,
+          state,
+        )
+      : [];
+
+  if (definition.kind === 'subagent') {
+    await rejectSubagentSchedulesDirectory(definition.name, sourceFile, agentDirectory, state);
+  } else {
+    validateUniqueNames(
+      scheduleNames(schedules).map((name) => ({ name })),
+      'schedule',
+      safeAgentName(definition.name),
+      sourceFile,
+      state,
+    );
+  }
 
   const subagents: DiscoveredAgent[] = [];
   const sortedDefinitions = [...definition.subagents].sort((left, right) =>
@@ -184,6 +214,7 @@ async function discoverDefinition(
     instructions,
     skills,
     memory,
+    schedules,
     subagents,
   };
 }
@@ -252,6 +283,16 @@ function validateDefinition(
       agent,
       file: displayPath(state.projectRoot, sourceFile),
       path: 'channels',
+    });
+  }
+
+  if (definition.kind === 'subagent' && definition.schedules.length > 0) {
+    state.diagnostics.push({
+      code: 'INVALID_SCHEDULE_SCOPE',
+      message: `Subagent ${JSON.stringify(agent)} declares ${definition.schedules.length} schedule${definition.schedules.length === 1 ? '' : 's'}. Remove all schedules because only lead agents can run on a cadence.`,
+      agent,
+      file: displayPath(state.projectRoot, sourceFile),
+      path: 'schedules',
     });
   }
 
@@ -619,6 +660,58 @@ function isSafePathSegment(value: string): boolean {
 
 function safeAgentName(value: unknown): string {
   return typeof value === 'string' && value !== '' ? value : '<invalid>';
+}
+
+async function rejectSubagentSchedulesDirectory(
+  agent: string,
+  sourceFile: string,
+  agentDirectory: string,
+  state: DiscoveryState,
+): Promise<void> {
+  const schedulesPath = join(agentDirectory, 'schedules');
+  try {
+    await lstat(schedulesPath);
+  } catch (error) {
+    if (isMissing(error)) {
+      return;
+    }
+    addDiagnostic(
+      state,
+      agent,
+      sourceFile,
+      'schedules',
+      'The schedules path could not be inspected.',
+    );
+    return;
+  }
+
+  state.diagnostics.push({
+    code: 'INVALID_SCHEDULE_SCOPE',
+    message: `Subagent ${JSON.stringify(safeAgentName(agent))} has a schedules/ directory. Remove it because only lead agents can author schedules.`,
+    agent: safeAgentName(agent),
+    file: displayPath(state.projectRoot, sourceFile),
+    path: 'schedules',
+  });
+}
+
+export function scheduleNames(files: readonly DiscoveredFile[]): readonly string[] {
+  const names: string[] = [];
+  for (const file of files) {
+    const name = scheduleNameFromDiscoveredPath(file.path);
+    if (name !== undefined) {
+      names.push(name);
+    }
+  }
+  return names.sort(compareText);
+}
+
+function scheduleNameFromDiscoveredPath(path: string): string | undefined {
+  const match = /(?:^|\/)schedules\/(.+)$/.exec(path);
+  const relative = match?.[1];
+  if (relative === undefined || !/\.(?:ts|md)$/.test(relative)) {
+    return undefined;
+  }
+  return relative.replace(/\.(?:ts|md)$/, '');
 }
 
 function formatNames(definitions: readonly { readonly name: string }[]): string {

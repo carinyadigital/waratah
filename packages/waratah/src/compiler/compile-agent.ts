@@ -10,6 +10,7 @@ import type {
 } from '../shared/contracts.js';
 import {
   discoverAgent,
+  scheduleNames,
   type DiscoverAgentOptions,
   type DiscoveredAgent,
   type DiscoveredFile,
@@ -58,6 +59,7 @@ function compileDefinition(agent: DiscoveredAgent): ManifestAgent {
     memory: compileFiles(agent.memory),
     tools: sortedNames(agent.definition.tools),
     channels: sortedNames(agent.definition.channels),
+    schedules: [...scheduleNames(agent.schedules)],
     subagents: agent.subagents.map(compileDefinition),
   };
 }

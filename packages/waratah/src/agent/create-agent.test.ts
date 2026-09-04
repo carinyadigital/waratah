@@ -31,6 +31,7 @@ describe('createAgent', () => {
       kind: 'lead',
       skills: ['./skills/'],
       memory: ['.waratah/memory/'],
+      schedules: [],
     });
   });
 
@@ -57,7 +58,8 @@ describe('createAgent', () => {
       name: 'systems-analyst',
       kind: 'subagent',
     });
-    const channel = { name: 'cron', description: 'Daily schedule trigger.' };
+    const channel = { name: 'http', description: 'Inbound HTTP trigger.' };
+    const schedule = { cron: '0 8 * * *', markdown: 'Run the daily digest.' };
 
     const definition = createAgent({
       ...baseAgent(),
@@ -67,6 +69,7 @@ describe('createAgent', () => {
       tools: [tool],
       subagents: [subagent],
       channels: [channel],
+      schedules: [schedule],
     });
 
     expect(definition).toMatchObject({
@@ -76,6 +79,7 @@ describe('createAgent', () => {
       tools: [tool],
       subagents: [subagent],
       channels: [channel],
+      schedules: [schedule],
     });
   });
 
@@ -89,21 +93,33 @@ describe('createAgent', () => {
     ['missing tools', { ...baseAgent(), tools: undefined }],
     ['missing subagents', { ...baseAgent(), subagents: undefined }],
     ['missing channels', { ...baseAgent(), channels: undefined }],
+    ['invalid schedules', { ...baseAgent(), schedules: 'daily' }],
   ])('rejects an invalid definition with %s', (_case, input) => {
     expect(() => createAgent(input as CreateAgentInput)).toThrowError(
       expect.objectContaining({ code: 'INVALID_AGENT' }),
     );
   });
 
+  it('leaves schedule-scope validation to compilation', () => {
+    const schedule = { cron: '0 8 * * *', markdown: 'Must be rejected at compile time.' };
+    const definition = createAgent({
+      ...baseAgent(),
+      kind: 'subagent',
+      schedules: [schedule],
+    });
+
+    expect(definition.schedules).toEqual([schedule]);
+  });
+
   it('leaves channel-scope validation to compilation', () => {
     const definition = createAgent({
       ...baseAgent(),
       kind: 'subagent',
-      channels: [{ name: 'cron', description: 'Must be rejected at compile time.' }],
+      channels: [{ name: 'http', description: 'Must be rejected at compile time.' }],
     });
 
     expect(definition.channels).toEqual([
-      { name: 'cron', description: 'Must be rejected at compile time.' },
+      { name: 'http', description: 'Must be rejected at compile time.' },
     ]);
   });
 });

@@ -77,17 +77,17 @@ describe('CreateSessionService', () => {
     const service = new CreateSessionService(createMemoryCheckpointer());
 
     const result = await service.create({
-      deliveryId: 'cron-2026-09-04',
+      deliveryId: 'schedule-2026-09-04',
       triggeredAt: validTimestamp,
       message: 'Run.',
-      trigger: 'cron',
+      trigger: 'schedule',
     });
 
     expect(result).toEqual({
-      sessionId: 'cron-2026-09-04',
+      sessionId: 'schedule-2026-09-04',
       accepted: true,
     });
-    expect(threadIdFor('cron-2026-09-04')).toBe(result.sessionId);
+    expect(threadIdFor('schedule-2026-09-04')).toBe(result.sessionId);
   });
 
   it('returns duplicate when the thread already exists', async () => {
@@ -171,7 +171,7 @@ describe('CreateSessionService', () => {
       deliveryId,
       triggeredAt: validTimestamp,
       message: 'Run.',
-      trigger: 'cron',
+      trigger: 'schedule',
     });
 
     expect(result).toEqual({ sessionId: deliveryId, accepted: true });

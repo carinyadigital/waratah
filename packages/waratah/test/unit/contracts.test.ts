@@ -5,7 +5,7 @@ import { asSessionId } from '../../src/shared/ids.js';
 
 describe('contracts', () => {
   it('maps delivery ids to stable thread ids', () => {
-    const deliveryId = 'cron-2026-09-01T08:00:00Z';
+    const deliveryId = 'schedule-2026-09-01T08:00:00Z';
 
     expect(threadIdFor(deliveryId)).toBe(deliveryId);
     expect(threadIdFor(deliveryId)).toBe(threadIdFor(deliveryId));

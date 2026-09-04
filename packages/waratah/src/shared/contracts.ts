@@ -18,13 +18,15 @@ export interface AgentDefinition {
   readonly tools: readonly ToolDefinition[];
   readonly subagents: readonly AgentDefinition[];
   readonly channels: readonly ChannelDefinition[];
+  readonly schedules: readonly ScheduleDefinition[];
 }
 
 export interface CreateAgentInput
-  extends Omit<AgentDefinition, 'kind' | 'skills' | 'memory'> {
+  extends Omit<AgentDefinition, 'kind' | 'skills' | 'memory' | 'schedules'> {
   readonly kind?: AgentKind;
   readonly skills?: readonly string[];
   readonly memory?: readonly string[];
+  readonly schedules?: readonly ScheduleDefinition[];
 }
 
 export interface CompiledAgent {
@@ -36,6 +38,11 @@ export interface CompiledAgent {
 export interface ChannelDefinition {
   readonly name: string;
   readonly description: string;
+}
+
+export interface ScheduleDefinition {
+  readonly cron: string;
+  readonly markdown: string;
 }
 
 export interface Schema<T> {
@@ -107,7 +114,7 @@ export type SessionStatus = 'pending' | 'running' | 'succeeded' | 'failed';
 
 export interface CreateSessionCommand {
   readonly deliveryId: string;
-  readonly trigger: 'manual' | 'cron' | 'http';
+  readonly trigger: 'manual' | 'schedule' | 'http';
   readonly triggeredAt: string;
   readonly message: string;
   readonly metadata?: Readonly<Record<string, string>>;
@@ -149,17 +156,10 @@ export const findingPath = (
 ): SessionPath =>
   asSessionPath(`/session/${sessionId}/findings/${subagentName}.md`);
 
-export interface CronTick {
+export interface ScheduleTick {
   readonly scheduleId: string;
   readonly deliveryId: string;
   readonly triggeredAt: string;
-}
-
-export interface DailyChangesInput {
-  readonly since: string;
-  readonly until: string;
-  readonly repository: string;
-  readonly branch: string;
 }
 
 export interface PostSessionBody {
@@ -231,6 +231,7 @@ export interface ManifestAgent {
   readonly memory: readonly ManifestFileRef[];
   readonly tools: readonly string[];
   readonly channels: readonly string[];
+  readonly schedules: readonly string[];
   readonly subagents: readonly ManifestAgent[];
 }
 

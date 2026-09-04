@@ -153,7 +153,11 @@ function assertCreateSessionCommand(
   if (!SESSION_ID_PATTERN.test(command.deliveryId)) {
     throw new InvalidSessionRequest();
   }
-  if (command.trigger !== 'manual' && command.trigger !== 'cron' && command.trigger !== 'http') {
+  if (
+    command.trigger !== 'manual' &&
+    command.trigger !== 'schedule' &&
+    command.trigger !== 'http'
+  ) {
     throw new InvalidSessionRequest();
   }
   triggerInstant(command.triggeredAt);

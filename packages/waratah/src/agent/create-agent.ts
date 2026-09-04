@@ -16,6 +16,8 @@ const DEFAULT_MEMORY = ['.waratah/memory/'] as const;
  * Omitting `skills` discovers skills from `./skills/`, while omitting `memory`
  * uses the project `.waratah/memory/` directory. Passing an empty array for
  * either option disables that source instead of applying its default.
+ * Omitting `schedules` means none; list imported `defineSchedule` values
+ * when the lead runs on a cadence.
  */
 export function createAgent(input: CreateAgentInput): AgentDefinition {
   if (!isRecord(input)) {
@@ -31,12 +33,14 @@ export function createAgent(input: CreateAgentInput): AgentDefinition {
   assertArray(input.tools);
   assertArray(input.subagents);
   assertArray(input.channels);
+  assertArray(input.schedules, true);
 
   return {
     ...input,
     kind: input.kind ?? 'lead',
     skills: input.skills ?? DEFAULT_SKILLS,
     memory: input.memory ?? DEFAULT_MEMORY,
+    schedules: input.schedules ?? [],
   };
 }
 
@@ -98,7 +102,11 @@ function assertStringArray(
   }
 }
 
-function assertArray(value: unknown): asserts value is readonly unknown[] {
+function assertArray(value: unknown, optional = false): asserts value is readonly unknown[] {
+  if (optional && value === undefined) {
+    return;
+  }
+
   if (!Array.isArray(value)) {
     throw invalidAgent();
   }

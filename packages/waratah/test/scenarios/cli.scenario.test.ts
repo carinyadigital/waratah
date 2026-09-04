@@ -38,6 +38,7 @@ describe('waratah CLI', () => {
     expect(withoutGeneratedAt(first)).toEqual(withoutGeneratedAt(second));
     expect(info.stdout).toContain('Lead: daily-changes (lead)');
     expect(info.stdout).toContain('Tools: slack-post');
+    expect(info.stdout).toContain('Schedules: daily-changes');
     expect(info.stdout).toContain('Subagent: systems-analyst (subagent)');
     expect(info.stdout).toContain('Tools: git-reader');
     expect(first.agent.tools).not.toContain('git-reader');

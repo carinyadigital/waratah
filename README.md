@@ -25,8 +25,8 @@ pnpm waratah serve examples/daily-changes
 ```
 
 The daily-changes fixture at [`examples/daily-changes/`](examples/daily-changes/)
-is the Phase 1 path: a PM lead, one systems-analyst subagent, cron, and
-`POST /session`. It does not call live models, GitHub, or Slack.
+is the Phase 1 path: a PM lead, one systems-analyst subagent, a daily
+schedule, and `POST /session`. It does not call live models, GitHub, or Slack.
 
 Local `waratah serve` writes one inspectable directory per session under
 `.waratah/session/<id>/`. LangGraph resume stays in `.waratah/sessions.db`.
@@ -39,7 +39,8 @@ agent/
 ├── instructions.md          # system prompt
 ├── skills/<skill>/SKILL.md  # Agent Skills (agentskills.io)
 ├── tools/*.ts               # typed tools this agent calls directly
-├── channels/*.ts            # LEADS ONLY — trigger entry points
+├── channels/*.ts            # LEADS ONLY — inbound surfaces
+├── schedules/*.ts           # LEADS ONLY — cadence jobs; name from file path
 ├── connections/*.ts         # MCP / OpenAPI clients this agent talks to
 ├── hooks/*.ts               # lifecycle hooks (e.g. confidence-gate)
 ├── sandbox/sandbox.ts       # override — write-capable workers only

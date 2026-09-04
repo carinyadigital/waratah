@@ -61,6 +61,7 @@ describe('compileAgent', () => {
     );
     expect(first.manifest.agent.tools).toEqual(['a-tool', 'z-tool']);
     expect(first.manifest.agent.channels).toEqual(['a-channel', 'z-channel']);
+    expect(first.manifest.agent.schedules).toEqual([]);
     expect(first.manifest.agent.skills.map(({ path }) => path)).toEqual([
       'agent/skills/alpha/SKILL.md',
       'agent/skills/zeta/SKILL.md',
@@ -79,7 +80,7 @@ describe('compileAgent', () => {
       name: 'analyst',
       kind: 'subagent',
       instructions: ['./instructions.md'],
-      channels: [{ name: 'cron', description: 'Must fail compile.' }],
+      channels: [{ name: 'http', description: 'Must fail compile.' }],
     });
     const invalid = createDefinition({
       name: 'lead',
@@ -103,7 +104,7 @@ describe('compileAgent', () => {
       kind: 'subagent',
       instructions: ['./missing.md'],
       tools: [duplicateTool, duplicateTool],
-      channels: [{ name: 'cron', description: 'Must fail compile.' }],
+      channels: [{ name: 'http', description: 'Must fail compile.' }],
     });
     const root = createDefinition({
       name: 'lead',
@@ -146,7 +147,7 @@ describe('compileAgent', () => {
       name: 'analyst',
       kind: 'subagent',
       instructions: ['./instructions.md'],
-      channels: [{ name: 'cron', description: 'Must fail compile.' }],
+      channels: [{ name: 'http', description: 'Must fail compile.' }],
     });
     const root = createDefinition({
       name: 'lead',
@@ -165,6 +166,75 @@ describe('compileAgent', () => {
         }),
       ],
     });
+  });
+
+  it('uses INVALID_SCHEDULE_SCOPE for schedules declared by a subagent', async () => {
+    const fixture = await createFixture();
+    const subagent = createDefinition({
+      name: 'analyst',
+      kind: 'subagent',
+      instructions: ['./instructions.md'],
+      schedules: [{ cron: '0 8 * * *', markdown: 'Must fail compile.' }],
+    });
+    const root = createDefinition({
+      name: 'lead',
+      instructions: ['./instructions.md'],
+      subagents: [subagent],
+    });
+    await writeFixtureFile(fixture, 'agent/subagents/analyst/agent.ts', 'export {};\n');
+    await writeFixtureFile(fixture, 'agent/subagents/analyst/instructions.md', 'analyst\n');
+
+    await expect(compileFixture(fixture, root)).rejects.toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'INVALID_SCHEDULE_SCOPE',
+          agent: 'analyst',
+          path: 'schedules',
+        }),
+      ],
+    });
+  });
+
+  it('uses INVALID_SCHEDULE_SCOPE for a schedules directory on a subagent', async () => {
+    const fixture = await createFixture();
+    const subagent = createDefinition({
+      name: 'analyst',
+      kind: 'subagent',
+      instructions: ['./instructions.md'],
+    });
+    const root = createDefinition({
+      name: 'lead',
+      instructions: ['./instructions.md'],
+      subagents: [subagent],
+    });
+    await writeFixtureFile(fixture, 'agent/subagents/analyst/agent.ts', 'export {};\n');
+    await writeFixtureFile(fixture, 'agent/subagents/analyst/instructions.md', 'analyst\n');
+    await writeFixtureFile(fixture, 'agent/subagents/analyst/schedules/daily.ts', 'export {};\n');
+
+    await expect(compileFixture(fixture, root)).rejects.toMatchObject({
+      diagnostics: [
+        expect.objectContaining({
+          code: 'INVALID_SCHEDULE_SCOPE',
+          agent: 'analyst',
+          path: 'schedules',
+          message: expect.stringContaining('schedules/ directory'),
+        }),
+      ],
+    });
+  });
+
+  it('records lead schedule names from agent/schedules file paths', async () => {
+    const fixture = await createFixture();
+    await writeFixtureFile(
+      fixture,
+      'agent/schedules/daily-changes.ts',
+      'export default { cron: "0 8 * * *", markdown: "Run." };\n',
+    );
+    const root = createDefinition({ name: 'lead', instructions: ['./instructions.md'] });
+
+    const compiled = await compileFixture(fixture, root);
+
+    expect(compiled.manifest.agent.schedules).toEqual(['daily-changes']);
   });
 
   it('rejects authored tools that use reserved built-in names', async () => {
@@ -270,6 +340,7 @@ function createDefinition(
     tools: overrides.tools ?? [],
     subagents: overrides.subagents ?? [],
     channels: overrides.channels ?? [],
+    schedules: overrides.schedules,
   });
 }
 

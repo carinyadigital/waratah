@@ -111,7 +111,7 @@ describe('daily-changes fixture', () => {
       deliveryId: 'daily-2026-09-04',
       triggeredAt: LOOKBACK.until,
       message: harness.options.input,
-      trigger: 'cron' as const,
+      trigger: 'schedule' as const,
     };
 
     await expect(sessions.create(command)).resolves.toMatchObject({ accepted: true });

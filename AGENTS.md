@@ -77,7 +77,7 @@ every required check must pass before merge.
 
 6. **Better for agents, better for humans.** Almost everything that makes a tool
    agent-ready, from clear docs to precise errors to sane defaults, makes it
-   better for human dwaratahlopers too.
+   better for human developers too.
 
 ## Coding principles
 
@@ -119,7 +119,7 @@ every required check must pass before merge.
 8. **Name definitions for the protocol they target.** Use
    `defineMcpClientConnection`, not `defineConnection`.
 
-9. **All runtime functionality lives in the `waratah` package.** Neve rely on
+9. **All runtime functionality lives in the `waratah` package.** Never rely on
    emitted or generated code for runtime behavior.
 
 10. **Comment why, not what.** Default to no comment; well-named code is the
@@ -133,7 +133,7 @@ editing the baseline — baselines may only shrink.
 
 ## Research plans
 
-Research documents live in the top-lwaratahl `research/` directory and require
+Research documents live in the top-level `research/` directory and require
 `issue`, `status`, and `last_updated` frontmatter. Keep plans concise and focus
 primarily on the proposed authoring API and externally observable semantics.
 Include only the architecture needed to explain boundaries, data flow, and
@@ -176,7 +176,7 @@ content is defined inline as `ScenarioAppDescriptor` objects (CI enforces this).
 
 ## End-to-end tests
 
-Automated tests cover module-lwaratahl behavior, but they don't prove a fixture
+Automated tests cover module-level behavior, but they don't prove a fixture
 agent boots, accepts a request, and streams a response over HTTP. E2E suites
 cannot run locally and must run in CI. When a change needs e2e coverage, add or
 update the relevant fixture eval, then proceed to commit and push. Optionally

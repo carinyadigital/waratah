@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Filesystem-first harness that compiles authored agents to a LangGraph graph.",
   "engines": { "node": ">=24" },
+  "bin": {
+    "waratah": "./bin/waratah.ts"
+  },
   "exports": {
     ".": "./src/index.ts"
   },

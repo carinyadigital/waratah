@@ -8,6 +8,7 @@
   "packageManager": "pnpm@11.18.0",
   "scripts": {
     "agent": "tsx packages/agent/src/cli.ts",
+    "waratah": "tsx packages/waratah/bin/waratah.ts",
     "validate": "tsx packages/agent/src/cli.ts validate",
     "build": "tsx packages/agent/src/cli.ts build",
     "build:check": "tsx packages/agent/src/cli.ts build --check",

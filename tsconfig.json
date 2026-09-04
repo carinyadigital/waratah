@@ -5,6 +5,7 @@
     "packages/agent/tests/**/*.ts",
     "packages/waratah/src/**/*.ts",
     "packages/waratah/test/**/*.ts",
+    "packages/waratah/bin/**/*.ts",
     "examples/**/*.ts"
   ],
   "exclude": ["node_modules"]

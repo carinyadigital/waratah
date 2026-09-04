@@ -1,4 +1,12 @@
-# waratah
+<div align="center">
+  <a href="https://carinyadigital.com/waratah">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/waratah.svg">
+      <img alt="waratah" src=".github/assets/waratah.svg" height="64">
+    </picture>
+  </a>
+  <h1>waratah</h1>
+</div>
 
 waratah is a filesystem-first TypeScript harness for durable AI agents. An
 agent is a directory on disk — instructions, skills, tools, connections,

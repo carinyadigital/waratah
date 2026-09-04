@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -13,6 +13,20 @@ describe('workspace layout', () => {
 
     expect(workspace).toMatch(/packages\/\*/);
     expect(workspace).toMatch(/examples\/\*/);
+  });
+
+  it('does not ship a YAML compiler package or YAML agent gates', () => {
+    expect(existsSync(path.join(repoRoot, 'packages/agent'))).toBe(false);
+    expect(existsSync(path.join(repoRoot, 'agents'))).toBe(false);
+
+    const pkg = JSON.parse(read('package.json')) as {
+      scripts: Record<string, string>;
+    };
+
+    expect(pkg.scripts.validate).toBeUndefined();
+    expect(pkg.scripts['build:check']).toBeUndefined();
+    expect(pkg.scripts.deploy).toBeUndefined();
+    expect(pkg.scripts.typecheck).toBeDefined();
   });
 
   it('declares the LangGraph runtime package with pinned framework dependencies', () => {

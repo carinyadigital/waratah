@@ -1,8 +1,15 @@
 import { loadSessionInstructions, loadSessionStartContent } from '../memory/load.js';
 import type { AgentDefinition, ModelMessage, SessionFilesystem } from '../shared/contracts.js';
 import type { SessionId, TurnId } from '../shared/ids.js';
-import { compileGraph, type CompileGraphOptions, type HarnessRuntime } from './compile-graph.js';
-import type { HarnessLimits } from './limits.js';
+import { createTaskTool } from '../subagents/task-tool.js';
+import type { ToolExecutorOptions } from '../tools/executor.js';
+import {
+  compileGraph,
+  type CompileGraphOptions,
+  type HarnessRuntime,
+  type StepBudget,
+} from './compile-graph.js';
+import { PHASE_1_LIMITS, type HarnessLimits } from './limits.js';
 import type { ModelAdapter } from './model-adapter.js';
 
 export interface RunAgentOptions {
@@ -19,6 +26,8 @@ export interface RunAgentOptions {
   readonly limits?: HarnessLimits;
   readonly signal?: AbortSignal;
   readonly findingPath?: string;
+  readonly budget?: StepBudget;
+  readonly toolExecutor?: ToolExecutorOptions;
 }
 
 export interface RunAgentResult {
@@ -28,9 +37,27 @@ export interface RunAgentResult {
 
 /** Loads session context and invokes the compiled graph for one turn. */
 export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult> {
+  const limits = options.limits ?? PHASE_1_LIMITS;
+  const budget = options.budget ?? { steps: 0 };
+  const extraTools = [
+    ...(options.extraTools ?? []),
+    ...(options.agent.kind === 'lead'
+      ? [
+          createTaskTool({
+            parentAgent: options.agent,
+            parentAgentFile: options.agentFile,
+            projectRoot: options.projectRoot,
+            modelAdapter: options.modelAdapter,
+            budget,
+            limits,
+            toolExecutor: options.toolExecutor,
+          }),
+        ]
+      : []),
+  ];
   const graph = compileGraph(options.agent, {
     checkpointer: options.checkpointer,
-    extraTools: options.extraTools,
+    extraTools,
   });
   const messages = await loadAgentMessages(options);
   const runtime: HarnessRuntime = {
@@ -38,8 +65,10 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
     files: options.files,
     sessionId: options.sessionId,
     turnId: options.turnId,
+    budget,
     signal: options.signal,
-    limits: options.limits,
+    limits,
+    toolExecutor: options.toolExecutor,
   };
   const result = await graph.invoke(
     { messages },
@@ -50,10 +79,10 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
       },
     },
   );
-  const state = result as { readonly content?: string; readonly steps?: number };
+  const state = result as { readonly content?: string };
   return {
     content: state.content ?? '',
-    steps: state.steps ?? 0,
+    steps: budget.steps,
   };
 }
 

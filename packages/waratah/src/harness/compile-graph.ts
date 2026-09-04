@@ -35,11 +35,16 @@ export function compileAcceptGraph(checkpointer?: Checkpointer): WaratahCompiled
     .compile({ checkpointer }) as unknown as WaratahCompiledGraph;
 }
 
+export interface StepBudget {
+  steps: number;
+}
+
 export interface HarnessRuntime {
   readonly modelAdapter: ModelAdapter;
   readonly files: SessionFilesystem;
   readonly sessionId: SessionId;
   readonly turnId: TurnId;
+  readonly budget: StepBudget;
   readonly signal?: AbortSignal;
   readonly limits?: HarnessLimits;
   readonly toolExecutor?: ToolExecutorOptions;
@@ -93,25 +98,24 @@ export function compileGraph(
   const model = async (state: typeof AgentState.State, config: unknown) => {
     const runtime = requireRuntime(runtimeFromConfig(config));
     const limits = runtime.limits ?? PHASE_1_LIMITS;
-    const steps = state.steps + 1;
-    if (steps > limits.maxSteps) {
-      throw new WaratahError(
-        'STEP_LIMIT_EXCEEDED',
-        'The session exceeded its step limit and was stopped. Reduce the work or split it into smaller tasks.',
-      );
-    }
+    const steps = consumeStep(runtime, limits.maxSteps);
 
     const descriptors: ToolDescriptor[] = boundTools.map((tool) => ({
       name: tool.name,
       description: tool.description,
       parameters: {},
     }));
-    const result = await completeModel(runtime.modelAdapter, {
-      model: definition.model,
-      messages: state.messages,
-      tools: descriptors,
-      signal: runtime.signal ?? new AbortController().signal,
-    });
+    const signal = runtime.signal ?? new AbortController().signal;
+    const result = await withSignal(
+      signal,
+      completeModel(runtime.modelAdapter, {
+        model: definition.model,
+        messages: state.messages,
+        tools: descriptors,
+        signal,
+      }),
+      modelFailed,
+    );
 
     if (result.type === 'message') {
       return {
@@ -149,26 +153,25 @@ export function compileGraph(
       { name: definition.name, tools: boundTools },
       runtime.toolExecutor,
     );
+    const signal = runtime.signal ?? new AbortController().signal;
     const messages: ModelMessage[] = [];
-    let steps = state.steps;
+    let steps = runtime.budget.steps;
 
     for (const call of state.pendingToolCalls) {
-      steps += 1;
-      if (steps > limits.maxSteps) {
-        throw new WaratahError(
-          'STEP_LIMIT_EXCEEDED',
-          'The session exceeded its step limit and was stopped. Reduce the work or split it into smaller tasks.',
-        );
-      }
+      steps = consumeStep(runtime, limits.maxSteps);
 
       try {
-        const output = await executor.execute(call, {
-          sessionId: runtime.sessionId,
-          turnId: runtime.turnId,
-          stepId: createStepId(),
-          files: runtime.files,
-          signal: runtime.signal ?? new AbortController().signal,
-        });
+        const output = await withSignal(
+          signal,
+          executor.execute(call, {
+            sessionId: runtime.sessionId,
+            turnId: runtime.turnId,
+            stepId: createStepId(),
+            files: runtime.files,
+            signal,
+          }),
+          toolFailed,
+        );
         const serialized = serializeToolResult(output);
         if (Buffer.byteLength(serialized, 'utf8') > limits.maxToolResultBytes) {
           throw new WaratahError(
@@ -214,6 +217,52 @@ export function compileGraph(
     .compile({ checkpointer: options.checkpointer }) as unknown as WaratahCompiledGraph;
 }
 
+function consumeStep(runtime: HarnessRuntime, maxSteps: number): number {
+  runtime.budget.steps += 1;
+  if (runtime.budget.steps > maxSteps) {
+    throw new WaratahError(
+      'STEP_LIMIT_EXCEEDED',
+      'The session exceeded its step limit and was stopped. Reduce the work or split it into smaller tasks.',
+    );
+  }
+  return runtime.budget.steps;
+}
+
+function withSignal<T>(
+  signal: AbortSignal,
+  operation: Promise<T>,
+  onAbort: () => WaratahError,
+): Promise<T> {
+  if (signal.aborted) {
+    return Promise.reject(onAbort());
+  }
+
+  let abort: (() => void) | undefined;
+  const aborted = new Promise<never>((_resolve, reject) => {
+    abort = () => reject(onAbort());
+    signal.addEventListener('abort', abort, { once: true });
+  });
+  return Promise.race([operation, aborted]).finally(() => {
+    if (abort !== undefined) {
+      signal.removeEventListener('abort', abort);
+    }
+  });
+}
+
+function modelFailed(): WaratahError {
+  return new WaratahError(
+    'MODEL_ERROR',
+    'The model request failed. Check provider availability and configuration before retrying.',
+  );
+}
+
+function toolFailed(): WaratahError {
+  return new WaratahError(
+    'TOOL_EXECUTION_FAILED',
+    'The tool could not complete. Check the tool configuration and retry only when the operation is safe.',
+  );
+}
+
 function runtimeFromConfig(config: unknown): HarnessRuntime | undefined {
   if (!isRecord(config) || !isRecord(config.configurable)) {
     return undefined;
@@ -222,6 +271,8 @@ function runtimeFromConfig(config: unknown): HarnessRuntime | undefined {
   if (
     !('modelAdapter' in configurable) ||
     !('files' in configurable) ||
+    !isRecord(configurable.budget) ||
+    typeof configurable.budget.steps !== 'number' ||
     typeof configurable.sessionId !== 'string' ||
     typeof configurable.turnId !== 'string'
   ) {

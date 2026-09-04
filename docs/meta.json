@@ -5,6 +5,7 @@
     "---Build---",
     "agent-config",
     "instructions",
-    "skills"
+    "skills",
+    "memory"
   ]
 }

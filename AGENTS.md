@@ -19,7 +19,7 @@ docs, prompts, comments, and headings.
 
 ## Repository layout
 
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — system architecture
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — architecture authority
 - `packages/waratah` — the framework and `waratah` CLI
 - `packages/agent` — YAML portable-def compiler and `agent` CLI
 - `examples/daily-changes` — Phase 1 LangGraph fixture

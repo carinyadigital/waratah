@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -45,6 +45,24 @@ describe('CreateSessionService', () => {
         message: 'Run.',
         trigger: 'http',
         metadata: { unexpected: 'value' },
+      },
+    ],
+    [
+      'path-unsafe delivery ID',
+      {
+        deliveryId: '../escape',
+        triggeredAt: validTimestamp,
+        message: 'Run.',
+        trigger: 'http',
+      },
+    ],
+    [
+      'delivery ID with a slash',
+      {
+        deliveryId: 'has/slash',
+        triggeredAt: validTimestamp,
+        message: 'Run.',
+        trigger: 'http',
       },
     ],
   ])('rejects %s before consulting the checkpointer', async (_label, command) => {
@@ -109,6 +127,77 @@ describe('CreateSessionService', () => {
     ).rejects.toMatchObject({ code: 'PAYLOAD_LIMIT_EXCEEDED' });
     expect(await getThread(checkpointer, 'delivery-one')).toBeUndefined();
   });
+
+  it('scaffolds an inspectable session directory for a unique delivery', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'waratah-session-store-'));
+    temporaryDirectories.push(projectRoot);
+    const service = new CreateSessionService(createMemoryCheckpointer(), { projectRoot });
+
+    const result = await service.create({
+      deliveryId: 'delivery-one',
+      triggeredAt: validTimestamp,
+      message: 'Run the digest.',
+      trigger: 'http',
+    });
+
+    expect(result).toEqual({ sessionId: 'delivery-one', accepted: true });
+    const sessionRoot = join(projectRoot, '.waratah', 'session', 'delivery-one');
+    const meta = JSON.parse(await readFile(join(sessionRoot, 'meta.json'), 'utf8')) as {
+      readonly sessionId: string;
+      readonly status: string;
+      readonly deliveryId: string;
+    };
+    expect(meta).toMatchObject({
+      sessionId: 'delivery-one',
+      deliveryId: 'delivery-one',
+      status: 'pending',
+    });
+    const transcript = parseJsonl(await readFile(join(sessionRoot, 'transcript.jsonl'), 'utf8'));
+    expect(transcript).toEqual([
+      expect.objectContaining({ type: 'system', event: 'accepted' }),
+      expect.objectContaining({ type: 'user', content: 'Run the digest.' }),
+    ]);
+    await expect(stat(join(sessionRoot, 'files'))).resolves.toMatchObject({ isDirectory: expect.any(Function) });
+    expect((await stat(join(sessionRoot, 'files'))).isDirectory()).toBe(true);
+  });
+
+  it('percent-encodes timestamp delivery IDs as session directory names', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'waratah-session-encoded-'));
+    temporaryDirectories.push(projectRoot);
+    const service = new CreateSessionService(createMemoryCheckpointer(), { projectRoot });
+    const deliveryId = 'daily-changes:2026-03-29T14:00:00+11:00';
+
+    const result = await service.create({
+      deliveryId,
+      triggeredAt: validTimestamp,
+      message: 'Run.',
+      trigger: 'cron',
+    });
+
+    expect(result).toEqual({ sessionId: deliveryId, accepted: true });
+    await expect(
+      stat(join(projectRoot, '.waratah', 'session', encodeURIComponent(deliveryId), 'meta.json')),
+    ).resolves.toMatchObject({ isFile: expect.any(Function) });
+  });
+
+  it('returns duplicate when the session directory already exists', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'waratah-session-dup-'));
+    temporaryDirectories.push(projectRoot);
+    const service = new CreateSessionService(createMemoryCheckpointer(), { projectRoot });
+    const command = {
+      deliveryId: 'delivery-one',
+      triggeredAt: validTimestamp,
+      message: 'Run.',
+      trigger: 'http' as const,
+    };
+
+    await expect(service.create(command)).resolves.toMatchObject({ accepted: true });
+    await expect(service.create(command)).resolves.toEqual({
+      sessionId: 'delivery-one',
+      accepted: false,
+      duplicateOf: 'delivery-one',
+    });
+  });
 });
 
 describe('sqlite checkpointer', () => {
@@ -122,3 +211,10 @@ describe('sqlite checkpointer', () => {
     expect(await getThread(checkpointer, 'local-delivery')).toBeDefined();
   });
 });
+
+function parseJsonl(raw: string): unknown[] {
+  return raw
+    .split('\n')
+    .filter((line) => line.length > 0)
+    .map((line) => JSON.parse(line) as unknown);
+}

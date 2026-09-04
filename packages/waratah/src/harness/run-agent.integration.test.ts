@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -7,6 +7,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createAgent, defineTool } from '../agent/create-agent.js';
 import { ConfinedSessionFilesystem } from '../context/session-filesystem.js';
 import { InMemorySessionBackend } from '../context/in-memory-backend.js';
+import { createMemoryCheckpointer } from '../session/checkpointer.js';
+import { CreateSessionService } from '../session/create-session.js';
+import {
+  createFilesystemSessionStore,
+  openSessionFilesystem,
+} from '../session/filesystem-store.js';
 import type { AgentDefinition, ModelAdapter, ModelMessage, Schema } from '../shared/contracts.js';
 import { asSessionId, createTurnId } from '../shared/ids.js';
 import { runAgent } from './run-agent.js';
@@ -100,6 +106,70 @@ describe('runAgent', () => {
     expect(model.complete).toHaveBeenCalledOnce();
     expect(execute).toHaveBeenCalledOnce();
   });
+
+  it('appends a Cursor-style transcript without tool payloads', async () => {
+    const execute = vi.fn(async (input: string) => ({ echoed: input }));
+    const model: ModelAdapter = {
+      complete: vi.fn(async ({ messages }) => {
+        const toolResult = messages.findLast((message: ModelMessage) => message.role === 'tool');
+        if (toolResult === undefined) {
+          return {
+            type: 'tool_calls' as const,
+            toolCalls: [{ id: 'call-1', name: 'echo', arguments: { value: 'secret-payload' } }],
+          };
+        }
+        return { type: 'message' as const, content: 'complete' };
+      }),
+    };
+    const harness = await createHarness(
+      [
+        defineTool({
+          name: 'echo',
+          description: 'Echo a string.',
+          inputSchema: valueSchema,
+          execute,
+        }),
+      ],
+      model,
+    );
+    const store = createFilesystemSessionStore(harness.options.projectRoot);
+    const sessions = new CreateSessionService(createMemoryCheckpointer(), { sessionStore: store });
+    await sessions.create({
+      deliveryId: 'session-one',
+      triggeredAt: '2026-09-04T00:00:00.000Z',
+      message: harness.options.input,
+      trigger: 'http',
+    });
+    const files = openSessionFilesystem(store, harness.options.sessionId);
+
+    await expect(
+      runAgent({ ...harness.options, files, sessionStore: store }),
+    ).resolves.toEqual({ content: 'complete', steps: 3 });
+
+    const transcript = parseJsonl(
+      await readFile(
+        join(harness.options.projectRoot, '.waratah', 'session', 'session-one', 'transcript.jsonl'),
+        'utf8',
+      ),
+    );
+    expect(transcript).toEqual([
+      expect.objectContaining({ type: 'system', event: 'accepted' }),
+      expect.objectContaining({ type: 'user', content: 'Run the fixture.' }),
+      expect.objectContaining({ type: 'system', event: 'started' }),
+      expect.objectContaining({ type: 'tool', name: 'echo', status: 'started' }),
+      expect.objectContaining({ type: 'tool', name: 'echo', status: 'succeeded' }),
+      expect.objectContaining({ type: 'assistant', content: 'complete' }),
+      expect.objectContaining({ type: 'system', event: 'succeeded' }),
+    ]);
+    expect(JSON.stringify(transcript)).not.toContain('secret-payload');
+    const meta = JSON.parse(
+      await readFile(
+        join(harness.options.projectRoot, '.waratah', 'session', 'session-one', 'meta.json'),
+        'utf8',
+      ),
+    ) as { readonly status: string };
+    expect(meta.status).toBe('succeeded');
+  });
 });
 
 async function createHarness(
@@ -137,4 +207,11 @@ async function createHarness(
       input: 'Run the fixture.',
     },
   };
+}
+
+function parseJsonl(raw: string): unknown[] {
+  return raw
+    .split('\n')
+    .filter((line) => line.length > 0)
+    .map((line) => JSON.parse(line) as unknown);
 }

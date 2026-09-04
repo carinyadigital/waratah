@@ -9,7 +9,7 @@ export const MAX_SESSION_PATH_BYTES = 4_096;
 const ENCODED_BYTE = /%[0-9A-Fa-f]{2}/;
 const LOOKALIKE_SEPARATOR =
   /[\u2044\u2215\u2571\u27cb\u29f5\u29f6\u29f8\u29f9\u2afb\u2afd\ufe68\uff0f\uff3c]/u;
-const SESSION_ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+export const SESSION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:+-]*$/;
 const UNSAFE_PATH_CHARACTER = /[\p{Cc}\p{Cf}\u2028\u2029]/u;
 const UNPAIRED_SURROGATE =
   /(?:[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:^|[^\uD800-\uDBFF])[\uDC00-\uDFFF])/;
@@ -20,7 +20,7 @@ const UNPAIRED_SURROGATE =
  * boundary so rejected input cannot trigger storage access.
  */
 export function normalizeSessionPath(sessionId: SessionId, input: string): SessionPath {
-  if (!SESSION_ID.test(sessionId)) {
+  if (!SESSION_ID_PATTERN.test(sessionId)) {
     invalidSessionPath();
   }
 

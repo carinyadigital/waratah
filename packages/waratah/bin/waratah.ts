@@ -85,7 +85,7 @@ async function serve(projectRoot: string, port: number): Promise<void> {
   }
 
   const server = createWaratahServer({
-    sessions: new CreateSessionService(checkpointer),
+    sessions: new CreateSessionService(checkpointer, { projectRoot }),
   });
 
   try {

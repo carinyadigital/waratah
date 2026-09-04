@@ -11,7 +11,7 @@ import type {
   ToolDescriptor,
   WaratahCompiledGraph,
 } from '../shared/contracts.js';
-import { WaratahError, isWaratahError } from '../shared/errors.js';
+import { WaratahError, isWaratahError, type WaratahErrorCode } from '../shared/errors.js';
 import { createStepId, type SessionId, type TurnId } from '../shared/ids.js';
 import { filesystemTools } from '../tools/filesystem.js';
 import { ToolExecutor, type ToolExecutorOptions } from '../tools/executor.js';
@@ -39,6 +39,14 @@ export interface StepBudget {
   steps: number;
 }
 
+export interface ToolTranscriptLine {
+  readonly timestamp: string;
+  readonly type: 'tool';
+  readonly name: string;
+  readonly status: 'started' | 'succeeded' | 'failed';
+  readonly errorCode?: WaratahErrorCode;
+}
+
 export interface HarnessRuntime {
   readonly modelAdapter: ModelAdapter;
   readonly files: SessionFilesystem;
@@ -48,6 +56,7 @@ export interface HarnessRuntime {
   readonly signal?: AbortSignal;
   readonly limits?: HarnessLimits;
   readonly toolExecutor?: ToolExecutorOptions;
+  readonly onTranscript?: (line: ToolTranscriptLine) => Promise<void>;
 }
 
 export interface HarnessState {
@@ -159,6 +168,7 @@ export function compileGraph(
 
     for (const call of state.pendingToolCalls) {
       steps = consumeStep(runtime, limits.maxSteps);
+      await recordToolTranscript(runtime, call.name, 'started');
 
       try {
         const output = await withSignal(
@@ -180,6 +190,7 @@ export function compileGraph(
           );
         }
         messages.push({ role: 'tool', toolCallId: call.id, content: serialized });
+        await recordToolTranscript(runtime, call.name, 'succeeded');
       } catch (error) {
         const failure = isWaratahError(error)
           ? error
@@ -187,6 +198,7 @@ export function compileGraph(
               'TOOL_EXECUTION_FAILED',
               'The tool could not complete. Check the tool configuration and retry only when the operation is safe.',
             );
+        await recordToolTranscript(runtime, call.name, 'failed', failure.code);
         if (failure.code === 'UNKNOWN_TOOL' || failure.code === 'TOOL_INPUT_INVALID') {
           messages.push({
             role: 'tool',
@@ -215,6 +227,28 @@ export function compileGraph(
     )
     .addEdge('tools', 'model')
     .compile({ checkpointer: options.checkpointer }) as unknown as WaratahCompiledGraph;
+}
+
+async function recordToolTranscript(
+  runtime: HarnessRuntime,
+  name: string,
+  status: ToolTranscriptLine['status'],
+  errorCode?: WaratahErrorCode,
+): Promise<void> {
+  if (runtime.onTranscript === undefined) {
+    return;
+  }
+  try {
+    await runtime.onTranscript({
+      timestamp: new Date().toISOString(),
+      type: 'tool',
+      name,
+      status,
+      ...(errorCode === undefined ? {} : { errorCode }),
+    });
+  } catch {
+    // Inspection files must not change the session outcome.
+  }
 }
 
 function consumeStep(runtime: HarnessRuntime, maxSteps: number): number {

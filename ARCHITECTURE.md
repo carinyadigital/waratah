@@ -1,8 +1,8 @@
 # Architecture
 
-> **Ownership rule**: When the authoring model, runtime split, protocol,
-> session identity, or deployment topology change, this document must be
-> updated in the same PR.
+> **Ownership rule**: This file is the architecture authority. When the
+> authoring model, runtime split, protocol, session identity, or deployment
+> topology change, update it in the same PR.
 
 waratah is a filesystem-first TypeScript harness for durable AI agents. An
 agent is a directory on disk — instructions, skills, tools, connections,
@@ -74,6 +74,16 @@ Product automations live in product repos and depend on the `waratah`
 package root. Credentials, channel IDs, and schedules are deployment
 config, not framework code.
 
+waratah owns `createAgent` / `defineTool`, authored-directory discovery,
+compile to `CompiledStateGraph`, the harness loop, built-in fs / `task` /
+`execute` tools, channel normalization, HTTP and ACP, session durability,
+and session bootstrap (`AGENTS.md`, `MEMORY.md`). It does not own product
+leads or domain-tool content; Claude/Cursor payload shape (`packages/agent`
+keeps that); LangGraph Platform hosting; Temporal or a second workflow
+engine; or the `deepagents` npm package — filesystem tools, the `files`
+channel, and isolated `task` subgraphs are reimplemented here. Chat models
+enter through `ModelAdapter`; tests use a fake.
+
 **Source files**: `packages/waratah/src/shared/contracts.ts`,
 `packages/waratah/src/shared/errors.ts`, `packages/waratah/package.json`
 
@@ -135,11 +145,25 @@ skills/<skill>/
 ```
 
 Discovery loads each skill's `name` and `description` only. The body and
-bundled files enter context when the skill activates. Omit `skills` on
-`createAgent` to use `./skills/` beside `agent.ts`. Omit `memory` to use
-the project memory directory. An empty array turns that source off.
+bundled files enter context when the skill activates. Omit `skills` to
+use `./skills/` beside `agent.ts`. Omit `memory` to use the project
+`.waratah/memory/` directory. An empty array turns that source off.
 Project `AGENTS.md` is never listed on `createAgent`: it already lives on
 the repo and is loaded at session start.
+
+```ts
+import { createAgent } from "waratah";
+import exploration from "./subagents/exploration/agent";
+
+export default createAgent({
+  name: "exploration-lead",
+  model: "anthropic/claude-opus-4.8",
+  skills: ["./skills/", "../shared/skills/"], // optional; omit for ./skills/ only
+  memory: [".waratah/memory/", "./notes/MEMORY.md"], // optional; omit for .waratah/memory/ only
+  tools: [...],
+  subagents: [exploration],
+});
+```
 
 A **lead** authors `channels/`. A **subagent** is the same
 `createAgent(...)` shape, nested or imported, and must not author
@@ -169,7 +193,7 @@ Channel, harness, and workflow stay separate.
 |-------|---------|---------------------|
 | **Channel** | Normalizes a trigger into a session + message. Owns trigger-side dedup. Not a graph. | Channel code calls `graph.invoke(input, { configurable: { thread_id } })`. |
 | **Harness** | The compiled lead graph: interpret the message, call `task`, read findings, stop or escalate. Identical for cron or webhook. | `CompiledStateGraph` from `createAgent` — model/tool loop plus the `files` state channel. |
-| **Workflow** | Session is a durable thread; turn is one `invoke`; model or tool call is a checkpointed step. A human-gate is `interrupt()`. | `BaseCheckpointSaver`. `thread_id` = session id. |
+| **Workflow** | Session is a durable thread; turn is one `invoke`; model or tool call is a checkpointed step. A human-gate is `interrupt()`. | `BaseCheckpointSaver`. `thread_id` = session id. Inspectable store: `.waratah/session/<id>/`. |
 
 ### Subagents
 
@@ -239,7 +263,7 @@ waratah-owned surfaces.
 |------|---------|
 | Lead | Authored agent with `channels/`. Compiles to the root graph. |
 | Subagent | Authored agent without `channels/`. Compiles to a subgraph. Invoked only via `task`. |
-| Session | One LangGraph `thread_id`. Equals the accepted delivery's session id. |
+| Session | One LangGraph `thread_id`. Equals the accepted delivery's session id. Inspectable at `.waratah/session/<id>/`. |
 | Turn | One `graph.invoke` for that thread. |
 | Step | One checkpointed model, tool, or subagent node. |
 | Findings | Condensed markdown at `/session/<id>/findings/<subagent>.md`. |
@@ -272,12 +296,33 @@ grown.
 
 ### Per-run session filesystem
 
-The shared memory vault is the filesystem: a `files` `ReducedValue`
-channel on graph state, so parallel subagents can write different paths
-without clobbering. A worker's job ends with a write to
+Local sessions are one directory per delivery, the same shape as Cursor
+and Claude transcripts — `ls` and `tail`, no database to open:
+
+```
+.waratah/session/<sessionId>/
+├── meta.json           # deliveryId, trigger, status, timestamps
+├── transcript.jsonl    # append-only user / assistant / tool name+status
+└── files/              # materialized files channel (findings)
+```
+
+`meta.json` is how a seen `deliveryId` is detected. The transcript is not
+traces: traces stay secret-safe operational events; the transcript is the
+inspectable conversation and never records tool arguments or payloads.
+`waratah serve` writes this tree on `POST /session`. Directory names are
+the session id, percent-encoded so timestamp delivery IDs stay valid path
+segments. Tests keep `MemorySaver` and an in-memory files backend unless
+they pass a temp `projectRoot`.
+
+The shared vault on the graph is still a `files` `ReducedValue` channel,
+so parallel subagents can write different paths without clobbering. On
+disk those paths land under `files/`. A worker's job ends with a write to
 `/session/<id>/findings/<name>.md`. Raw diffs never return to the lead.
 Path confinement keeps tools inside the session root
 (`INVALID_SESSION_PATH`).
+
+LangGraph resume stays in `.waratah/sessions.db` (`SqliteSaver`). That
+blob is not the human store.
 
 ### Cross-run structured store
 
@@ -399,10 +444,26 @@ fetch (SSRF).
 
 ## 10. Observability
 
-Compile and run write a small inspectable working directory (gitignored):
-`manifest.json`, `sessions.db` (local), `traces.jsonl`, `logs.jsonl`, and
-`memory/MEMORY.md`. Diagnosis is a grep of those files, not a read of
-framework source.
+Compile and run write a small inspectable working directory (gitignored).
+Thin on purpose — no nested discovery or compile subtrees. Humans do not
+hand-edit compile or journal files. `MEMORY.md` is agent-maintained
+(humans may read it; the agent will rewrite it). Diagnosis is a grep of
+these files, not a read of framework source.
+
+```
+.waratah/
+├── manifest.json     # discovered + compiled for this agent, one file
+├── session/
+│   └── <sessionId>/  # one inspectable run (Cursor/Claude-style)
+│       ├── meta.json
+│       ├── transcript.jsonl
+│       └── files/    # findings and other session files
+├── sessions.db       # LangGraph checkpointer (resume), not the human store
+├── traces.jsonl      # one line per traced event
+├── logs.jsonl
+└── memory/
+    └── MEMORY.md     # auto memory — per project, shared across worktrees
+```
 
 Trace events: start / complete / error per **session**, **turn**,
 **model**, **tool**, and **subagent**. JSONL allowlist sink: no
@@ -487,7 +548,7 @@ public API breaks (`minor`).
 │       │   ├── protocol/           production HTTP
 │       │   ├── acp/                Agent Client Protocol (editor / local)
 │       │   ├── client/             thin SDK for the HTTP protocol
-│       │   ├── session/            thread_id from deliveryId; checkpointer
+│       │   ├── session/            thread_id from deliveryId; filesystem store; checkpointer
 │       │   ├── memory/             AGENTS.md + MEMORY.md load / write / compact
 │       │   ├── approval/           guardrail / human-gate before write tools
 │       │   ├── sandbox/            per-agent sandbox backends

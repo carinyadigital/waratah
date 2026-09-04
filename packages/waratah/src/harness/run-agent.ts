@@ -1,5 +1,6 @@
 import { loadSessionInstructions, loadSessionStartContent } from '../memory/load.js';
 import { createToolTraceHook, type JsonlSink } from '../observability/jsonl-sink.js';
+import type { FilesystemSessionStore, SessionTranscriptLine } from '../session/filesystem-store.js';
 import type { AgentDefinition, ModelMessage, SessionFilesystem } from '../shared/contracts.js';
 import { isWaratahError } from '../shared/errors.js';
 import type { SessionId, TurnId } from '../shared/ids.js';
@@ -31,6 +32,7 @@ export interface RunAgentOptions {
   readonly budget?: StepBudget;
   readonly toolExecutor?: ToolExecutorOptions;
   readonly sink?: JsonlSink;
+  readonly sessionStore?: FilesystemSessionStore;
 }
 
 export interface RunAgentResult {
@@ -73,6 +75,10 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
     signal: options.signal,
     limits,
     toolExecutor,
+    onTranscript:
+      options.sessionStore === undefined
+        ? undefined
+        : (line) => options.sessionStore!.appendTranscript(options.sessionId, line),
   };
   const startedAt = Date.now();
   await emit(options.sink, {
@@ -85,6 +91,12 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
     turnId: options.turnId,
     agentName: options.agent.name,
   });
+  await recordSession(options, {
+    timestamp: new Date().toISOString(),
+    type: 'system',
+    event: 'started',
+  });
+  await updateSessionStatus(options, 'running');
   try {
     const result = await graph.invoke(
       { messages },
@@ -107,8 +119,20 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
       agentName: options.agent.name,
     });
     const state = result as { readonly content?: string };
+    const content = state.content ?? '';
+    await recordSession(options, {
+      timestamp: new Date().toISOString(),
+      type: 'assistant',
+      content,
+    });
+    await recordSession(options, {
+      timestamp: new Date().toISOString(),
+      type: 'system',
+      event: 'succeeded',
+    });
+    await updateSessionStatus(options, 'succeeded');
     return {
-      content: state.content ?? '',
+      content,
       steps: budget.steps,
     };
   } catch (error) {
@@ -124,7 +148,47 @@ export async function runAgent(options: RunAgentOptions): Promise<RunAgentResult
       agentName: options.agent.name,
       errorCode: isWaratahError(error) ? error.code : undefined,
     });
+    await recordSession(options, {
+      timestamp: new Date().toISOString(),
+      type: 'system',
+      event: 'failed',
+      ...(isWaratahError(error) ? { errorCode: error.code } : {}),
+    });
+    await updateSessionStatus(
+      options,
+      'failed',
+      isWaratahError(error) ? error.code : undefined,
+    );
     throw error;
+  }
+}
+
+async function recordSession(
+  options: RunAgentOptions,
+  line: SessionTranscriptLine,
+): Promise<void> {
+  if (options.sessionStore === undefined) {
+    return;
+  }
+  try {
+    await options.sessionStore.appendTranscript(options.sessionId, line);
+  } catch {
+    // Inspection files must not change the session outcome.
+  }
+}
+
+async function updateSessionStatus(
+  options: RunAgentOptions,
+  status: 'running' | 'succeeded' | 'failed',
+  errorCode?: Parameters<FilesystemSessionStore['updateStatus']>[2],
+): Promise<void> {
+  if (options.sessionStore === undefined) {
+    return;
+  }
+  try {
+    await options.sessionStore.updateStatus(options.sessionId, status, errorCode);
+  } catch {
+    // Inspection files must not change the session outcome.
   }
 }
 

@@ -11,6 +11,8 @@ This repository also hosts **waratah**, Carinya Digital's filesystem-first harne
 | `pnpm agent` / `pnpm validate` / `pnpm build` | `agents/<name>/agent.yaml` | Provider artifacts in `dist/` (Claude, Cursor) |
 | `pnpm waratah` | `agent/agent.ts` via `createAgent()` | LangGraph graph, `.waratah/manifest.json`, `waratah serve` |
 
+Local `waratah serve` writes one inspectable directory per session under `.waratah/session/<id>/` (Cursor/Claude-style transcripts). LangGraph resume stays in `.waratah/sessions.db`.
+
 ```bash
 pnpm validate              # YAML definitions conform
 pnpm build                 # render YAML agents into dist/

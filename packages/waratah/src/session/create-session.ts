@@ -1,9 +1,11 @@
 import { compileAcceptGraph } from '../harness/compile-graph.js';
+import { SESSION_ID_PATTERN } from '../context/paths.js';
 import type { CreateSessionCommand, CreateSessionResult, WaratahCompiledGraph } from '../shared/contracts.js';
 import { PHASE_1_LIMITS } from '../harness/limits.js';
 import { WaratahError } from '../shared/errors.js';
 import { asSessionId } from '../shared/ids.js';
 import { getThread, type Checkpointer } from './checkpointer.js';
+import { createFilesystemSessionStore, type FilesystemSessionStore } from './filesystem-store.js';
 import { threadIdFor } from './thread-id.js';
 
 export class InvalidSessionRequest extends Error {
@@ -16,14 +18,17 @@ export class InvalidSessionRequest extends Error {
 export interface CreateSessionServiceOptions {
   readonly metadataKeys?: readonly string[];
   readonly limits?: { readonly maxSessionMessageBytes?: number };
+  readonly sessionStore?: FilesystemSessionStore;
+  readonly projectRoot?: string;
 }
 
-/** Validates trigger input before accepting a session against the checkpointer. */
+/** Validates trigger input before accepting a session against the local store. */
 export class CreateSessionService {
   readonly #checkpointer: Checkpointer;
   readonly #metadataKeys: ReadonlySet<string>;
   readonly #maxMessageBytes: number;
   readonly #graph: WaratahCompiledGraph;
+  readonly #sessionStore: FilesystemSessionStore | undefined;
 
   constructor(checkpointer: Checkpointer, options: CreateSessionServiceOptions = {}) {
     this.#checkpointer = checkpointer;
@@ -33,19 +38,40 @@ export class CreateSessionService {
       PHASE_1_LIMITS.maxSessionMessageBytes,
     );
     this.#graph = compileAcceptGraph(checkpointer);
+    this.#sessionStore =
+      options.sessionStore ??
+      (options.projectRoot === undefined
+        ? undefined
+        : createFilesystemSessionStore(options.projectRoot));
   }
 
   async create(command: unknown): Promise<CreateSessionResult> {
     assertCreateSessionCommand(command, this.#metadataKeys, this.#maxMessageBytes);
     const threadId = threadIdFor(command.deliveryId);
-    const existing = await getThread(this.#checkpointer, threadId);
     const sessionId = asSessionId(threadId);
-    if (existing !== undefined) {
-      return { sessionId, accepted: false, duplicateOf: sessionId };
+    if (this.#sessionStore !== undefined) {
+      const existing = await this.#sessionStore.readMeta(sessionId);
+      if (existing !== undefined) {
+        return { sessionId, accepted: false, duplicateOf: sessionId };
+      }
+    } else {
+      const existing = await getThread(this.#checkpointer, threadId);
+      if (existing !== undefined) {
+        return { sessionId, accepted: false, duplicateOf: sessionId };
+      }
     }
     try {
+      if (this.#sessionStore !== undefined) {
+        const written = await this.#sessionStore.create(sessionId, command);
+        if (written === 'duplicate') {
+          return { sessionId, accepted: false, duplicateOf: sessionId };
+        }
+      }
       await this.#graph.invoke({}, { configurable: { thread_id: threadId } });
-    } catch {
+    } catch (error) {
+      if (error instanceof WaratahError && error.code === 'SESSION_STORE_ERROR') {
+        throw error;
+      }
       throw new WaratahError(
         'SESSION_STORE_ERROR',
         'The session store is unavailable. Restore the store before accepting or resuming work.',
@@ -108,6 +134,12 @@ export function triggerInstant(triggeredAt: unknown): number {
   return instant;
 }
 
+function assertNonEmptyString(value: unknown): asserts value is string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new InvalidSessionRequest();
+  }
+}
+
 function assertCreateSessionCommand(
   command: unknown,
   metadataKeys: ReadonlySet<string>,
@@ -118,6 +150,9 @@ function assertCreateSessionCommand(
   }
 
   assertNonEmptyString(command.deliveryId);
+  if (!SESSION_ID_PATTERN.test(command.deliveryId)) {
+    throw new InvalidSessionRequest();
+  }
   if (command.trigger !== 'manual' && command.trigger !== 'cron' && command.trigger !== 'http') {
     throw new InvalidSessionRequest();
   }
@@ -142,12 +177,7 @@ function assertCreateSessionCommand(
   }
 }
 
-function assertNonEmptyString(value: unknown): asserts value is string {
-  if (typeof value !== 'string' || value.trim() === '') {
-    throw new InvalidSessionRequest();
-  }
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
+

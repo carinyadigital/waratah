@@ -13,6 +13,7 @@ export function createMemoryCheckpointer(): Checkpointer {
 }
 
 export function createSqliteCheckpointer(projectRoot: string): Checkpointer {
+  // Resume blob for LangGraph. The inspectable session is `.waratah/session/<id>/`.
   const dbPath = join(resolve(projectRoot), '.waratah', 'sessions.db');
   try {
     mkdirSync(dirname(dbPath), { recursive: true });

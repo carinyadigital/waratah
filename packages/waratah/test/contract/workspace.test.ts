@@ -46,6 +46,7 @@ describe('workspace coexistence', () => {
       'WaratahError',
       'compile',
       'createAgent',
+      'defineCronChannel',
       'defineTool',
       'isWaratahError',
     ]);

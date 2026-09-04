@@ -1,6 +1,3 @@
-const cron = {
-  name: 'cron',
-  description: 'Daily schedule trigger for the lookback window.',
-} as const;
+import { defineCronChannel } from 'waratah';
 
-export default cron;
+export default defineCronChannel();
